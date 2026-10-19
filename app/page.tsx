@@ -44,6 +44,7 @@ import { kcalEstimate, profileStats, macroTargets } from "@/lib/calc";
 import { WARMUP_MAP, getExercise, hasEquipment } from "@/lib/exercises";
 import { buildFeedback, initSets, lastWeights, normalizeHistory, normalizeSession, totals } from "@/lib/session";
 import { KEYS, makeBackup, mergeHistory, parseProfile, readBackup } from "@/lib/storage";
+import { type Language, TRANSLATIONS, FOCUS_LABELS_I18N } from "@/lib/i18n";
 import {
   DEFAULT_PROFILE,
   FOCUSES,
@@ -66,7 +67,10 @@ export default function Page() {
   const [accessCode, setAccessCode] = useStoredState<string>(KEYS.access, "");
   const [geminiKey, setGeminiKey] = useStoredState<string>(KEYS.geminiKey, "");
   const [unitSystem, setUnitSystem] = useStoredState<"metric" | "imperial">(KEYS.unitSystem, "metric");
+  const [lang, setLang] = useStoredState<Language>(KEYS.language, "bn");
   const [soundOn, setSoundOn] = useStoredState<boolean>(KEYS.sound, true);
+
+  const tr = TRANSLATIONS[lang] ?? TRANSLATIONS.bn;
 
   const [view, setView] = useState<View>("today");
   const [showProfile, setShowProfile] = useState(false);
@@ -178,12 +182,13 @@ export default function Page() {
     [accessCode, applyPlan, geminiKey, history],
   );
 
-  const saveProfile = (p: Profile, code: string, key?: string, unit?: "metric" | "imperial") => {
+  const saveProfile = (p: Profile, code: string, key?: string, unit?: "metric" | "imperial", l?: Language) => {
     const first = !profile;
     setProfile(p);
     setAccessCode(code);
     if (key !== undefined) setGeminiKey(key);
     if (unit !== undefined) setUnitSystem(unit);
+    if (l !== undefined) setLang(l);
     setShowProfile(false);
     if (first) void generate(p);
   };
@@ -327,31 +332,44 @@ export default function Page() {
             </div>
             <div>
               <h1 className="flex items-center gap-1.5 text-base font-bold tracking-tight text-white">
-                ARISE
+                {tr.appName}
                 <span className="rounded border border-emerald-500/30 bg-emerald-950/80 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-widest text-emerald-400">
-                  Coach
+                  {tr.coachBadge}
                 </span>
               </h1>
-              <p className="text-xs text-zinc-400">Adaptive personal training</p>
+              <p className="text-xs text-zinc-400">{tr.tagline}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
+            {/* 1-Click Dual Language Toggle Switcher */}
+            <button
+              id="btn-lang-toggle"
+              type="button"
+              onClick={() => setLang(lang === "bn" ? "en" : "bn")}
+              aria-label={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
+              title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
+              className="flex h-11 items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-zinc-800/80 px-2.5 sm:px-3 text-xs font-bold text-zinc-100 hover:border-emerald-500 hover:bg-zinc-800 shadow-sm transition-colors"
+            >
+              <span className="text-sm">🌐</span>
+              <span className="font-bold text-emerald-400">{lang === "bn" ? "EN" : "বাংলা"}</span>
+            </button>
+
             <button
               id="btn-bangladeshi-diet"
               onClick={() => setShowDietSheet(true)}
-              aria-label="Bangladeshi Diet Chart"
-              title="বাঙালি ডায়েট চার্ট (Bangladeshi Diet Plan)"
+              aria-label={tr.dietBtn}
+              title={tr.dietBtn}
               className="flex h-11 items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-2.5 sm:px-3 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 shadow-sm transition-colors"
             >
               <Utensils className="h-4 w-4" />
-              <span className="hidden sm:inline">বাঙালি ডায়েট</span>
+              <span className="hidden sm:inline">{tr.dietBtnShort}</span>
             </button>
             <button
               onClick={() => {
                 unlockAudio();
                 setSoundOn(!soundOn);
               }}
-              aria-label={soundOn ? "Mute sounds" : "Unmute sounds"}
+              aria-label={soundOn ? tr.soundMute : tr.soundUnmute}
               aria-pressed={soundOn}
               className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 hover:bg-zinc-800"
             >
@@ -359,7 +377,7 @@ export default function Page() {
             </button>
             <button
               onClick={() => setView(view === "history" ? "today" : "history")}
-              aria-label={view === "history" ? "Back to today" : "History"}
+              aria-label={view === "history" ? "Back to today" : tr.historyBtn}
               aria-pressed={view === "history"}
               className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 hover:bg-zinc-800"
             >
@@ -367,7 +385,7 @@ export default function Page() {
             </button>
             <button
               onClick={() => setShowProfile(true)}
-              aria-label="Profile and settings"
+              aria-label={tr.profileBtn}
               className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
             >
               <SlidersHorizontal className="h-4 w-4" />
@@ -379,11 +397,11 @@ export default function Page() {
           <div className="mx-auto mt-2.5 max-w-3xl">
             <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-zinc-400">
               <span className="flex items-center gap-1">
-                <Activity className="h-3.5 w-3.5 text-emerald-400" /> Session
-                {elapsedMin !== null && <span className="text-zinc-500">· {elapsedMin} min in</span>}
+                <Activity className="h-3.5 w-3.5 text-emerald-400" /> {tr.sessionProgress}
+                {elapsedMin !== null && <span className="text-zinc-500">· {elapsedMin} {tr.minIn}</span>}
               </span>
               <span className="font-semibold text-emerald-400">
-                {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}% ({t.setsDone}/{t.setsTotal} sets)
+                {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}% ({t.setsDone}/{t.setsTotal} {tr.sets})
               </span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
@@ -446,6 +464,7 @@ export default function Page() {
             {/* Weekly Schedule & Smart Split Bar */}
             <WeeklyScheduleBar
               workoutDays={activeProfile.workoutDays ?? [1, 3, 5]}
+              lang={lang}
               onToggleDay={(dayIndex) => {
                 const cur = new Set(activeProfile.workoutDays ?? [1, 3, 5]);
                 if (cur.has(dayIndex)) {
@@ -461,27 +480,27 @@ export default function Page() {
 
             <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 p-5 shadow-xl">
               <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
-              <h2 className="text-2xl font-extrabold tracking-tight text-white">Ready for today&apos;s session?</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight text-white">{tr.readyTitle}</h2>
               <p className="mt-1 text-sm text-zinc-400">
-                Pick a focus and length, and your coach builds it from the equipment you have.
+                {tr.readySubtitle}
               </p>
 
               <div className="mt-4">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-400">Focus</span>
+                <span className="mb-1.5 block text-xs font-medium text-zinc-400">{tr.focusLabel}</span>
                 <div className="flex flex-wrap gap-2">
                   {FOCUSES.map((f) => (
                     <Chip key={f.id} selected={activeProfile.focus === f.id} onClick={() => quickPatch({ focus: f.id })}>
-                      {f.label}
+                      {FOCUS_LABELS_I18N[lang]?.[f.id] ?? f.label}
                     </Chip>
                   ))}
                 </div>
               </div>
               <div className="mt-4">
-                <span className="mb-1.5 block text-xs font-medium text-zinc-400">Time</span>
+                <span className="mb-1.5 block text-xs font-medium text-zinc-400">{tr.timeLabel}</span>
                 <div className="flex flex-wrap gap-2">
                   {([20, 30, 45, 60] as const).map((m) => (
                     <Chip key={m} selected={activeProfile.minutes === m} onClick={() => quickPatch({ minutes: m })}>
-                      {m} min
+                      {m} {lang === "bn" ? "মি." : "min"}
                     </Chip>
                   ))}
                 </div>
@@ -498,11 +517,11 @@ export default function Page() {
               >
                 {busy ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Building your session…
+                    <Loader2 className="h-4 w-4 animate-spin" /> {tr.buildingSessionBtn}
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4 stroke-[2.5]" /> Generate workout
+                    <Sparkles className="h-4 w-4 stroke-[2.5]" /> {tr.generateWorkoutBtn}
                   </>
                 )}
               </button>
@@ -512,7 +531,7 @@ export default function Page() {
                 disabled={busy || !profile}
                 className="mt-2 min-h-[44px] w-full text-xs text-zinc-400 underline-offset-2 hover:text-zinc-200 hover:underline disabled:opacity-50"
               >
-                Build without AI (works offline)
+                {tr.offlineBuildBtn}
               </button>
             </div>
 
@@ -522,11 +541,11 @@ export default function Page() {
 
               <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-zinc-800/60">
                 <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
-                  <div className="text-[10px] text-zinc-400">Resting BMR</div>
+                  <div className="text-[10px] text-zinc-400">{tr.restingBmr}</div>
                   <div className="text-base font-bold text-white font-mono">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
                 <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
-                  <div className="text-[10px] text-zinc-400">Daily Maintenance</div>
+                  <div className="text-[10px] text-zinc-400">{tr.dailyTdee}</div>
                   <div className="text-base font-bold text-emerald-400 font-mono">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
               </div>
@@ -534,20 +553,20 @@ export default function Page() {
               {nutrition && (
                 <div className="rounded-xl bg-zinc-950/80 p-3 border border-zinc-800 text-center space-y-1.5">
                   <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
-                    <span>Target Calories ({activeProfile.goal}):</span>
+                    <span>{tr.targetCalories(activeProfile.goal)}</span>
                     <strong className="text-white font-mono">{nutrition.targetCalories} kcal/day</strong>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5 text-xs">
                     <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                      <span className="text-emerald-400 font-semibold block text-[10px]">Protein</span>
+                      <span className="text-emerald-400 font-semibold block text-[10px]">{tr.proteinLabel}</span>
                       <strong className="text-white font-mono">{nutrition.proteinGrams}g</strong>
                     </div>
                     <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                      <span className="text-teal-400 font-semibold block text-[10px]">Carbs</span>
+                      <span className="text-teal-400 font-semibold block text-[10px]">{tr.carbsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.carbGrams}g</strong>
                     </div>
                     <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                      <span className="text-amber-400 font-semibold block text-[10px]">Fats</span>
+                      <span className="text-amber-400 font-semibold block text-[10px]">{tr.fatsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.fatGrams}g</strong>
                     </div>
                   </div>
@@ -560,13 +579,13 @@ export default function Page() {
                 className="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2.5 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors shadow-sm"
               >
                 <Utensils className="h-4 w-4" />
-                <span>দেশীয় খাবারের সম্পূর্ণ ডায়েট চার্ট দেখুন (Bangladeshi Diet Chart)</span>
+                <span>{tr.viewDietChartBtn}</span>
               </button>
             </div>
 
             {history[0] && (
               <p className="text-center text-xs text-zinc-500">
-                Last session: {history[0].title}, felt &ldquo;{history[0].difficulty.replace("_", " ")}&rdquo;. Your coach will use that.
+                {tr.lastSessionFelt(history[0].title, history[0].difficulty)}
               </p>
             )}
           </section>
@@ -578,15 +597,15 @@ export default function Page() {
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 {plan.source === "ai" ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                    <Sparkles className="h-3 w-3" /> AI coach
+                    <Sparkles className="h-3 w-3" /> {tr.aiCoachBadge}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-600 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-300">
-                    <WifiOff className="h-3 w-3" /> Offline plan (no AI)
+                    <WifiOff className="h-3 w-3" /> {tr.offlineBadge}
                   </span>
                 )}
                 <span className="flex items-center gap-1.5 rounded-full border border-zinc-700/60 bg-zinc-800/90 px-2.5 py-1 text-xs text-zinc-300">
-                  <HeartPulse className="h-3.5 w-3.5 text-rose-400" /> BMI <strong className="text-white">{session.meta.bmi}</strong> ({session.meta.bmiCategory})
+                  <HeartPulse className="h-3.5 w-3.5 text-rose-400" /> {tr.bmiLabel} <strong className="text-white">{session.meta.bmi}</strong> ({session.meta.bmiCategory})
                 </span>
               </div>
 
@@ -594,13 +613,13 @@ export default function Page() {
               <div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-zinc-400 md:text-sm">
                 <span className="flex items-center gap-1.5">
                   <Dumbbell className="h-4 w-4 text-emerald-400" />
-                  <span className="text-zinc-200">{focusLabel(plan.focus)}</span>
+                  <span className="text-zinc-200">{FOCUS_LABELS_I18N[lang]?.[plan.focus] ?? focusLabel(plan.focus)}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-emerald-400" /> ~{estimateMinutes(plan)} min
+                  <Clock className="h-4 w-4 text-emerald-400" /> ~{estimateMinutes(plan)} {lang === "bn" ? "মি." : "min"}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Activity className="h-4 w-4 text-emerald-400" /> {plan.exercises.length} movements
+                  <Activity className="h-4 w-4 text-emerald-400" /> {tr.movementsCount(plan.exercises.length)}
                 </span>
               </div>
 
@@ -610,7 +629,7 @@ export default function Page() {
                     <Info className="h-4 w-4" />
                   </div>
                   <p className="text-xs leading-relaxed text-zinc-300 md:text-sm">
-                    <strong className="font-semibold text-emerald-400">Coach: </strong>
+                    <strong className="font-semibold text-emerald-400">{tr.coachNotePrefix} </strong>
                     {plan.coachNote}
                   </p>
                 </div>
@@ -621,7 +640,7 @@ export default function Page() {
                   onClick={startWorkout}
                   className="mt-4 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 font-semibold text-emerald-300 hover:bg-emerald-500/20"
                 >
-                  <Play className="h-4 w-4" /> Start workout (keeps the screen on)
+                  <Play className="h-4 w-4" /> {tr.startWorkoutBtn}
                 </button>
               )}
             </section>
@@ -647,7 +666,7 @@ export default function Page() {
                     <Flame className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-white">Warm-up</h3>
+                    <h3 className="text-sm font-semibold text-white">{tr.warmupTitle}</h3>
                     <p className="text-xs text-zinc-400">
                       {plan.warmup.filter((w) => session.warmupDone[w.moveId]).length} of {plan.warmup.length} done
                     </p>
@@ -697,10 +716,10 @@ export default function Page() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-lg font-bold tracking-tight text-white">
-                  <Dumbbell className="h-5 w-5 text-emerald-400" /> Main work ({plan.exercises.length})
+                  <Dumbbell className="h-5 w-5 text-emerald-400" /> {tr.mainWorkTitle(plan.exercises.length)}
                 </h3>
                 <button onClick={discard} className="flex min-h-[40px] items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200">
-                  <RotateCcw className="h-3 w-3" /> Discard
+                  <RotateCcw className="h-3 w-3" /> {tr.discardBtn}
                 </button>
               </div>
 
@@ -723,6 +742,7 @@ export default function Page() {
                     harder={harder && hasEquipment(harder, owned) && !inPlan.includes(harder.id) ? harder : undefined}
                     alternatives={alternativesFor(ex.id, activeProfile, inPlan)}
                     unitSystem={unitSystem}
+                    lang={lang}
                     onToggleSet={(idx) => toggleSet(pe.uid, idx)}
                     onChangeSet={(idx, patch) => changeSet(pe.uid, idx, patch)}
                     onSwap={(id) => swapExercise(pe.uid, id)}
@@ -739,24 +759,24 @@ export default function Page() {
             <section className={`rounded-2xl border p-4 ${allDone ? "border-emerald-500/40 bg-emerald-500/10" : "border-zinc-800 bg-zinc-900/60"}`}>
               <p className="mb-3 text-sm text-zinc-300">
                 {allDone
-                  ? "All sets done. Log how it felt so your next session adapts."
-                  : "Done early or short on time? You can finish any time and still log it."}
+                  ? (lang === "bn" ? "সবগুলো সেট সম্পন্ন হয়েছে! সেশনটি কেমন লেগেছে রেট করে সেভ করুন।" : "All sets done. Log how it felt so your next session adapts.")
+                  : (lang === "bn" ? "তাড়াতাড়ি শেষ করতে চান? যেকোনো সময় ফিনিশ করে সেশন সেভ করতে পারেন।" : "Done early or short on time? You can finish any time and still log it.")}
               </p>
               <button
                 onClick={() => setShowFinish(true)}
                 className={`min-h-[48px] w-full rounded-xl font-bold ${allDone ? "bg-gradient-to-r from-emerald-500 to-teal-400 text-zinc-950" : "border border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700"}`}
               >
-                Finish workout
+                {tr.finishWorkoutBtn}
               </button>
               {session.startedAt && t && (
-                <p className="mt-2 text-center text-[11px] text-zinc-500">~{kcalEstimate(activeProfile.weightKg, Math.max(1, elapsedMin ?? 0))} kcal so far (estimate)</p>
+                <p className="mt-2 text-center text-[11px] text-zinc-500">{tr.estimateKcalBurn(kcalEstimate(activeProfile.weightKg, Math.max(1, elapsedMin ?? 0)))}</p>
               )}
             </section>
           </>
         )}
 
         <p className="pb-4 text-center text-[11px] leading-relaxed text-zinc-600">
-          Training suggestions only, not medical advice. Stop if something hurts, and check with a professional if you have a condition or injury.
+          {tr.medicalDisclaimer}
         </p>
       </main>
 
@@ -779,6 +799,8 @@ export default function Page() {
           accessCode={accessCode}
           geminiKey={geminiKey}
           unitSystem={unitSystem}
+          lang={lang}
+          onLanguageChange={setLang}
           onSave={saveProfile}
           onClose={() => setShowProfile(false)}
         />
@@ -796,6 +818,7 @@ export default function Page() {
         bmiCategory={stats.bmiCategory}
         tdee={stats.tdee}
         initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
+        lang={lang}
         onClose={() => setShowDietSheet(false)}
       />
 
@@ -803,6 +826,7 @@ export default function Page() {
         exercise={selectedAnimationEx}
         easier={selectedAnimationEx?.easier ? getExercise(selectedAnimationEx.easier) : undefined}
         harder={selectedAnimationEx?.harder ? getExercise(selectedAnimationEx.harder) : undefined}
+        lang={lang}
         onClose={() => setSelectedAnimationEx(null)}
         onSwap={
           session && selectedAnimationEx

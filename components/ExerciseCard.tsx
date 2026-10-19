@@ -4,6 +4,7 @@ import { ArrowLeftRight, CheckCircle2, Clock, ExternalLink, Play, Timer, Trendin
 import { useState } from "react";
 import { MUSCLE_LABEL } from "@/lib/exercises";
 import { kgToLbs, lbsToKg } from "@/lib/calc";
+import { TRANSLATIONS, type Language } from "@/lib/i18n";
 import type { Exercise, PlanExercise, SetLog } from "@/lib/types";
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
   harder?: Exercise;
   alternatives: Exercise[];
   unitSystem?: "metric" | "imperial";
+  lang?: Language;
   onToggleSet: (setIndex: number) => void;
   onChangeSet: (setIndex: number, patch: Partial<SetLog>) => void;
   onSwap: (exerciseId: string) => void;
@@ -39,6 +41,7 @@ export function ExerciseCard({
   harder,
   alternatives,
   unitSystem = "metric",
+  lang = "bn",
   onToggleSet,
   onChangeSet,
   onSwap,
@@ -50,6 +53,7 @@ export function ExerciseCard({
   const allDone = sets.length > 0 && doneCount === sets.length;
   const canSwap = doneCount === 0;
   const equipmentText = exercise.requires.length ? exercise.requires.map((r) => r.replace("_", " ")).join(" + ") : "bodyweight";
+  const t = TRANSLATIONS[lang] ?? TRANSLATIONS.bn;
 
   const isImperial = unitSystem === "imperial";
   const weightUnit = isImperial ? "lbs" : "kg";
@@ -79,20 +83,20 @@ export function ExerciseCard({
               {pe.sets} × {pe.reps}
             </span>
             <div className="mt-1 flex items-center justify-end gap-1 text-[11px] text-zinc-400">
-              <Clock className="h-3 w-3" /> {pe.restSeconds}s rest
+              <Clock className="h-3 w-3" /> {t.restSecLabel(pe.restSeconds)}
             </div>
           </div>
         </div>
 
         <div className="my-3 rounded-xl border border-zinc-800/70 bg-zinc-950/40 p-3 text-xs leading-relaxed text-zinc-300">
-          <strong className="text-zinc-100">Cue:</strong> {exercise.cues}
+          <strong className="text-zinc-100">{t.cuePrefix}</strong> {exercise.cues}
           {pe.note && (
             <>
               <br />
-              <strong className="text-zinc-100">Coach:</strong> {pe.note}
+              <strong className="text-zinc-100">{t.coachNotePrefix}</strong> {pe.note}
             </>
           )}
-          <div className="mt-1.5 text-[11px] text-zinc-500">Equipment: {equipmentText}</div>
+          <div className="mt-1.5 text-[11px] text-zinc-500">{t.equipmentPrefix} {equipmentText}</div>
         </div>
 
         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -107,7 +111,7 @@ export function ExerciseCard({
               title={`Watch animated demonstration and form guide for ${exercise.name}`}
             >
               <Play className="h-3 w-3 fill-emerald-400 text-emerald-400" />
-              <span>Animation & How-To</span>
+              <span>{t.animationBtn}</span>
             </button>
           )}
 
@@ -117,7 +121,7 @@ export function ExerciseCard({
               disabled={!canSwap}
               className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 hover:border-zinc-500 disabled:opacity-40"
             >
-              <TrendingDown className="h-3.5 w-3.5" /> Easier: {easier.name}
+              <TrendingDown className="h-3.5 w-3.5" /> {t.easierBtn(easier.name)}
             </button>
           )}
           {harder && (
@@ -126,7 +130,7 @@ export function ExerciseCard({
               disabled={!canSwap}
               className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 hover:border-zinc-500 disabled:opacity-40"
             >
-              <TrendingUp className="h-3.5 w-3.5" /> Harder: {harder.name}
+              <TrendingUp className="h-3.5 w-3.5" /> {t.harderBtn(harder.name)}
             </button>
           )}
           {alternatives.length > 0 && (
@@ -136,7 +140,7 @@ export function ExerciseCard({
               disabled={!canSwap}
               className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 hover:border-zinc-500 disabled:opacity-40"
             >
-              <ArrowLeftRight className="h-3.5 w-3.5" /> Swap
+              <ArrowLeftRight className="h-3.5 w-3.5" /> {t.swapBtn}
             </button>
           )}
 
@@ -149,10 +153,10 @@ export function ExerciseCard({
             title={`Search proper biomechanical form for ${exercise.name}`}
           >
             <ExternalLink className="h-3 w-3 text-emerald-400" />
-            <span>Form Video</span>
+            <span>{t.formVideoBtn}</span>
           </a>
         </div>
-        {!canSwap && <p className="mb-2 text-[11px] text-zinc-500">Swapping is available until you complete a set.</p>}
+        {!canSwap && <p className="mb-2 text-[11px] text-zinc-500">{t.swapNotice}</p>}
 
         {swapOpen && canSwap && (
           <ul className="mb-3 space-y-1 rounded-xl border border-zinc-800 bg-zinc-950/60 p-2">
@@ -174,10 +178,10 @@ export function ExerciseCard({
         )}
 
         <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-          Sets {doneCount}/{sets.length}
+          {t.setsProgress(doneCount, sets.length)}
           {exercise.loaded && lastWeightDisplay ? (
             <span className="ml-2 normal-case text-zinc-500">
-              last time {lastWeightDisplay} {weightUnit}
+              {t.lastWeightPrefix(lastWeightDisplay, weightUnit)}
             </span>
           ) : null}
         </div>

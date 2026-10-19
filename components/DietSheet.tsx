@@ -16,6 +16,7 @@ import {
   Info,
 } from "lucide-react";
 import { generateBangladeshiDiet, type BangladeshiDietPlan } from "@/lib/diet";
+import { TRANSLATIONS, type Language } from "@/lib/i18n";
 import type { Goal } from "@/lib/types";
 
 interface Props {
@@ -26,6 +27,7 @@ interface Props {
   bmiCategory: string;
   tdee: number;
   initialGoal?: Goal | "recomp";
+  lang?: Language;
   onClose: () => void;
 }
 
@@ -39,6 +41,7 @@ export function DietSheet({
   bmiCategory,
   tdee,
   initialGoal = "recomp",
+  lang = "bn",
   onClose,
 }: Props) {
   // Map initial goal to tab
@@ -51,6 +54,7 @@ export function DietSheet({
   const [activeTab, setActiveTab] = useState<TabGoal>(getInitialTab);
   const [copied, setCopied] = useState(false);
   const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
+  const t = TRANSLATIONS[lang] ?? TRANSLATIONS.bn;
 
   // Derive diet plan dynamically
   const plan: BangladeshiDietPlan = useMemo(() => {
@@ -69,7 +73,7 @@ ${plan.meals
   .map(
     (m) =>
       `▶️ ${m.title} [${m.time}]:\n` +
-      m.items.map((i) => ` • ${i.bengaliName} (${i.portion}) - ${i.calories} kcal [P: ${i.proteinG}g]`).join("\n") +
+      m.items.map((i) => ` • ${lang === "bn" ? i.bengaliName : i.name} (${i.portion}) - ${i.calories} kcal [P: ${i.proteinG}g]`).join("\n") +
       (m.tips ? `\n 💡 Tip: ${m.tips}` : "")
   )
   .join("\n\n")}
@@ -100,13 +104,13 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
             <div>
               <div className="flex items-center gap-2">
                 <h2 id="diet-modal-title" className="text-base font-bold text-white sm:text-lg">
-                  দেশীয় ডায়েট চার্ট
+                  {t.dietSheetTitle}
                 </h2>
                 <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 uppercase tracking-wide">
-                  Bangladeshi Diet
+                  {t.dietSheetBadge}
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">আপনার ওজন ও বিএমআই অনুযায়ী সঠিক খাবারের হিসাব</p>
+              <p className="text-xs text-zinc-400">{t.dietSheetSubtitle}</p>
             </div>
           </div>
           <button
@@ -129,8 +133,8 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
               }`}
             >
-              <span className="text-xs sm:text-sm">📉 ওজন কমানো</span>
-              <span className="text-[10px] opacity-75">Fat Loss</span>
+              <span className="text-xs sm:text-sm">{t.tabFatLoss}</span>
+              <span className="text-[10px] opacity-75">{lang === "bn" ? "Fat Loss" : "ওজন কমানো"}</span>
             </button>
             <button
               onClick={() => setActiveTab("muscle")}
@@ -140,8 +144,8 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
               }`}
             >
-              <span className="text-xs sm:text-sm">💪 মাসল বৃদ্ধি</span>
-              <span className="text-[10px] opacity-75">Muscle Gain</span>
+              <span className="text-xs sm:text-sm">{t.tabMuscle}</span>
+              <span className="text-[10px] opacity-75">{lang === "bn" ? "Muscle Gain" : "মাসল বৃদ্ধি"}</span>
             </button>
             <button
               onClick={() => setActiveTab("recomp")}
@@ -151,8 +155,8 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
               }`}
             >
-              <span className="text-xs sm:text-sm">🌟 এস্থেটিক বডি</span>
-              <span className="text-[10px] opacity-75">Look Good / Fit</span>
+              <span className="text-xs sm:text-sm">{t.tabRecomp}</span>
+              <span className="text-[10px] opacity-75">{lang === "bn" ? "Look Good / Fit" : "এস্থেটিক বডি"}</span>
             </button>
           </div>
         </div>
@@ -176,7 +180,7 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
               <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
-                  <Flame className="h-3 w-3 text-amber-400" /> দৈনিক ক্যালোরি
+                  <Flame className="h-3 w-3 text-amber-400" /> {lang === "bn" ? "দৈনিক ক্যালোরি" : "Daily Calories"}
                 </div>
                 <div className="mt-1 text-lg font-bold font-mono text-white">
                   {plan.targetCalories} <span className="text-[11px] font-normal text-zinc-500">kcal</span>
@@ -185,28 +189,28 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
 
               <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
-                  <Sparkles className="h-3 w-3 text-emerald-400" /> মোট প্রোটিন
+                  <Sparkles className="h-3 w-3 text-emerald-400" /> {t.proteinLabel}
                 </div>
                 <div className="mt-1 text-lg font-bold font-mono text-emerald-400">
-                  {plan.proteinGrams} <span className="text-[11px] font-normal text-zinc-500">গ্রাম</span>
+                  {plan.proteinGrams} <span className="text-[11px] font-normal text-zinc-500">{lang === "bn" ? "গ্রাম" : "g"}</span>
                 </div>
               </div>
 
               <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
-                  <Apple className="h-3 w-3 text-teal-400" /> কার্বোহাইড্রেট
+                  <Apple className="h-3 w-3 text-teal-400" /> {t.carbsLabel}
                 </div>
                 <div className="mt-1 text-lg font-bold font-mono text-teal-400">
-                  {plan.carbsGrams} <span className="text-[11px] font-normal text-zinc-500">গ্রাম</span>
+                  {plan.carbsGrams} <span className="text-[11px] font-normal text-zinc-500">{lang === "bn" ? "গ্রাম" : "g"}</span>
                 </div>
               </div>
 
               <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
                 <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
-                  <Droplets className="h-3 w-3 text-cyan-400" /> পানি পান
+                  <Droplets className="h-3 w-3 text-cyan-400" /> {t.waterLabel}
                 </div>
                 <div className="mt-1 text-lg font-bold font-mono text-cyan-300">
-                  {plan.waterLiters} <span className="text-[11px] font-normal text-zinc-500">লিটার</span>
+                  {plan.waterLiters} <span className="text-[11px] font-normal text-zinc-500">{lang === "bn" ? "লিটার" : "L"}</span>
                 </div>
               </div>
             </div>
@@ -215,7 +219,7 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
           {/* Meals Breakdown */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-              <Utensils className="h-3.5 w-3.5 text-emerald-400" /> সারাদিনের ৫টি খাবারের চার্ট (Daily Meals)
+              <Utensils className="h-3.5 w-3.5 text-emerald-400" /> {t.dailyMealsTitle}
             </h3>
 
             {plan.meals.map((meal, mIdx) => {
@@ -315,12 +319,12 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
             {copied ? (
               <>
                 <CheckCircle className="h-4 w-4 text-emerald-400" />
-                <span className="text-emerald-300">কপি হয়েছে!</span>
+                <span className="text-emerald-300">{t.copiedBtn}</span>
               </>
             ) : (
               <>
                 <Copy className="h-4 w-4" />
-                <span>চার্ট কপি করুন (Copy Plan)</span>
+                <span>{t.copyPlanBtn}</span>
               </>
             )}
           </button>
@@ -329,7 +333,7 @@ ${plan.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
             onClick={onClose}
             className="flex min-h-[44px] items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-6 text-xs font-bold text-zinc-950 shadow-md shadow-emerald-500/20 hover:opacity-95 transition-opacity"
           >
-            ঠিক আছে (Close)
+            {t.closeBtn}
           </button>
         </div>
       </div>

@@ -18,12 +18,14 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { MUSCLE_LABEL } from "@/lib/exercises";
+import { TRANSLATIONS, type Language } from "@/lib/i18n";
 import type { Exercise } from "@/lib/types";
 
 interface Props {
   exercise: Exercise | null;
   easier?: Exercise;
   harder?: Exercise;
+  lang?: Language;
   onClose: () => void;
   onSwap?: (exerciseId: string) => void;
 }
@@ -32,12 +34,14 @@ export function ExerciseAnimationModal({
   exercise,
   easier,
   harder,
+  lang = "bn",
   onClose,
   onSwap,
 }: Props) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [tempoPhase, setTempoPhase] = useState<"eccentric" | "pause" | "concentric">("eccentric");
   const [tempoSec, setTempoSec] = useState(3);
+  const t = TRANSLATIONS[lang] ?? TRANSLATIONS.bn;
 
   // Tempo cycle simulation: 3s eccentric -> 1s pause -> 1s concentric -> repeat (5s total loop)
   useEffect(() => {
@@ -370,7 +374,7 @@ export function ExerciseAnimationModal({
             <div className="relative z-10 w-full mt-2 rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Timer className="h-4 w-4 text-emerald-400" />
-                <span className="text-xs font-bold text-white">Cadence Tempo:</span>
+                <span className="text-xs font-bold text-white">{t.tempoLabel}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span
@@ -380,7 +384,7 @@ export function ExerciseAnimationModal({
                       : "text-zinc-500"
                   }`}
                 >
-                  3s Down (Eccentric)
+                  {t.tempoEccentric}
                 </span>
                 <span className="text-zinc-600 font-mono">•</span>
                 <span
@@ -390,7 +394,7 @@ export function ExerciseAnimationModal({
                       : "text-zinc-500"
                   }`}
                 >
-                  1s Pause
+                  {t.tempoPause}
                 </span>
                 <span className="text-zinc-600 font-mono">•</span>
                 <span
@@ -400,7 +404,7 @@ export function ExerciseAnimationModal({
                       : "text-zinc-500"
                   }`}
                 >
-                  1s Drive Up
+                  {t.tempoConcentric}
                 </span>
               </div>
             </div>
@@ -409,20 +413,26 @@ export function ExerciseAnimationModal({
           {/* Biomechanical Execution Guide */}
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-              <Zap className="h-3.5 w-3.5" /> ব্যায়ামটি সঠিকভাবে করার নিয়মাবলী (Step-by-Step Form)
+              <Zap className="h-3.5 w-3.5" /> {t.stepByStepTitle}
             </h3>
 
             <div className="space-y-2.5 text-xs leading-relaxed text-zinc-300">
               <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/70 p-3">
-                <strong className="text-white block mb-0.5">১. সেটআপ ও অবস্থান (Setup & Stance):</strong>
+                <strong className="text-white block mb-0.5">
+                  {lang === "bn" ? "১. সেটআপ ও অবস্থান (Setup & Stance):" : "1. Setup & Stance:"}
+                </strong>
                 {guide.setup}
               </div>
               <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/70 p-3">
-                <strong className="text-white block mb-0.5">২. নামার কৌশল (Controlled Descent):</strong>
+                <strong className="text-white block mb-0.5">
+                  {lang === "bn" ? "২. নামার কৌশল (Controlled Descent):" : "2. Controlled Descent (Eccentric):"}
+                </strong>
                 {guide.descent}
               </div>
               <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/70 p-3">
-                <strong className="text-white block mb-0.5">৩. ওঠার ড্রাইভ ও কন্ট্রাকশন (The Concentric Drive):</strong>
+                <strong className="text-white block mb-0.5">
+                  {lang === "bn" ? "৩. ওঠার ড্রাইভ ও কন্ট্রাকশন (The Concentric Drive):" : "3. Concentric Drive & Lockout:"}
+                </strong>
                 {guide.drive}
               </div>
             </div>
@@ -433,7 +443,7 @@ export function ExerciseAnimationModal({
             {/* DO's */}
             <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/15 p-3.5 space-y-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5" /> যা অবশ্যই করবেন (Do&apos;s)
+                <CheckCircle2 className="h-3.5 w-3.5" /> {t.dosTitle}
               </h4>
               <ul className="space-y-1.5 text-xs text-zinc-300">
                 {guide.dos.map((d, i) => (
@@ -448,7 +458,7 @@ export function ExerciseAnimationModal({
             {/* DONT's */}
             <div className="rounded-2xl border border-rose-500/30 bg-rose-950/15 p-3.5 space-y-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
-                <AlertOctagon className="h-3.5 w-3.5" /> সাধারণ ভুল যা এড়িয়ে চলবেন (Don&apos;ts)
+                <AlertOctagon className="h-3.5 w-3.5" /> {t.dontsTitle}
               </h4>
               <ul className="space-y-1.5 text-xs text-zinc-300">
                 {guide.donts.map((d, i) => (
@@ -464,7 +474,9 @@ export function ExerciseAnimationModal({
           {/* Progression & Regression Links */}
           {(easier || harder) && (
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-medium text-zinc-400">Progression Options:</span>
+              <span className="text-xs font-medium text-zinc-400">
+                {lang === "bn" ? "বিকল্প ভ্যারিয়েন্ট:" : "Progression Options:"}
+              </span>
               <div className="flex items-center gap-2">
                 {easier && onSwap && (
                   <button
@@ -475,7 +487,7 @@ export function ExerciseAnimationModal({
                     className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700 transition-colors"
                   >
                     <TrendingDown className="h-3.5 w-3.5 text-amber-400" />
-                    <span>সহজ ভ্যারিয়েন্ট: {easier.name}</span>
+                    <span>{t.easierBtn(easier.name)}</span>
                   </button>
                 )}
                 {harder && onSwap && (
@@ -487,7 +499,7 @@ export function ExerciseAnimationModal({
                     className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700 transition-colors"
                   >
                     <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>কঠিন ভ্যারিয়েন্ট: {harder.name}</span>
+                    <span>{t.harderBtn(harder.name)}</span>
                   </button>
                 )}
               </div>
@@ -504,14 +516,14 @@ export function ExerciseAnimationModal({
             className="flex min-h-[44px] items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-4 text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-700 transition-colors"
           >
             <ExternalLink className="h-3.5 w-3.5 text-emerald-400" />
-            <span>ভিডিও গাইড (YouTube Form)</span>
+            <span>{t.formVideoBtn} (YouTube)</span>
           </a>
 
           <button
             onClick={onClose}
             className="flex min-h-[44px] items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-6 text-xs font-bold text-zinc-950 shadow-md shadow-emerald-500/20 hover:opacity-95 transition-opacity"
           >
-            বুঝেছি (Got It)
+            {t.gotItBtn}
           </button>
         </div>
       </div>

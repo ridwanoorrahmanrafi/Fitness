@@ -27,6 +27,15 @@ import {
 import { Chip, Sheet } from "./Sheet";
 import { BmiGauge } from "./BmiGauge";
 
+import {
+  type Language,
+  TRANSLATIONS,
+  ACTIVITY_LABELS_I18N,
+  FOCUS_LABELS_I18N,
+  GOAL_LABELS_I18N,
+  LEVEL_LABELS_I18N,
+} from "@/lib/i18n";
+
 interface Props {
   open: boolean;
   firstRun: boolean;
@@ -34,7 +43,15 @@ interface Props {
   accessCode: string;
   geminiKey?: string;
   unitSystem?: "metric" | "imperial";
-  onSave: (p: Profile, accessCode: string, geminiKey?: string, unitSystem?: "metric" | "imperial") => void;
+  lang?: Language;
+  onLanguageChange?: (lang: Language) => void;
+  onSave: (
+    p: Profile,
+    accessCode: string,
+    geminiKey?: string,
+    unitSystem?: "metric" | "imperial",
+    lang?: Language
+  ) => void;
   onClose: () => void;
 }
 
@@ -79,17 +96,27 @@ export function ProfileSheet({
   accessCode,
   geminiKey = "",
   unitSystem = "metric",
+  lang = "bn",
+  onLanguageChange,
   onSave,
   onClose,
 }: Props) {
   const [draft, setDraft] = useState<Profile>(profile);
   const [currentUnit, setCurrentUnit] = useState<"metric" | "imperial">(unitSystem);
+  const [currentLang, setCurrentLang] = useState<Language>(lang);
   const [age, setAge] = useState(String(profile.age));
   const [height, setHeight] = useState(String(profile.heightCm));
   const [weight, setWeight] = useState(String(profile.weightKg));
   const [code, setCode] = useState(accessCode);
   const [apiKey, setApiKey] = useState(geminiKey);
   const [error, setError] = useState<string | null>(null);
+
+  const t = TRANSLATIONS[currentLang] ?? TRANSLATIONS.bn;
+
+  const handleLanguageSwitch = (newLang: Language) => {
+    setCurrentLang(newLang);
+    onLanguageChange?.(newLang);
+  };
 
   // Imperial inputs state
   const initialFtIn = cmToFtIn(profile.heightCm);
@@ -141,73 +168,100 @@ export function ProfileSheet({
       code.trim(),
       apiKey.trim(),
       currentUnit,
+      currentLang,
     );
   };
 
   return (
-    <Sheet open={open} title={firstRun ? "Set up your coach" : "Your profile"} onClose={onClose} dismissable={!firstRun}>
+    <Sheet open={open} title={firstRun ? t.firstRunTitle : t.profileSheetTitle} onClose={onClose} dismissable={!firstRun}>
       <form onSubmit={submit} className="space-y-5">
         {firstRun && (
           <p className="text-sm text-zinc-400">
-            Everything is saved on this device only. The calculators run locally, and body measurements are never sent to
-            the AI.
+            {t.firstRunNote}
           </p>
         )}
 
         <section className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-white">Body & Biometrics</h3>
-            <div className="flex gap-1 rounded-lg border border-zinc-800 bg-zinc-950 p-0.5 text-xs">
-              <button
-                type="button"
-                onClick={() => setCurrentUnit("metric")}
-                className={`rounded-md px-2.5 py-1 transition-colors ${
-                  currentUnit === "metric" ? "bg-emerald-500 font-semibold text-zinc-950" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                Metric (kg/cm)
-              </button>
-              <button
-                type="button"
-                onClick={() => setCurrentUnit("imperial")}
-                className={`rounded-md px-2.5 py-1 transition-colors ${
-                  currentUnit === "imperial" ? "bg-emerald-500 font-semibold text-zinc-950" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                Imperial (lbs/ft)
-              </button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-white">{t.bodyBiometricsTitle}</h3>
+            <div className="flex items-center gap-1.5">
+              {/* Language Switcher */}
+              <div className="flex gap-1 rounded-lg border border-zinc-800 bg-zinc-950 p-0.5 text-xs">
+                <button
+                  type="button"
+                  id="btn-profile-lang-en"
+                  onClick={() => handleLanguageSwitch("en")}
+                  className={`rounded-md px-2 py-1 font-semibold transition-colors ${
+                    currentLang === "en" ? "bg-emerald-500 text-zinc-950" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  type="button"
+                  id="btn-profile-lang-bn"
+                  onClick={() => handleLanguageSwitch("bn")}
+                  className={`rounded-md px-2 py-1 font-semibold transition-colors ${
+                    currentLang === "bn" ? "bg-emerald-500 text-zinc-950" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  বাংলা
+                </button>
+              </div>
+
+              {/* Unit System Switcher */}
+              <div className="flex gap-1 rounded-lg border border-zinc-800 bg-zinc-950 p-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setCurrentUnit("metric")}
+                  className={`rounded-md px-2.5 py-1 transition-colors ${
+                    currentUnit === "metric" ? "bg-emerald-500 font-semibold text-zinc-950" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  {t.metricOption}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentUnit("imperial")}
+                  className={`rounded-md px-2.5 py-1 transition-colors ${
+                    currentUnit === "imperial" ? "bg-emerald-500 font-semibold text-zinc-950" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  {t.imperialOption}
+                </button>
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls} htmlFor="gender">Sex (Mifflin-St Jeor formula)</label>
+              <label className={labelCls} htmlFor="gender">{t.sexLabel}</label>
               <select id="gender" className={inputCls} value={draft.gender} onChange={(e) => set("gender", e.target.value as Gender)}>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Prefer not to say</option>
+                <option value="male">{t.maleOption}</option>
+                <option value="female">{t.femaleOption}</option>
+                <option value="other">{t.otherSexOption}</option>
               </select>
             </div>
             <div>
-              <label className={labelCls} htmlFor="age">Age</label>
+              <label className={labelCls} htmlFor="age">{t.ageLabel}</label>
               <input id="age" className={inputCls} type="number" inputMode="numeric" value={age} onChange={(e) => setAge(e.target.value)} />
             </div>
 
             {currentUnit === "metric" ? (
               <>
                 <div>
-                  <label className={labelCls} htmlFor="height">Height (cm)</label>
+                  <label className={labelCls} htmlFor="height">{t.heightLabelMetric}</label>
                   <input id="height" className={inputCls} type="number" inputMode="decimal" value={height} onChange={(e) => setHeight(e.target.value)} />
                 </div>
                 <div>
-                  <label className={labelCls} htmlFor="weight">Weight (kg)</label>
+                  <label className={labelCls} htmlFor="weight">{t.weightLabelMetric}</label>
                   <input id="weight" className={inputCls} type="number" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <label className={labelCls}>Height (ft & in)</label>
+                  <label className={labelCls}>{t.heightLabelImperial}</label>
                   <div className="flex gap-1.5">
                     <input
                       placeholder="ft"
@@ -228,7 +282,7 @@ export function ProfileSheet({
                   </div>
                 </div>
                 <div>
-                  <label className={labelCls}>Weight (lbs)</label>
+                  <label className={labelCls}>{t.weightLabelImperial}</label>
                   <input
                     aria-label="Weight in pounds"
                     className={inputCls}
@@ -242,9 +296,9 @@ export function ProfileSheet({
           </div>
 
           <div>
-            <label className={labelCls} htmlFor="activity">Daily activity factor</label>
+            <label className={labelCls} htmlFor="activity">{t.activityLabel}</label>
             <select id="activity" className={inputCls} value={draft.activity} onChange={(e) => set("activity", e.target.value as Activity)}>
-              {Object.entries(ACTIVITY_LABELS).map(([k, v]) => (
+              {Object.entries(ACTIVITY_LABELS_I18N[currentLang] ?? ACTIVITY_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
             </select>
@@ -257,11 +311,11 @@ export function ProfileSheet({
 
               <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-zinc-800/60">
                 <div className="rounded-xl bg-zinc-900/60 p-2">
-                  <div className="text-[10px] text-zinc-400">Basal BMR</div>
+                  <div className="text-[10px] text-zinc-400">{t.restingBmr}</div>
                   <div className="text-base font-bold text-white">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
                 <div className="rounded-xl bg-zinc-900/60 p-2">
-                  <div className="text-[10px] text-zinc-400">Daily TDEE</div>
+                  <div className="text-[10px] text-zinc-400">{t.dailyTdee}</div>
                   <div className="text-base font-bold text-emerald-400">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
               </div>
@@ -269,20 +323,20 @@ export function ProfileSheet({
               {nutrition && (
                 <div className="rounded-xl bg-zinc-900/80 p-2.5 border border-zinc-800 text-center">
                   <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-1.5 font-medium">
-                    <span>Target Calories ({draft.goal}):</span>
+                    <span>{t.targetCalories(draft.goal)}</span>
                     <strong className="text-white font-mono">{nutrition.targetCalories} kcal/day</strong>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5 text-[11px]">
                     <div className="bg-zinc-950 p-1.5 rounded-lg border border-zinc-800">
-                      <span className="text-emerald-400 font-semibold block">Protein</span>
+                      <span className="text-emerald-400 font-semibold block">{t.proteinLabel}</span>
                       <strong className="text-white font-mono">{nutrition.proteinGrams}g</strong>
                     </div>
                     <div className="bg-zinc-950 p-1.5 rounded-lg border border-zinc-800">
-                      <span className="text-teal-400 font-semibold block">Carbs</span>
+                      <span className="text-teal-400 font-semibold block">{t.carbsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.carbGrams}g</strong>
                     </div>
                     <div className="bg-zinc-950 p-1.5 rounded-lg border border-zinc-800">
-                      <span className="text-amber-400 font-semibold block">Fats</span>
+                      <span className="text-amber-400 font-semibold block">{t.fatsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.fatGrams}g</strong>
                     </div>
                   </div>
@@ -295,50 +349,50 @@ export function ProfileSheet({
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-white">Training Parameters</h3>
+          <h3 className="text-sm font-semibold text-white">{currentLang === "bn" ? "প্রশিক্ষণের প্যারামিটার" : "Training Parameters"}</h3>
           <div>
-            <span className={labelCls}>Experience</span>
+            <span className={labelCls}>{t.levelLabel}</span>
             <Segmented<Level>
               value={draft.level}
               onChange={(v) => set("level", v)}
               options={[
-                { value: "beginner", label: "Beginner" },
-                { value: "intermediate", label: "Intermediate" },
-                { value: "advanced", label: "Advanced" },
+                { value: "beginner", label: LEVEL_LABELS_I18N[currentLang].beginner },
+                { value: "intermediate", label: LEVEL_LABELS_I18N[currentLang].intermediate },
+                { value: "advanced", label: LEVEL_LABELS_I18N[currentLang].advanced },
               ]}
             />
           </div>
           <div>
-            <span className={labelCls}>Goal</span>
+            <span className={labelCls}>{t.goalLabel}</span>
             <Segmented<Goal>
               value={draft.goal}
               onChange={(v) => set("goal", v)}
               options={[
-                { value: "muscle", label: "Build muscle (+300 kcal)" },
-                { value: "strength", label: "Strength (maintain)" },
-                { value: "endurance", label: "Endurance (-350 kcal)" },
+                { value: "muscle", label: GOAL_LABELS_I18N[currentLang].muscle },
+                { value: "strength", label: GOAL_LABELS_I18N[currentLang].strength },
+                { value: "endurance", label: GOAL_LABELS_I18N[currentLang].endurance },
               ]}
             />
           </div>
           <div>
-            <span className={labelCls}>Session length</span>
+            <span className={labelCls}>{t.sessionLengthLabel}</span>
             <Segmented<Profile["minutes"]>
               value={draft.minutes}
               onChange={(v) => set("minutes", v)}
               options={[
-                { value: 20, label: "20 min" },
-                { value: 30, label: "30 min" },
-                { value: 45, label: "45 min" },
-                { value: 60, label: "60 min" },
+                { value: 20, label: `20 ${currentLang === "bn" ? "মি." : "min"}` },
+                { value: 30, label: `30 ${currentLang === "bn" ? "মি." : "min"}` },
+                { value: 45, label: `45 ${currentLang === "bn" ? "মি." : "min"}` },
+                { value: 60, label: `60 ${currentLang === "bn" ? "মি." : "min"}` },
               ]}
             />
           </div>
           <div>
-            <span className={labelCls}>Target Focus</span>
+            <span className={labelCls}>{t.targetFocusLabel}</span>
             <div className="flex flex-wrap gap-2">
               {FOCUSES.map((f) => (
                 <Chip key={f.id} selected={draft.focus === f.id} onClick={() => set("focus", f.id)}>
-                  {f.label}
+                  {FOCUS_LABELS_I18N[currentLang]?.[f.id] ?? f.label}
                 </Chip>
               ))}
             </div>
@@ -346,28 +400,28 @@ export function ProfileSheet({
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <span className={labelCls}>Weekly Workout Days (সাপ্তাহিক ব্যায়ামের দিন)</span>
+              <span className={labelCls}>{t.weeklyDaysProfileLabel}</span>
               <div className="flex gap-1 text-[11px]">
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 3, 5])}
                   className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
                 >
-                  3d (PPL)
+                  {t.daysPpl}
                 </button>
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 2, 4, 5])}
                   className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
                 >
-                  4d
+                  {t.daysFour}
                 </button>
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 2, 3, 4, 5])}
                   className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
                 >
-                  5d
+                  {t.daysFive}
                 </button>
               </div>
             </div>
@@ -395,7 +449,7 @@ export function ProfileSheet({
                     }`}
                   >
                     <span className="text-[10px] uppercase font-semibold">{d.short}</span>
-                    <span className="text-[10px] opacity-75">{d.bengaliName.slice(0, 3)}</span>
+                    <span className="text-[10px] opacity-75">{currentLang === "bn" ? d.bengaliName.slice(0, 3) : d.short}</span>
                   </button>
                 );
               })}
@@ -403,21 +457,21 @@ export function ProfileSheet({
           </div>
 
           <div>
-            <span className={labelCls}>Bangladeshi Diet Target (বাঙালি ডায়েট লক্ষ্য)</span>
+            <span className={labelCls}>{t.dietGoalLabel}</span>
             <Segmented<Goal | "recomp">
               value={draft.dietGoal ?? (draft.goal === "muscle" ? "muscle" : "recomp")}
               onChange={(v) => set("dietGoal", v)}
               options={[
-                { value: "endurance", label: "Fat Loss (ওজন কমানো)" },
-                { value: "muscle", label: "Muscle Gain (মাসল বৃদ্ধি)" },
-                { value: "recomp", label: "Aesthetic Fit (বডি শেইপ)" },
+                { value: "endurance", label: t.tabFatLoss },
+                { value: "muscle", label: t.tabMuscle },
+                { value: "recomp", label: t.tabRecomp },
               ]}
             />
           </div>
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-white">Available Equipment</h3>
+          <h3 className="text-sm font-semibold text-white">{t.equipmentTitle}</h3>
           <div className="flex flex-wrap gap-2">
             {EQUIPMENT_PRESETS.map((p) => (
               <Chip key={p.id} selected={sameSet(draft.equipment, p.equipment)} onClick={() => set("equipment", [...p.equipment])}>
@@ -432,11 +486,15 @@ export function ProfileSheet({
               </Chip>
             ))}
           </div>
-          <p className="text-[11px] text-zinc-500">Bodyweight movements are always included. Movements outside this list will never be programmed.</p>
+          <p className="text-[11px] text-zinc-500">
+            {currentLang === "bn"
+              ? "বডিওয়েট ব্যায়াম সবসময় অন্তর্ভুক্ত থাকে। এই তালিকার বাইরের সরঞ্জাম প্রোগ্রাম করা হবে না।"
+              : "Bodyweight movements are always included. Movements outside this list will never be programmed."}
+          </p>
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-white">Preferences & Safety</h3>
+          <h3 className="text-sm font-semibold text-white">{currentLang === "bn" ? "নিরাপত্তা ও পছন্দ" : "Preferences & Safety"}</h3>
           <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 text-sm">
             <input
               type="checkbox"
@@ -445,24 +503,30 @@ export function ProfileSheet({
               onChange={(e) => set("lowImpact", e.target.checked)}
             />
             <span>
-              Joint-friendly only
-              <span className="block text-[11px] text-zinc-500">No jumping, plyometrics, or ballistic knee loading.</span>
+              {currentLang === "bn" ? "জয়েন্ট ফ্রেন্ডলি (হালকা ব্যায়াম)" : "Joint-friendly only"}
+              <span className="block text-[11px] text-zinc-500">
+                {currentLang === "bn"
+                  ? "কোনো ভারী লাফানো বা হাঁটুতে অতিরিক্ত চাপ সৃষ্টিকারী ব্যায়াম বাদ দেওয়া হবে।"
+                  : "No jumping, plyometrics, or ballistic knee loading."}
+              </span>
             </span>
           </label>
           <div>
-            <label className={labelCls} htmlFor="limits">Injuries or limitations (optional)</label>
+            <label className={labelCls} htmlFor="limits">{t.limitationsLabel}</label>
             <textarea
               id="limits"
               rows={2}
               maxLength={300}
               className={`${inputCls} py-2`}
-              placeholder="e.g. sore left knee, avoid overhead pressing, wrist discomfort"
+              placeholder={t.limitationsPlaceholder}
               value={draft.limitations}
               onChange={(e) => set("limitations", e.target.value)}
             />
             <p className="mt-1 flex items-start gap-1.5 text-[11px] text-zinc-500">
               <ShieldAlert className="mt-0.5 h-3 w-3 shrink-0" />
-              Treated as safety data by the coach to exclude conflicting movements.
+              {currentLang === "bn"
+                ? "কোচ আপনার আঘাত ও সমস্যার কথা মনে রেখে বিপরীতধর্মী ব্যায়াম বাদ দেবে।"
+                : "Treated as safety data by the coach to exclude conflicting movements."}
             </p>
           </div>
         </section>
@@ -471,7 +535,7 @@ export function ProfileSheet({
         <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-950/50 p-3.5">
           <div className="flex items-center gap-2">
             <Key className="h-4 w-4 text-emerald-400" />
-            <h3 className="text-sm font-semibold text-white">AI Key & Server Access</h3>
+            <h3 className="text-sm font-semibold text-white">{t.serverAccessTitle}</h3>
           </div>
 
           <div>
@@ -510,7 +574,7 @@ export function ProfileSheet({
           type="submit"
           className="min-h-[48px] w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 font-bold text-zinc-950 transition-opacity hover:opacity-95"
         >
-          {firstRun ? "Save and continue" : "Save profile"}
+          {firstRun ? (currentLang === "bn" ? "সংরক্ষণ করে এগিয়ে যান" : "Save and continue") : t.saveProfileBtn}
         </button>
       </form>
     </Sheet>

@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Calendar, Dumbbell, Moon, Sparkles, Check, ChevronRight } from "lucide-react";
-import { DAYS_OF_WEEK, getWeeklySplit, getTodaySchedule, type ScheduledDay } from "@/lib/schedule";
+import { Calendar, Dumbbell, Moon, Sparkles, ChevronRight } from "lucide-react";
+import { DAYS_OF_WEEK, getWeeklySplit, getTodaySchedule } from "@/lib/schedule";
+import { TRANSLATIONS, type Language } from "@/lib/i18n";
 import type { FocusId } from "@/lib/types";
 
 interface Props {
   workoutDays: number[];
+  lang?: Language;
   onToggleDay: (dayIndex: number) => void;
   onSetDays: (days: number[]) => void;
   onApplyTodayFocus?: (focusId: FocusId) => void;
@@ -14,6 +16,7 @@ interface Props {
 
 export function WeeklyScheduleBar({
   workoutDays,
+  lang = "bn",
   onToggleDay,
   onSetDays,
   onApplyTodayFocus,
@@ -22,14 +25,15 @@ export function WeeklyScheduleBar({
   const weeklySplit = useMemo(() => getWeeklySplit(activeDays), [activeDays]);
   const todaySchedule = useMemo(() => getTodaySchedule(activeDays), [activeDays]);
   const todayIndex = new Date().getDay();
+  const t = TRANSLATIONS[lang] ?? TRANSLATIONS.bn;
 
   const count = activeDays.length;
 
-  let splitName = "Full Body Foundation";
+  let splitName = lang === "bn" ? "ফুল বডি ফাউন্ডেশন" : "Full Body Compound Foundation";
   if (count === 3) splitName = "Push / Pull / Legs (PPL)";
-  else if (count === 4) splitName = "Upper / Lower & Arms Split";
-  else if (count === 5) splitName = "Targeted Hypertrophy Split";
-  else if (count >= 6) splitName = "High Frequency PPL x 2";
+  else if (count === 4) splitName = lang === "bn" ? "আপার / লোয়ার ও আর্মস স্প্লিট" : "Upper / Lower & Arms Split";
+  else if (count === 5) splitName = lang === "bn" ? "টার্গেটেড হাইপারট্রফি স্প্লিট" : "Targeted Hypertrophy Split";
+  else if (count >= 6) splitName = lang === "bn" ? "হাই ফ্রিকোয়েন্সি PPL x 2" : "High Frequency PPL x 2";
 
   return (
     <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 p-4 shadow-md text-zinc-100 space-y-3.5">
@@ -37,7 +41,7 @@ export function WeeklyScheduleBar({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-emerald-400" />
-          <h3 className="text-sm font-bold text-white">সাপ্তাহিক রুটিন (Weekly Workout Days)</h3>
+          <h3 className="text-sm font-bold text-white">{t.weeklyRoutineTitle}</h3>
         </div>
         <div className="flex items-center gap-1.5 text-xs">
           <button
@@ -49,7 +53,7 @@ export function WeeklyScheduleBar({
                 : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            3 Days (PPL)
+            {t.daysPpl}
           </button>
           <button
             type="button"
@@ -60,7 +64,7 @@ export function WeeklyScheduleBar({
                 : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            4 Days
+            {t.daysFour}
           </button>
           <button
             type="button"
@@ -71,7 +75,7 @@ export function WeeklyScheduleBar({
                 : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            5 Days
+            {t.daysFive}
           </button>
         </div>
       </div>
@@ -81,7 +85,6 @@ export function WeeklyScheduleBar({
         {DAYS_OF_WEEK.map((d) => {
           const isSelected = activeDays.includes(d.dayIndex);
           const isToday = d.dayIndex === todayIndex;
-          const dayPlan = weeklySplit[d.dayIndex];
 
           return (
             <button
@@ -96,12 +99,14 @@ export function WeeklyScheduleBar({
             >
               {isToday && (
                 <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded bg-emerald-400 px-1 py-0.2 text-[8px] font-black uppercase text-zinc-950 tracking-wider">
-                  TODAY
+                  {t.todayLabel}
                 </span>
               )}
 
               <span className="text-[10px] font-semibold uppercase">{d.short}</span>
-              <span className="text-[11px] opacity-75">{d.bengaliName.slice(0, 3)}</span>
+              <span className="text-[11px] opacity-75">
+                {lang === "bn" ? d.bengaliName.slice(0, 3) : d.name.slice(0, 3)}
+              </span>
 
               <div className="mt-1 flex h-5 w-5 items-center justify-center rounded-full">
                 {isSelected ? (
@@ -130,7 +135,7 @@ export function WeeklyScheduleBar({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-white">
-                {todaySchedule.isWorkoutDay ? "আজকের টার্গেট:" : "আজ বিশ্রাম দিন:"} {todaySchedule.focusLabel}
+                {todaySchedule.isWorkoutDay ? t.todayTarget : t.todayRest} {todaySchedule.focusLabel}
               </span>
               <span
                 className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
@@ -139,13 +144,13 @@ export function WeeklyScheduleBar({
                     : "bg-zinc-800 text-zinc-400"
                 }`}
               >
-                {todaySchedule.isWorkoutDay ? "Training" : "Rest & Recover"}
+                {todaySchedule.isWorkoutDay ? t.trainingDay : t.restDay}
               </span>
             </div>
             <p className="text-[11px] text-zinc-400">
               {todaySchedule.isWorkoutDay
-                ? `প্রোগ্রাম: ${todaySchedule.sessionTitle}`
-                : "পেশি রিকভারির জন্য বিশ্রাম, হালকা হাঁটা ও পর্যাপ্ত প্রোটিন নিন।"}
+                ? `${t.programLabel} ${todaySchedule.sessionTitle}`
+                : t.restDesc}
             </p>
           </div>
         </div>
@@ -157,7 +162,7 @@ export function WeeklyScheduleBar({
             className="flex min-h-[36px] items-center gap-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-500/30 transition-colors"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            <span>আজকের ফোকাস সেট করুন</span>
+            <span>{t.applyFocusBtn}</span>
             <ChevronRight className="h-3 w-3" />
           </button>
         )}
@@ -165,9 +170,7 @@ export function WeeklyScheduleBar({
 
       {/* Routine summary footer */}
       <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1">
-        <span>
-          সপ্তাহে <strong className="text-emerald-400">{count} দিন</strong> ওয়ার্কআউট • <strong className="text-zinc-300">{7 - count} দিন</strong> বিশ্রাম
-        </span>
+        <span>{t.workoutDaysCount(count, 7 - count)}</span>
         <span className="text-zinc-500 font-medium">{splitName}</span>
       </div>
     </div>

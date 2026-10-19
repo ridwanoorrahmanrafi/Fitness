@@ -10,6 +10,7 @@ export const KEYS = {
   sound: "arise.v1.sound",
   geminiKey: "arise.v1.gemini_key",
   unitSystem: "arise.v1.unit_system",
+  language: "arise.v1.language",
 } as const;
 
 export function parseProfile(v: unknown): Profile | null {
