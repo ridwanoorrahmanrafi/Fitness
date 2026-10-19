@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, CheckCircle2, Clock, ExternalLink, Timer, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowLeftRight, CheckCircle2, Clock, ExternalLink, Play, Timer, TrendingDown, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { MUSCLE_LABEL } from "@/lib/exercises";
 import { kgToLbs, lbsToKg } from "@/lib/calc";
@@ -20,6 +20,7 @@ interface Props {
   onChangeSet: (setIndex: number, patch: Partial<SetLog>) => void;
   onSwap: (exerciseId: string) => void;
   onStartHold: (seconds: number, label: string) => void;
+  onOpenAnimation?: () => void;
 }
 
 /** "30-45s" -> 45, "40s" -> 40 */
@@ -42,6 +43,7 @@ export function ExerciseCard({
   onChangeSet,
   onSwap,
   onStartHold,
+  onOpenAnimation,
 }: Props) {
   const [swapOpen, setSwapOpen] = useState(false);
   const doneCount = sets.filter((s) => s.done).length;
@@ -94,6 +96,21 @@ export function ExerciseCard({
         </div>
 
         <div className="mb-3 flex flex-wrap items-center gap-2">
+          {/* Animated Demonstration & Form Guide */}
+          {onOpenAnimation && (
+            <button
+              id={`btn-animation-${exercise.id}`}
+              data-testid={`btn-animation-${exercise.id}`}
+              type="button"
+              onClick={onOpenAnimation}
+              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-emerald-500/50 bg-emerald-500/15 px-3 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition-colors shadow-sm"
+              title={`Watch animated demonstration and form guide for ${exercise.name}`}
+            >
+              <Play className="h-3 w-3 fill-emerald-400 text-emerald-400" />
+              <span>Animation & How-To</span>
+            </button>
+          )}
+
           {easier && (
             <button
               onClick={() => onSwap(easier.id)}
@@ -123,7 +140,7 @@ export function ExerciseCard({
             </button>
           )}
 
-          {/* Biomechanical Form Guide external video search link */}
+          {/* External video search link */}
           <a
             href={`https://www.youtube.com/results?search_query=proper+form+${encodeURIComponent(exercise.name)}`}
             target="_blank"
@@ -132,7 +149,7 @@ export function ExerciseCard({
             title={`Search proper biomechanical form for ${exercise.name}`}
           >
             <ExternalLink className="h-3 w-3 text-emerald-400" />
-            <span>Form Guide</span>
+            <span>Form Video</span>
           </a>
         </div>
         {!canSwap && <p className="mb-2 text-[11px] text-zinc-500">Swapping is available until you complete a set.</p>}

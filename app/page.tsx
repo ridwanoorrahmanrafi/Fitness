@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Timer,
+  Utensils,
   Volume2,
   VolumeX,
   WifiOff,
@@ -30,6 +31,9 @@ import { HistoryView } from "@/components/HistoryView";
 import { ProfileSheet } from "@/components/ProfileSheet";
 import { RestTimer } from "@/components/RestTimer";
 import { BmiGauge } from "@/components/BmiGauge";
+import { DietSheet } from "@/components/DietSheet";
+import { WeeklyScheduleBar } from "@/components/WeeklyScheduleBar";
+import { ExerciseAnimationModal } from "@/components/ExerciseAnimationModal";
 import { Chip } from "@/components/Sheet";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useStoredState } from "@/hooks/useStoredState";
@@ -43,6 +47,7 @@ import { KEYS, makeBackup, mergeHistory, parseProfile, readBackup } from "@/lib/
 import {
   DEFAULT_PROFILE,
   FOCUSES,
+  type Exercise,
   type GenerateResponse,
   type HistoryEntry,
   type PlanMeta,
@@ -66,6 +71,8 @@ export default function Page() {
   const [view, setView] = useState<View>("today");
   const [showProfile, setShowProfile] = useState(false);
   const [showFinish, setShowFinish] = useState(false);
+  const [showDietSheet, setShowDietSheet] = useState(false);
+  const [selectedAnimationEx, setSelectedAnimationEx] = useState<Exercise | null>(null);
   const [warmupOpen, setWarmupOpen] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -330,6 +337,16 @@ export default function Page() {
           </div>
           <div className="flex items-center gap-1.5">
             <button
+              id="btn-bangladeshi-diet"
+              onClick={() => setShowDietSheet(true)}
+              aria-label="Bangladeshi Diet Chart"
+              title="বাঙালি ডায়েট চার্ট (Bangladeshi Diet Plan)"
+              className="flex h-11 items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-2.5 sm:px-3 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 shadow-sm transition-colors"
+            >
+              <Utensils className="h-4 w-4" />
+              <span className="hidden sm:inline">বাঙালি ডায়েট</span>
+            </button>
+            <button
               onClick={() => {
                 unlockAudio();
                 setSoundOn(!soundOn);
@@ -426,6 +443,22 @@ export default function Page() {
               </div>
             )}
 
+            {/* Weekly Schedule & Smart Split Bar */}
+            <WeeklyScheduleBar
+              workoutDays={activeProfile.workoutDays ?? [1, 3, 5]}
+              onToggleDay={(dayIndex) => {
+                const cur = new Set(activeProfile.workoutDays ?? [1, 3, 5]);
+                if (cur.has(dayIndex)) {
+                  if (cur.size > 1) cur.delete(dayIndex);
+                } else {
+                  cur.add(dayIndex);
+                }
+                quickPatch({ workoutDays: Array.from(cur).sort((a, b) => a - b) });
+              }}
+              onSetDays={(days) => quickPatch({ workoutDays: days })}
+              onApplyTodayFocus={(focusId) => quickPatch({ focus: focusId })}
+            />
+
             <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 p-5 shadow-xl">
               <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
               <h2 className="text-2xl font-extrabold tracking-tight text-white">Ready for today&apos;s session?</h2>
@@ -455,6 +488,7 @@ export default function Page() {
               </div>
 
               <button
+                id="btn-generate-ai"
                 onClick={() => {
                   unlockAudio();
                   void generate(activeProfile);
@@ -473,6 +507,7 @@ export default function Page() {
                 )}
               </button>
               <button
+                id="btn-generate-offline"
                 onClick={() => void generate(activeProfile, { offline: true })}
                 disabled={busy || !profile}
                 className="mt-2 min-h-[44px] w-full text-xs text-zinc-400 underline-offset-2 hover:text-zinc-200 hover:underline disabled:opacity-50"
@@ -518,6 +553,15 @@ export default function Page() {
                   </div>
                 </div>
               )}
+
+              <button
+                type="button"
+                onClick={() => setShowDietSheet(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2.5 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors shadow-sm"
+              >
+                <Utensils className="h-4 w-4" />
+                <span>দেশীয় খাবারের সম্পূর্ণ ডায়েট চার্ট দেখুন (Bangladeshi Diet Chart)</span>
+              </button>
             </div>
 
             {history[0] && (
@@ -686,6 +730,7 @@ export default function Page() {
                       unlockAudio();
                       timer.start(secs, `Hold: ${label}`);
                     }}
+                    onOpenAnimation={() => setSelectedAnimationEx(ex)}
                   />
                 );
               })}
@@ -742,6 +787,33 @@ export default function Page() {
       {showFinish && session && (
         <FinishSheet open session={session} weightKg={activeProfile.weightKg} onSave={finish} onClose={() => setShowFinish(false)} />
       )}
+
+      <DietSheet
+        open={showDietSheet}
+        weightKg={activeProfile.weightKg}
+        heightCm={activeProfile.heightCm}
+        bmi={stats.bmi}
+        bmiCategory={stats.bmiCategory}
+        tdee={stats.tdee}
+        initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
+        onClose={() => setShowDietSheet(false)}
+      />
+
+      <ExerciseAnimationModal
+        exercise={selectedAnimationEx}
+        easier={selectedAnimationEx?.easier ? getExercise(selectedAnimationEx.easier) : undefined}
+        harder={selectedAnimationEx?.harder ? getExercise(selectedAnimationEx.harder) : undefined}
+        onClose={() => setSelectedAnimationEx(null)}
+        onSwap={
+          session && selectedAnimationEx
+            ? (newId) => {
+                const pe = session.plan.exercises.find((e) => e.exerciseId === selectedAnimationEx.id);
+                if (pe) swapExercise(pe.uid, newId);
+                setSelectedAnimationEx(getExercise(newId) ?? null);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

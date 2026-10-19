@@ -110,6 +110,10 @@ export interface Profile {
   lowImpact: boolean;
   /** Free text, optional. Sent to the model as data, never as instructions. */
   limitations: string;
+  /** Days of the week user works out (0=Sun, 1=Mon, ..., 6=Sat). Default: [1, 3, 5] */
+  workoutDays?: number[];
+  /** Preferred dietary goal for Bangladeshi meal plans */
+  dietGoal?: Goal | "recomp";
 }
 
 export const DEFAULT_PROFILE: Profile = {
@@ -125,6 +129,8 @@ export const DEFAULT_PROFILE: Profile = {
   minutes: 30,
   lowImpact: false,
   limitations: "",
+  workoutDays: [1, 3, 5],
+  dietGoal: "muscle",
 };
 
 export interface PlanExercise {

@@ -1,7 +1,8 @@
 "use client";
 
-import { ShieldAlert, Key, Scale, Zap, Info } from "lucide-react";
+import { ShieldAlert, Key, Scale, Zap, Info, Calendar, Utensils } from "lucide-react";
 import { useMemo, useState } from "react";
+import { DAYS_OF_WEEK } from "@/lib/schedule";
 import {
   ACTIVITY_LABELS,
   isProfileInRange,
@@ -341,6 +342,77 @@ export function ProfileSheet({
                 </Chip>
               ))}
             </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className={labelCls}>Weekly Workout Days (সাপ্তাহিক ব্যায়ামের দিন)</span>
+              <div className="flex gap-1 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => set("workoutDays", [1, 3, 5])}
+                  className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
+                >
+                  3d (PPL)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set("workoutDays", [1, 2, 4, 5])}
+                  className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
+                >
+                  4d
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set("workoutDays", [1, 2, 3, 4, 5])}
+                  className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
+                >
+                  5d
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {DAYS_OF_WEEK.map((d) => {
+                const days = draft.workoutDays && draft.workoutDays.length > 0 ? draft.workoutDays : [1, 3, 5];
+                const active = days.includes(d.dayIndex);
+                return (
+                  <button
+                    key={d.dayIndex}
+                    type="button"
+                    onClick={() => {
+                      const cur = new Set(days);
+                      if (cur.has(d.dayIndex)) {
+                        if (cur.size > 1) cur.delete(d.dayIndex);
+                      } else {
+                        cur.add(d.dayIndex);
+                      }
+                      set("workoutDays", Array.from(cur).sort((a, b) => a - b));
+                    }}
+                    className={`flex flex-col items-center justify-center rounded-xl p-2 min-h-[50px] border text-center transition-colors ${
+                      active
+                        ? "border-emerald-500 bg-emerald-500/15 font-bold text-emerald-300"
+                        : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                    }`}
+                  >
+                    <span className="text-[10px] uppercase font-semibold">{d.short}</span>
+                    <span className="text-[10px] opacity-75">{d.bengaliName.slice(0, 3)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <span className={labelCls}>Bangladeshi Diet Target (বাঙালি ডায়েট লক্ষ্য)</span>
+            <Segmented<Goal | "recomp">
+              value={draft.dietGoal ?? (draft.goal === "muscle" ? "muscle" : "recomp")}
+              onChange={(v) => set("dietGoal", v)}
+              options={[
+                { value: "endurance", label: "Fat Loss (ওজন কমানো)" },
+                { value: "muscle", label: "Muscle Gain (মাসল বৃদ্ধি)" },
+                { value: "recomp", label: "Aesthetic Fit (বডি শেইপ)" },
+              ]}
+            />
           </div>
         </section>
 

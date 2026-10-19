@@ -39,3 +39,81 @@ input[type="number"] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Biomechanical Exercise SVG Animations */
+@keyframes squat-motion {
+  0%, 15% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(32px);
+  }
+  70% {
+    transform: translateY(32px);
+  }
+  90%, 100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pushup-motion {
+  0%, 15% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(25px);
+  }
+  70% {
+    transform: translateY(25px);
+  }
+  90%, 100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pullup-motion {
+  0%, 15% {
+    transform: translateY(35px);
+  }
+  40% {
+    transform: translateY(0);
+  }
+  60% {
+    transform: translateY(0);
+  }
+  85%, 100% {
+    transform: translateY(35px);
+  }
+}
+
+@keyframes lunge-motion {
+  0%, 15% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(22px);
+  }
+  70% {
+    transform: translateY(22px);
+  }
+  90%, 100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-squat {
+  animation: squat-motion 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-pushup {
+  animation: pushup-motion 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-pullup {
+  animation: pullup-motion 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-lunge {
+  animation: lunge-motion 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+

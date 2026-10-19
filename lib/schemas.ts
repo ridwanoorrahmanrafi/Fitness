@@ -15,6 +15,8 @@ export const ProfileSchema = z.object({
   minutes: z.union([z.literal(20), z.literal(30), z.literal(45), z.literal(60)]),
   lowImpact: z.boolean(),
   limitations: z.string().max(300),
+  workoutDays: z.array(z.number().int().min(0).max(6)).max(7).optional(),
+  dietGoal: z.enum(["muscle", "strength", "endurance", "recomp"]).optional(),
 });
 
 export const FeedbackSchema = z.object({
