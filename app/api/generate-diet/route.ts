@@ -42,7 +42,11 @@ export async function POST(req: NextRequest) {
 
   try {
     const clientGeminiKey = req.headers.get("x-gemini-api-key")?.trim();
-    const geminiKey = clientGeminiKey || process.env.GEMINI_API_KEY;
+    const geminiKey =
+      process.env.GEMINI_API_KEY ||
+      process.env.GOOGLE_API_KEY ||
+      process.env.GOOGLE_GENAI_API_KEY ||
+      clientGeminiKey;
 
     const clientOpenAiKey = req.headers.get("x-openai-api-key")?.trim();
     const openaiKey = clientOpenAiKey || process.env.OPENAI_API_KEY;

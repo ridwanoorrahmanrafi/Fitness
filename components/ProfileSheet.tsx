@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldAlert, Key, Scale, Zap, Info, Calendar, Utensils } from "lucide-react";
+import { ShieldAlert, Scale, Zap, Info, Calendar, Utensils } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DAYS_OF_WEEK } from "@/lib/schedule";
 import {
@@ -107,8 +107,6 @@ export function ProfileSheet({
   const [age, setAge] = useState(String(profile.age));
   const [height, setHeight] = useState(String(profile.heightCm));
   const [weight, setWeight] = useState(String(profile.weightKg));
-  const [code, setCode] = useState(accessCode);
-  const [apiKey, setApiKey] = useState(geminiKey);
   const [error, setError] = useState<string | null>(null);
 
   const t = TRANSLATIONS[currentLang] ?? TRANSLATIONS.bn;
@@ -165,8 +163,8 @@ export function ProfileSheet({
     }
     onSave(
       { ...draft, ...numbers, limitations: draft.limitations.trim() },
-      code.trim(),
-      apiKey.trim(),
+      "",
+      "",
       currentUnit,
       currentLang,
     );
@@ -531,42 +529,7 @@ export function ProfileSheet({
           </div>
         </section>
 
-        {/* AI Key & Access Code Section */}
-        <section className="space-y-3 system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/80 p-4 shadow-[0_0_20px_rgba(6,182,212,0.06)]">
-          <div className="flex items-center gap-2">
-            <Key className="h-4 w-4 text-cyan-400" />
-            <h3 className="text-xs font-mono font-bold tracking-widest text-cyan-300 uppercase">{t.serverAccessTitle}</h3>
-          </div>
 
-          <div>
-            <label className={labelCls} htmlFor="apikey">Google AI Studio Gemini Key (Optional)</label>
-            <input
-              id="apikey"
-              className={inputCls}
-              type="password"
-              autoComplete="off"
-              placeholder="AI Studio key (saved in this browser only)"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <p className="mt-1 font-mono text-[10px] text-cyan-600">
-              Leave blank to use server environment key or offline builder.
-            </p>
-          </div>
-
-          <div>
-            <label className={labelCls} htmlFor="code">Server Access Code (Optional)</label>
-            <input
-              id="code"
-              className={inputCls}
-              type="password"
-              autoComplete="off"
-              placeholder="Only if your server sets ACCESS_CODE"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
-          </div>
-        </section>
 
         {error && <p className="font-mono text-xs text-red-400 [text-shadow:0_0_8px_rgba(248,113,113,0.5)]">{error}</p>}
 

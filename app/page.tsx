@@ -110,7 +110,6 @@ export default function Page() {
   const [session, setSession, sessionReady] = useStoredState<Session | null>(KEYS.session, null, normalizeSession);
   const [history, setHistory, historyReady] = useStoredState<HistoryEntry[]>(KEYS.history, [], normalizeHistory);
   const [accessCode, setAccessCode] = useStoredState<string>(KEYS.access, "");
-  const [geminiKey, setGeminiKey] = useStoredState<string>(KEYS.geminiKey, "");
   const [unitSystem, setUnitSystem] = useStoredState<"metric" | "imperial">(KEYS.unitSystem, "metric");
   const [lang, setLang] = useStoredState<Language>(KEYS.language, "bn");
   const [soundOn, setSoundOn] = useStoredState<boolean>(KEYS.sound, true);
@@ -412,7 +411,6 @@ export default function Page() {
           const headers: Record<string, string> = {
             "Content-Type": "application/json",
             ...(accessCode ? { "x-access-code": accessCode } : {}),
-            ...(geminiKey ? { "x-gemini-api-key": geminiKey } : {}),
           };
           res = await fetch("/api/generate-workout", {
             method: "POST",
@@ -446,14 +444,13 @@ export default function Page() {
         setBusy(false);
       }
     },
-    [accessCode, applyPlan, geminiKey, history],
+    [accessCode, applyPlan, history],
   );
 
-  const saveProfile = (p: Profile, code: string, key?: string, unit?: "metric" | "imperial", l?: Language) => {
+  const saveProfile = (p: Profile, code: string, _key?: string, unit?: "metric" | "imperial", l?: Language) => {
     const first = !profile;
     setProfile(p);
     setAccessCode(code);
-    if (key !== undefined) setGeminiKey(key);
     if (unit !== undefined) setUnitSystem(unit);
     if (l !== undefined) setLang(l);
     setShowProfile(false);
@@ -790,8 +787,6 @@ export default function Page() {
           lang={lang}
           activeAccount={activeUser}
           accounts={accounts}
-          geminiKey={geminiKey}
-          onSaveGeminiKey={setGeminiKey}
           onSelectAccount={(acc) => {
             setActiveUser(acc);
             if (acc?.profile) setProfile(acc.profile);
@@ -821,7 +816,6 @@ export default function Page() {
           tdee={stats.tdee}
           initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
           lang={lang}
-          geminiKey={geminiKey}
           accessCode={accessCode}
           onClose={() => setShowDietSheet(false)}
         />
@@ -1637,7 +1631,6 @@ export default function Page() {
           firstRun={needsSetup}
           profile={activeProfile}
           accessCode={accessCode}
-          geminiKey={geminiKey}
           unitSystem={unitSystem}
           lang={lang}
           onLanguageChange={setLang}
@@ -1699,7 +1692,6 @@ export default function Page() {
         tdee={stats.tdee}
         initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
         lang={lang}
-        geminiKey={geminiKey}
         accessCode={accessCode}
         onClose={() => setShowDietSheet(false)}
       />
@@ -1709,8 +1701,6 @@ export default function Page() {
         lang={lang}
         activeAccount={activeUser}
         accounts={accounts}
-        geminiKey={geminiKey}
-        onSaveGeminiKey={setGeminiKey}
         onSelectAccount={(acc) => {
           setActiveUser(acc);
           if (acc?.profile) setProfile(acc.profile);

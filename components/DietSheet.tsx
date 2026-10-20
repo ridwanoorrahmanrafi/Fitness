@@ -49,7 +49,6 @@ export function DietSheet({
   tdee,
   initialGoal = "recomp",
   lang = "bn",
-  geminiKey = "",
   accessCode = "",
   onClose,
 }: Props) {
@@ -101,7 +100,6 @@ export function DietSheet({
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
         ...(accessCode ? { "x-access-code": accessCode } : {}),
-        ...(geminiKey ? { "x-gemini-api-key": geminiKey } : {}),
       };
 
       const res = await fetch("/api/generate-diet", {

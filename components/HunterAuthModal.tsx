@@ -8,18 +8,15 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Sparkles,
   Check,
   LogOut,
   Cloud,
-  Database,
+  Sparkles,
   AlertTriangle,
   RefreshCw,
-  ExternalLink,
   ShieldCheck,
   ArrowRight,
   Radio,
-  Server,
 } from "lucide-react";
 import { Sheet } from "./Sheet";
 import { type Language, TRANSLATIONS } from "@/lib/i18n";
@@ -27,8 +24,6 @@ import type { UserAccount } from "@/lib/types";
 import { authClient } from "@/lib/auth-client";
 import {
   isSupabaseConfigured,
-  getSupabaseConfig,
-  saveSupabaseConfig,
   syncProfileToSupabase,
   syncPlayerStatsToSupabase,
 } from "@/lib/supabase";
@@ -41,7 +36,7 @@ interface Props {
   activeAccount: UserAccount | null;
   accounts: UserAccount[];
   geminiKey?: string;
-  onSaveGeminiKey: (key: string) => void;
+  onSaveGeminiKey?: (key: string) => void;
   onSelectAccount: (acc: UserAccount | null) => void;
   onCreateAccount: (name: string, pin?: string) => void;
   onLanguageChange?: (lang: Language) => void;
@@ -49,15 +44,13 @@ interface Props {
   onClose: () => void;
 }
 
-type AuthTab = "login" | "register" | "local" | "cloud";
+type AuthTab = "login" | "register" | "local";
 
 export function HunterAuthModal({
   open,
   lang,
   activeAccount,
   accounts,
-  geminiKey = "",
-  onSaveGeminiKey,
   onSelectAccount,
   onCreateAccount,
   onLanguageChange,
@@ -80,16 +73,7 @@ export function HunterAuthModal({
   // Local account creation state
   const [newName, setNewName] = useState("");
   const [newPin, setNewPin] = useState("");
-  const [keyInput, setKeyInput] = useState(geminiKey);
-  const [showKeySaved, setShowKeySaved] = useState(false);
 
-  // Cloud Config state (merged from SupabaseConfigModal)
-  const currentConfig = getSupabaseConfig();
-  const [customUrl, setCustomUrl] = useState(currentConfig?.url || "");
-  const [customKey, setCustomKey] = useState(currentConfig?.anonKey || "");
-  const [showConfigSaved, setShowConfigSaved] = useState(false);
-
-  const supabaseConnected = isSupabaseConfigured();
   const isCloudLoggedIn = Boolean(activeAccount?.supabaseUser || activeAccount?.emailOrHandle);
 
   const clearForm = () => {
@@ -316,33 +300,13 @@ export function HunterAuthModal({
     setTab("local");
   };
 
-  // 6. Save Custom Cloud Config (merged from SupabaseConfigModal)
-  const handleSaveCloudConfig = (e: React.FormEvent) => {
-    e.preventDefault();
-    playSound("system-click");
-    saveSupabaseConfig({
-      url: customUrl.trim(),
-      anonKey: customKey.trim(),
-    });
-    setShowConfigSaved(true);
-    setTimeout(() => setShowConfigSaved(false), 2500);
-  };
-
-  // 7. Save Gemini AI Key
-  const handleSaveKey = () => {
-    playSound("system-click");
-    onSaveGeminiKey(keyInput.trim());
-    setShowKeySaved(true);
-    setTimeout(() => setShowKeySaved(false), 2500);
-  };
-
   return (
     <Sheet
       open={open}
       title={
         isBn
-          ? "[ HUNTER AUTHENTICATION : বেটার অথ ও ক্লাউড ডাটাবেস ]"
-          : "[ HUNTER AUTHENTICATION : BETTER AUTH & CLOUD TELEMETRY ]"
+          ? "[ HUNTER AUTHENTICATION : সিস্টেম লগইন ও প্রোফাইল ]"
+          : "[ HUNTER AUTHENTICATION : SYSTEM LOGIN & PROFILE ]"
       }
       onClose={onClose}
       dismissable
@@ -439,7 +403,7 @@ export function HunterAuthModal({
         )}
 
         {/* Unified Navigation Tabs */}
-        <div className="grid grid-cols-4 gap-1.5 p-1 rounded-xl bg-[#03081a] border border-cyan-500/40 text-xs font-bold">
+        <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#03081a] border border-cyan-500/40 text-xs font-bold">
           <button
             type="button"
             onClick={() => {
@@ -486,22 +450,6 @@ export function HunterAuthModal({
             }`}
           >
             {isBn ? "গেস্ট/লোকাল" : "Guest / PIN"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              playSound("system-click");
-              setTab("cloud");
-              setError(null);
-            }}
-            className={`py-2 px-1 text-center rounded-lg transition-all ${
-              tab === "cloud"
-                ? "bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 shadow-[0_0_10px_rgba(6,182,212,0.3)] font-black"
-                : "text-zinc-400 hover:text-cyan-300"
-            }`}
-          >
-            {isBn ? "ক্লাউড সিঙ্ক" : "Cloud Sync"}
           </button>
         </div>
 
@@ -770,127 +718,20 @@ export function HunterAuthModal({
                 {isBn ? "+ প্রোফাইল তৈরি করুন" : "+ Save Hardware Profile"}
               </button>
             </form>
-          </div>
-        )}
-
-        {/* TAB 4: Cloud Sync & PostgreSQL Configuration (Merged from SupabaseConfigModal) */}
-        {tab === "cloud" && (
-          <div className="space-y-3.5 system-btn-chamfer border border-cyan-500/40 bg-[#030920]/90 p-4">
-            <div className="flex items-center justify-between border-b border-cyan-500/30 pb-2">
-              <span className="text-xs font-bold text-cyan-300 uppercase flex items-center gap-1.5">
-                <Server className="h-3.5 w-3.5 text-cyan-400" />
-                {isBn ? "ক্লাউড ডাটাবেস ও সিঙ্ক সেটিংস" : "CLOUD DATABASE & SYNC TELEMETRY"}
-              </span>
-              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {isBn ? "সক্রিয়" : "ACTIVE"}
-              </span>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[#020614] border border-cyan-500/30 text-xs space-y-2">
-              <div className="text-cyan-400 font-bold uppercase text-[11px]">
-                {isBn ? "সংযুক্ত ক্লাউড ডাটাবেস বিবরণী" : "Connected Database Endpoint"}
-              </div>
-              <div className="text-[11px] text-cyan-200/90 font-mono break-all bg-black/60 p-2 rounded border border-cyan-900/60">
-                https://vdaenqmujfpduvjmuxzm.supabase.co
-              </div>
-              <p className="text-[11px] text-cyan-300/70">
-                {isBn
-                  ? "আপনার সব ওয়ার্কআউট সেশন, লেভেল, এক্সপি ও বায়োমেট্রিক গোল এই ক্লাউড ডাটাবেসে রিয়েল-টাইমে সংরক্ষিত হচ্ছে।"
-                  : "All workout history, Hunter level, attributes, and body goals are continuously synchronized to your cloud database."}
-              </p>
-            </div>
-
-            {/* Quick Manual Force Sync */}
-            <button
-              type="button"
-              onClick={handleForceSync}
-              disabled={syncing}
-              className="w-full min-h-[44px] system-btn-chamfer bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-black uppercase text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-              <span>{isBn ? "◆ এখন ক্লাউডে সব ডাটা সিঙ্ক করুন ◆" : "◆ FORCE CLOUD TELEMETRY SYNC ◆"}</span>
-            </button>
-
-            {/* Optional Custom Config Override */}
-            <form onSubmit={handleSaveCloudConfig} className="space-y-2 pt-2 border-t border-cyan-500/20">
-              <div className="text-[11px] font-bold text-cyan-400/80 uppercase">
-                {isBn ? "কাস্টম প্রজেক্ট কী পরিবর্তন (ঐচ্ছিক)" : "Custom Credentials Override (Optional)"}
-              </div>
-              <input
-                type="text"
-                placeholder="https://your-project.supabase.co"
-                value={customUrl}
-                onChange={(e) => setCustomUrl(e.target.value)}
-                className="w-full min-h-[38px] system-btn-chamfer border border-cyan-500/30 bg-[#020512] px-3 text-xs text-cyan-100 placeholder-cyan-800 focus:outline-none focus:border-cyan-400"
-              />
-              <input
-                type="password"
-                placeholder="Publishable / Anon Key (sb_publishable_...)"
-                value={customKey}
-                onChange={(e) => setCustomKey(e.target.value)}
-                className="w-full min-h-[38px] system-btn-chamfer border border-cyan-500/30 bg-[#020512] px-3 text-xs text-cyan-100 placeholder-cyan-800 focus:outline-none focus:border-cyan-400"
-              />
+            {/* Direct Sync Option */}
+            <div className="pt-2 border-t border-cyan-500/20">
               <button
-                type="submit"
-                className="w-full min-h-[36px] system-btn-chamfer bg-[#040e2a] border border-cyan-500/40 text-xs font-bold text-cyan-300 hover:text-white"
+                type="button"
+                onClick={handleForceSync}
+                disabled={syncing}
+                className="w-full min-h-[40px] system-btn-chamfer bg-gradient-to-r from-cyan-900/60 to-blue-900/60 border border-cyan-500/40 text-xs font-bold text-cyan-200 hover:text-white flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
               >
-                {isBn ? "কী সংরক্ষণ করুন" : "Save Custom Keys"}
+                <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin text-cyan-400" : ""}`} />
+                <span>{isBn ? "ক্লাউডে সব ডাটা সিঙ্ক করুন" : "Sync All Progress to Cloud"}</span>
               </button>
-              {showConfigSaved && (
-                <div className="text-xs text-emerald-400 flex items-center gap-1">
-                  <Check className="h-3.5 w-3.5" />
-                  <span>{isBn ? "ডাটাবেস সেটিংস সংরক্ষিত হয়েছে!" : "Database credentials saved!"}</span>
-                </div>
-              )}
-            </form>
+            </div>
           </div>
         )}
-
-        {/* Google Gemini AI Key Section */}
-        <section className="space-y-2.5 system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/80 p-3.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-              <h4 className="text-xs font-bold tracking-wider text-cyan-300 uppercase">
-                GOOGLE GEMINI AI STUDIO KEY
-              </h4>
-            </div>
-            <a
-              href="https://aistudio.google.com/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-cyan-400 hover:underline"
-            >
-              <span>{isBn ? "ফ্রি কী নিন" : "Get Free Key"}</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </div>
-
-          <div className="flex gap-2">
-            <input
-              type="password"
-              className="flex-1 min-h-[40px] system-btn-chamfer border border-cyan-500/35 bg-[#020512] px-3 text-xs text-cyan-100 placeholder-cyan-800 focus:border-cyan-400 focus:outline-none"
-              placeholder="AIzaSy..."
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-            />
-            <button
-              type="button"
-              onClick={handleSaveKey}
-              className="min-h-[40px] system-btn-chamfer bg-cyan-500 px-4 text-xs font-bold text-black hover:bg-cyan-400 transition-colors shadow-[0_0_10px_rgba(6,182,212,0.5)]"
-            >
-              {isBn ? "সেভ" : "Save"}
-            </button>
-          </div>
-
-          {showKeySaved && (
-            <div className="text-xs font-bold text-cyan-300 flex items-center gap-1.5 text-glow-cyan">
-              <Check className="h-3.5 w-3.5 text-cyan-400" />
-              <span>{isBn ? "এআই কী সফলভাবে সংরক্ষণ হয়েছে!" : "Gemini API key encrypted on hardware!"}</span>
-            </div>
-          )}
-        </section>
 
         {/* Modal Close CTA */}
         <button
