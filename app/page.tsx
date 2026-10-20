@@ -6,6 +6,8 @@ import {
   Bell,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Clock,
   Dumbbell,
@@ -18,9 +20,12 @@ import {
   Package,
   Play,
   RotateCcw,
+  Shield,
   SlidersHorizontal,
   Sparkles,
   Timer,
+  Trophy,
+  Users,
   Utensils,
   Volume2,
   VolumeX,
@@ -141,6 +146,7 @@ export default function Page() {
   const [showGuildHubModal, setShowGuildHubModal] = useState(false);
   const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
   const [hapticsOn, setHapticsOn] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [selectedAnimationEx, setSelectedAnimationEx] = useState<Exercise | null>(null);
   const [warmupOpen, setWarmupOpen] = useState(true);
@@ -868,23 +874,32 @@ export default function Page() {
   const elapsedMin = session?.startedAt ? Math.max(0, Math.round((nowTick - session.startedAt) / 60000)) : null;
 
   return (
-    <div className="min-h-screen pb-40">
-      <header className="sticky top-0 z-30 border-b border-cyan-500/30 bg-[#040817]/90 px-4 py-3 backdrop-blur-md shadow-[0_4px_25px_rgba(6,182,212,0.15)]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-          {/* Left: Brand Logo & Solo Leveling System Title */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+    <div className="min-h-screen bg-[#020510] text-zinc-100 flex">
+      {/* ======================================================== */}
+      {/* 1. Desktop Left Navigation Asidebar (<aside>)            */}
+      {/* ======================================================== */}
+      <aside
+        id="desktop-navigation-sidebar"
+        aria-label="Desktop Navigation Sidebar"
+        className={`hidden lg:flex flex-col justify-between shrink-0 sticky top-0 h-screen border-r border-cyan-500/30 bg-[#030713]/95 backdrop-blur-xl z-30 transition-all duration-300 ${
+          sidebarCollapsed ? "w-20 p-3" : "w-64 p-4"
+        }`}
+      >
+        {/* Top: Brand Crest & Collapse Toggle */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-2 border-b border-cyan-500/20 pb-3">
             <button
               type="button"
-              id="btn-header-crest"
+              id="sidebar-crest-btn"
               onClick={() => {
                 playSound("system-alert");
-                vibrate(20);
+                vibrate(15);
                 setActiveTab("status");
               }}
-              title="Open Solo Leveling System Status Window"
-              className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer text-left focus:outline-none shrink-0 whitespace-nowrap"
+              title="Open Solo Leveling System Status"
+              className="flex items-center gap-2.5 text-left group overflow-hidden"
             >
-              <div className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
+              <div className="relative h-10 w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
                 <Image
                   src="/images/solo-leveling/system-crest-icon.jpg"
                   alt="Solo Leveling System Crest"
@@ -892,113 +907,154 @@ export default function Page() {
                   className="object-cover"
                 />
               </div>
-              <div className="shrink-0">
-                <h1 className="flex items-center gap-1.5 text-sm sm:text-base font-black tracking-wide text-white whitespace-nowrap">
-                  ARISE
-                  <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)] shrink-0 whitespace-nowrap">
-                    [ SYSTEM ]
-                  </span>
-                </h1>
-                <p className="text-[10px] sm:text-[11px] font-mono text-cyan-400/80 flex items-center gap-1 whitespace-nowrap">
-                  <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"} : Lv.{playerStats.level}</span>
-                  <span className="text-zinc-600">·</span>
-                  <span className="text-purple-300 font-bold">{playerStats.rank}-RANK</span>
-                </p>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="shrink-0 overflow-hidden">
+                  <div className="flex items-center gap-1.5 text-sm font-black tracking-wide text-white whitespace-nowrap">
+                    ARISE
+                    <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1 py-0.2 text-[9px] font-mono uppercase tracking-widest text-cyan-300">
+                      [ SYSTEM ]
+                    </span>
+                  </div>
+                  <div className="text-[10px] font-mono text-cyan-400/80 whitespace-nowrap">
+                    Lv.{playerStats.level} · <span className="text-purple-300 font-bold">{playerStats.rank}-RANK</span>
+                  </div>
+                </div>
+              )}
+            </button>
+
+            <button
+              type="button"
+              id="btn-sidebar-collapse"
+              onClick={() => {
+                playSound("system-click");
+                setSidebarCollapsed((prev) => !prev);
+              }}
+              aria-label={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-500/30 bg-black/40 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-950/60 transition-all shrink-0 cursor-pointer"
+            >
+              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </button>
           </div>
 
-          {/* Center: Desktop Navigation Tabs (Hidden on mobile) */}
-          <nav
-            aria-label="Desktop Tab Navigation"
-            className="hidden md:flex items-center gap-0.5 lg:gap-1.5 rounded-2xl border border-cyan-500/30 bg-[#030712]/80 p-1 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.15)] shrink-0"
-          >
+          {/* Navigation Tabs List */}
+          <nav aria-label="Sidebar Primary Navigation" className="space-y-1.5">
+            {!sidebarCollapsed && (
+              <div className="px-2 text-[9px] font-mono font-bold uppercase tracking-widest text-cyan-400/70">
+                [ {lang === "bn" ? "প্রধান মেনু" : "CORE MODULES"} ]
+              </div>
+            )}
+
+            {/* Quests Tab */}
             <button
               type="button"
-              id="desktop-nav-home"
+              id="sidebar-nav-home"
               onClick={() => {
                 playSound("system-click");
                 vibrate(15);
                 setActiveTab("home");
               }}
-              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+              title={lang === "bn" ? "কোয়েস্ট ও ডানজন" : "Daily Quests & Dungeons"}
+              className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              } ${
                 activeTab === "home"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
+                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
               }`}
             >
-              <Home className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
-              <span className="hidden xl:inline">[ {lang === "bn" ? "কোয়েস্ট" : "QUESTS"} ]</span>
-              <span className="inline xl:hidden">{lang === "bn" ? "কোয়েস্ট" : "QUESTS"}</span>
+              <Home className="h-4 w-4 text-cyan-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ কোয়েস্ট ]" : "[ QUESTS ]"}</span>
+              )}
             </button>
 
+            {/* Statistics Tab */}
             <button
               type="button"
-              id="desktop-nav-stats"
+              id="sidebar-nav-stats"
               onClick={() => {
                 playSound("system-click");
                 vibrate(15);
                 setActiveTab("stats");
               }}
-              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+              title={lang === "bn" ? "পরিসংখ্যান ও রেকর্ড" : "Statistics & Logs"}
+              className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              } ${
                 activeTab === "stats"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
+                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
               }`}
             >
-              <Activity className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
-              <span className="hidden xl:inline">[ {lang === "bn" ? "পরিসংখ্যান" : "STATISTICS"} ]</span>
-              <span className="inline xl:hidden">{lang === "bn" ? "রেকর্ড" : "STATS"}</span>
+              <Activity className="h-4 w-4 text-cyan-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ পরিসংখ্যান ]" : "[ STATISTICS ]"}</span>
+              )}
             </button>
 
+            {/* Inventory Tab */}
             <button
               type="button"
-              id="desktop-nav-inventory"
+              id="sidebar-nav-inventory"
               onClick={() => {
                 playSound("system-click");
                 vibrate(15);
                 setActiveTab("inventory");
               }}
-              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+              title={lang === "bn" ? "ইনভেন্টরি ও গিয়ার" : "Inventory & Arsenal"}
+              className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              } ${
                 activeTab === "inventory"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
+                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
               }`}
             >
-              <Package className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
-              <span className="hidden xl:inline">[ {lang === "bn" ? "ইনভেন্টরি" : "INVENTORY"} ]</span>
-              <span className="inline xl:hidden">{lang === "bn" ? "গিয়ার" : "ITEMS"}</span>
+              <Package className="h-4 w-4 text-cyan-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ ইনভেন্টরি ]" : "[ INVENTORY ]"}</span>
+              )}
             </button>
 
+            {/* Status Tab */}
             <button
               type="button"
-              id="desktop-nav-status"
+              id="sidebar-nav-status"
               onClick={() => {
                 playSound("system-click");
                 vibrate(15);
                 setActiveTab("status");
               }}
-              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+              title={lang === "bn" ? "খেলোয়াড়ের স্ট্যাটাস" : "Hunter Status & Stats"}
+              className={`relative flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              } ${
                 activeTab === "status"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
+                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
               }`}
             >
-              <UserIcon className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
-              <span className="hidden xl:inline">[ {lang === "bn" ? "স্ট্যাটাস" : "STATUS"} ]</span>
-              <span className="inline xl:hidden">{lang === "bn" ? "স্ট্যাটাস" : "STATUS"}</span>
+              <UserIcon className="h-4 w-4 text-cyan-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ স্ট্যাটাস ]" : "[ STATUS ]"}</span>
+              )}
               {playerStats.unallocatedPoints > 0 && (
-                <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+                <span className={`h-2 w-2 rounded-full bg-amber-400 animate-ping shadow-[0_0_8px_rgba(251,191,36,0.9)] ${sidebarCollapsed ? "absolute top-2 right-2" : "ml-auto"}`} />
               )}
             </button>
-          </nav>
 
-          {/* Right: Quick Action Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Desktop Awakening Trigger */}
+            {/* System Directives Section */}
+            {!sidebarCollapsed && (
+              <div className="pt-3 px-2 text-[9px] font-mono font-bold uppercase tracking-widest text-cyan-400/70">
+                [ {lang === "bn" ? "সিস্টেম অপারেশন" : "DIRECTIVES"} ]
+              </div>
+            )}
+
+            {/* ARISE Awakening Button */}
             <button
-              id="btn-desktop-arise"
               type="button"
+              id="sidebar-btn-arise"
               onClick={() => {
                 playSound("arise");
                 vibrate([40, 80, 40]);
@@ -1008,45 +1064,338 @@ export default function Page() {
                 });
                 setShowAriseModal(true);
               }}
-              aria-label="Trigger Arise Awakening"
               title="Trigger Arise Awakening"
-              className="hidden xl:flex h-9 lg:h-10 items-center gap-1.5 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/60 to-indigo-950/60 px-2.5 lg:px-3 text-xs font-black text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)] active:scale-95 transition-all shrink-0"
+              className={`flex items-center gap-3 w-full rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/50 via-indigo-950/60 to-purple-950/50 text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.25)] active:scale-95 transition-all cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-black"
+              }`}
             >
-              <Sparkles className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-purple-400 animate-pulse" />
-              <span className="tracking-wider">ARISE</span>
+              <Sparkles className="h-4 w-4 text-purple-400 animate-pulse shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap tracking-wider">{lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN"}</span>
+              )}
             </button>
 
-            {/* Arsenal / Exercise Library shortcut (Large screens) */}
+            {/* Exercise Arsenal Shortcut */}
             <button
-              id="btn-desktop-arsenal"
               type="button"
+              id="sidebar-btn-arsenal"
               onClick={() => {
                 playSound("system-click");
                 setShowLibraryModal(true);
               }}
-              aria-label="Open Exercise Arsenal"
               title="Open Exercise Arsenal"
-              className="hidden 2xl:flex h-10 items-center gap-1.5 rounded-xl border border-zinc-700/60 bg-zinc-800/60 px-3 text-xs font-semibold text-zinc-200 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0"
+              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-white hover:bg-white/5 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              }`}
             >
-              <Dumbbell className="h-3.5 w-3.5 text-cyan-400" />
-              <span>{lang === "bn" ? "অস্ত্রাগার" : "Arsenal"}</span>
+              <Dumbbell className="h-4 w-4 text-cyan-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap">{lang === "bn" ? "অস্ত্রাগার (Arsenal)" : "Exercise Arsenal"}</span>
+              )}
             </button>
 
-            {/* Diet Sheet shortcut (Large screens) */}
+            {/* Nutrition Rations Shortcut */}
             <button
-              id="btn-desktop-rations"
               type="button"
+              id="sidebar-btn-rations"
               onClick={() => {
                 playSound("system-click");
                 setShowDietSheet(true);
               }}
-              aria-label="Open Nutrition Rations"
               title="Open Nutrition Rations"
-              className="hidden 2xl:flex h-10 items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-3 text-xs font-semibold text-emerald-300 hover:bg-emerald-900/40 transition-colors shrink-0"
+              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-emerald-300 hover:bg-emerald-950/20 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              }`}
             >
-              <Utensils className="h-3.5 w-3.5 text-emerald-400" />
-              <span>{lang === "bn" ? "ডায়েট চার্ট" : "Rations"}</span>
+              <Utensils className="h-4 w-4 text-emerald-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap">{lang === "bn" ? "ডায়েট চার্ট (Rations)" : "Nutrition Rations"}</span>
+              )}
             </button>
+
+            {/* Hunter Guilds Hub */}
+            <button
+              type="button"
+              id="sidebar-btn-guilds"
+              onClick={() => {
+                playSound("system-click");
+                setShowGuildHubModal(true);
+              }}
+              title="Open Hunter Guilds"
+              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-purple-300 hover:bg-purple-950/20 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              }`}
+            >
+              <Users className="h-4 w-4 text-purple-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap">{lang === "bn" ? "হান্টার গিল্ড (Guilds)" : "Hunter Guilds"}</span>
+              )}
+            </button>
+
+            {/* Hall of Feats (Achievements) */}
+            <button
+              type="button"
+              id="sidebar-btn-achievements"
+              onClick={() => {
+                playSound("system-click");
+                setShowAchievementsModal(true);
+              }}
+              title="Hall of Feats & Achievements"
+              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-amber-300 hover:bg-amber-950/20 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              }`}
+            >
+              <Trophy className="h-4 w-4 text-amber-400 shrink-0" />
+              {!sidebarCollapsed && (
+                <span className="whitespace-nowrap">{lang === "bn" ? "কৃতিত্ব (Feats)" : "Hall of Feats"}</span>
+              )}
+            </button>
+          </nav>
+        </div>
+
+        {/* Bottom / Footer of Sidebar */}
+        <div className="space-y-3 pt-3 border-t border-cyan-500/20">
+          {!sidebarCollapsed && (
+            <div className="rounded-xl border border-cyan-500/30 bg-black/60 p-2.5 flex items-center justify-between shadow-inner">
+              <div className="overflow-hidden">
+                <div className="text-[11px] font-mono font-black text-white truncate">{playerStats.name || "Sung Jin-Woo"}</div>
+                <div className="text-[9px] font-mono text-cyan-400/80">🪙 {playerStats.coins ?? 1450} Gold</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWelcomeOnboarding(true)}
+                title="Calibrate Hunter Profile"
+                className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-950/80 border border-cyan-400/40 px-2 py-1 rounded hover:bg-cyan-900 transition-colors cursor-pointer"
+              >
+                EDIT
+              </button>
+            </div>
+          )}
+
+          {/* Utility row: Language, Sound, Menu Drawer */}
+          <div className={`flex items-center gap-1.5 ${sidebarCollapsed ? "flex-col justify-center" : "justify-between"}`}>
+            <button
+              type="button"
+              id="sidebar-lang-switcher"
+              onClick={() => {
+                playSound("system-click");
+                const nextLang = lang === "bn" ? "en" : "bn";
+                setLang(nextLang);
+                addSystemToast(
+                  nextLang === "bn" ? "[ ভাষা পরিবর্তন : বাংলা ]" : "[ LANGUAGE : ENGLISH ]",
+                  nextLang === "bn" ? "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।" : "System interface set to English."
+                );
+              }}
+              aria-label="Switch Language"
+              title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-950/40 text-xs font-mono font-bold text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/40 transition-colors shrink-0 cursor-pointer"
+            >
+              <span className="text-[11px] font-black">{lang === "bn" ? "বাং" : "EN"}</span>
+            </button>
+
+            <button
+              type="button"
+              id="sidebar-sound-toggle"
+              onClick={() => {
+                const next = !soundOn;
+                setSoundOn(next);
+                if (next) playSound("system-click");
+              }}
+              aria-label={soundOn ? "Mute Audio" : "Unmute Audio"}
+              title={soundOn ? "Sound: ON" : "Sound: MUTED"}
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0 cursor-pointer"
+            >
+              {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
+            </button>
+
+            <button
+              type="button"
+              id="sidebar-menu-btn"
+              onClick={() => {
+                playSound("system-click");
+                setShowSettingsDrawer(true);
+              }}
+              aria-label="System Settings & Hub"
+              title="System Settings & Hub"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_10px_rgba(6,182,212,0.25)] transition-colors shrink-0 cursor-pointer"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* ======================================================== */}
+      {/* 2. Main Content Viewport & Header                        */}
+      {/* ======================================================== */}
+      <div className="flex-1 min-w-0 flex flex-col pb-40 lg:pb-16">
+        <header className="sticky top-0 z-20 border-b border-cyan-500/30 bg-[#040817]/90 px-4 py-3 backdrop-blur-md shadow-[0_4px_25px_rgba(6,182,212,0.15)]">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+            {/* Left: Mobile Brand Logo & Solo Leveling System Title (< lg) */}
+            <div className="flex lg:hidden items-center gap-2.5 sm:gap-3 shrink-0">
+              <button
+                type="button"
+                id="btn-header-crest"
+                onClick={() => {
+                  playSound("system-alert");
+                  vibrate(20);
+                  setActiveTab("status");
+                }}
+                title="Open Solo Leveling System Status Window"
+                className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer text-left focus:outline-none shrink-0 whitespace-nowrap"
+              >
+                <div className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
+                  <Image
+                    src="/images/solo-leveling/system-crest-icon.jpg"
+                    alt="Solo Leveling System Crest"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="shrink-0">
+                  <h1 className="flex items-center gap-1.5 text-sm sm:text-base font-black tracking-wide text-white whitespace-nowrap">
+                    ARISE
+                    <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)] shrink-0 whitespace-nowrap">
+                      [ SYSTEM ]
+                    </span>
+                  </h1>
+                  <p className="text-[10px] sm:text-[11px] font-mono text-cyan-400/80 flex items-center gap-1 whitespace-nowrap">
+                    <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"} : Lv.{playerStats.level}</span>
+                    <span className="text-zinc-600">·</span>
+                    <span className="text-purple-300 font-bold">{playerStats.rank}-RANK</span>
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            {/* Left / Center on Desktop (lg+): Active System Directive Breadcrumb */}
+            <div className="hidden lg:flex items-center gap-2.5">
+              <div className="h-2.5 w-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse shrink-0" />
+              <span className="font-mono text-xs font-black text-cyan-300 tracking-wider uppercase">
+                [ SYSTEM ONLINE ] //{" "}
+                {activeTab === "home"
+                  ? lang === "bn"
+                    ? "দৈনিক কোয়েস্ট ও ডানজন"
+                    : "DAILY QUESTS & DUNGEON GATES"
+                  : activeTab === "stats"
+                  ? lang === "bn"
+                    ? "পরিসংখ্যান ও রেকর্ড"
+                    : "HUNTER STATISTICS & LOGS"
+                  : activeTab === "inventory"
+                  ? lang === "bn"
+                    ? "ইনভেন্টরি ও গিয়ার"
+                    : "INVENTORY & EQUIPMENT"
+                  : lang === "bn"
+                  ? "খেলোয়াড়ের স্ট্যাটাস"
+                  : "HUNTER STATUS WINDOW"}
+              </span>
+              <span className="text-zinc-600">·</span>
+              <span className="font-mono text-[11px] text-zinc-400 font-semibold">{headerDateString}</span>
+            </div>
+
+            {/* Center: Tablet Navigation Tabs (Shown only on tablet between 768px and 1024px) */}
+            <nav
+              aria-label="Tablet Tab Navigation"
+              className="hidden md:flex lg:hidden items-center gap-0.5 rounded-2xl border border-cyan-500/30 bg-[#030712]/80 p-1 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.15)] shrink-0"
+            >
+              <button
+                type="button"
+                id="tablet-nav-home"
+                onClick={() => {
+                  playSound("system-click");
+                  vibrate(15);
+                  setActiveTab("home");
+                }}
+                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                  activeTab === "home"
+                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                }`}
+              >
+                <Home className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                <span>{lang === "bn" ? "কোয়েস্ট" : "QUESTS"}</span>
+              </button>
+
+              <button
+                type="button"
+                id="tablet-nav-stats"
+                onClick={() => {
+                  playSound("system-click");
+                  vibrate(15);
+                  setActiveTab("stats");
+                }}
+                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                  activeTab === "stats"
+                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                }`}
+              >
+                <Activity className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                <span>{lang === "bn" ? "রেকর্ড" : "STATS"}</span>
+              </button>
+
+              <button
+                type="button"
+                id="tablet-nav-inventory"
+                onClick={() => {
+                  playSound("system-click");
+                  vibrate(15);
+                  setActiveTab("inventory");
+                }}
+                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                  activeTab === "inventory"
+                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                }`}
+              >
+                <Package className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                <span>{lang === "bn" ? "গিয়ার" : "ITEMS"}</span>
+              </button>
+
+              <button
+                type="button"
+                id="tablet-nav-status"
+                onClick={() => {
+                  playSound("system-click");
+                  vibrate(15);
+                  setActiveTab("status");
+                }}
+                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                  activeTab === "status"
+                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                }`}
+              >
+                <UserIcon className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"}</span>
+                {playerStats.unallocatedPoints > 0 && (
+                  <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+                )}
+              </button>
+            </nav>
+
+            {/* Right: Quick Action Controls */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Desktop Awakening Trigger */}
+              <button
+                id="btn-desktop-arise"
+                type="button"
+                onClick={() => {
+                  playSound("arise");
+                  vibrate([40, 80, 40]);
+                  setAriseModalText({
+                    title: lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN",
+                    subtitle: lang === "bn" ? "শ্যাডো মনার্ক জাগ্রত হচ্ছে" : "THE SHADOW MONARCH AWAKENS",
+                  });
+                  setShowAriseModal(true);
+                }}
+                aria-label="Trigger Arise Awakening"
+                title="Trigger Arise Awakening"
+                className="hidden sm:flex lg:hidden xl:flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/60 to-indigo-950/60 px-2.5 sm:px-3 text-xs font-black text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)] active:scale-95 transition-all shrink-0 cursor-pointer"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-purple-400 animate-pulse" />
+                <span className="tracking-wider">ARISE</span>
+              </button>
 
             {/* Language Switcher */}
             <button
@@ -1808,6 +2157,7 @@ export default function Page() {
           {tr.medicalDisclaimer}
         </p>
       </main>
+      </div>
 
       <RestTimer
         state={timer.state}
