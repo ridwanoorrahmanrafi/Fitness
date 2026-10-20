@@ -20,7 +20,15 @@ export const auth = betterAuth({
   baseURL:
     process.env.BETTER_AUTH_URL ||
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL ||
-    (typeof process.env.VERCEL_URL === "string" ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+    (typeof process.env.VERCEL_URL === "string"
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://fitness-eight-virid.vercel.app"),
+  trustedOrigins: [
+    "https://fitness-eight-virid.vercel.app",
+    "http://localhost:3000",
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    ...(process.env.VERCEL_PROJECT_PRODUCTION_URL ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`] : []),
+  ],
   secret:
     process.env.BETTER_AUTH_SECRET ||
     "arise_solo_leveling_better_auth_secret_hunter_system_key_2026_x99",
