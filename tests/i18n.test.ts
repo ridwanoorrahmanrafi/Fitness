@@ -55,4 +55,19 @@ describe("Internationalization (i18n) Engine", () => {
       }
     }
   });
+
+  it("strictly enforces duo language support (Bangla and English only) with zero residual Korean", () => {
+    const supportedLangs = Object.keys(TRANSLATIONS);
+    expect(supportedLangs.sort()).toEqual(["bn", "en"].sort());
+
+    const koreanRegex = /[\uac00-\ud7a3]/;
+    for (const lang of languages) {
+      const t = TRANSLATIONS[lang];
+      for (const [key, value] of Object.entries(t)) {
+        if (typeof value === "string") {
+          expect(koreanRegex.test(value), `Key ${key} in ${lang} contains Korean: ${value}`).toBe(false);
+        }
+      }
+    }
+  });
 });

@@ -11,12 +11,21 @@ export const KEYS = {
   geminiKey: "arise.v1.gemini_key",
   unitSystem: "arise.v1.unit_system",
   language: "arise.v1.language",
+  activeUser: "arise.v1.active_user",
+  accounts: "arise.v1.accounts",
+  aiDietPlan: "arise.v1.ai_diet_plan",
+  hasVisited: "arise.v1.has_visited",
+  supabaseConfig: "arise.v1.supabase_config",
+  userGoals: "arise.v1.user_goals",
+  evaluations: "arise.v1.evaluations",
+  lastSyncAt: "arise.v1.last_sync_at",
 } as const;
 
 export function parseProfile(v: unknown): Profile | null {
   const r = ProfileSchema.safeParse(v);
   return r.success ? (r.data as Profile) : null;
 }
+
 
 export interface Backup {
   app: "arise-coach";

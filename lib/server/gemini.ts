@@ -3,9 +3,9 @@ import type { ModelCaller } from "./generate";
 
 /** Defaults use Google's "latest" aliases so a retired dated model name cannot break the app. Override in .env. */
 export function getModelChain(): string[] {
-  const primary = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
-  const fallback = process.env.GEMINI_FALLBACK_MODEL?.trim() || "gemini-2.5-flash-lite";
-  const models = [primary, fallback, "gemini-1.5-flash"];
+  const primary = process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash";
+  const fallback = process.env.GEMINI_FALLBACK_MODEL?.trim() || "gemini-2.0-flash";
+  const models = [primary, fallback, "gemini-2.5-flash"];
   return [...new Set(models)];
 }
 

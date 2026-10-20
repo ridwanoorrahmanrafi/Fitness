@@ -48,3 +48,53 @@ export const LlmPlanSchema = z.object({
     }),
   ),
 });
+
+export const GenerateDietRequestSchema = z.object({
+  weightKg: z.number().min(30).max(300),
+  heightCm: z.number().min(90).max(250),
+  age: z.number().int().min(10).max(120),
+  gender: z.enum(["male", "female", "other"]),
+  activity: z.enum(["sedentary", "light", "moderate", "active", "very_active"]),
+  goal: z.enum(["muscle", "strength", "endurance", "recomp"]),
+  bmi: z.number(),
+  tdee: z.number(),
+  targetCalories: z.number(),
+  preferences: z.array(z.string()).optional(),
+  allergiesOrRestrictions: z.string().max(300).optional(),
+  budgetLevel: z.enum(["student", "standard", "premium"]).optional(),
+  language: z.enum(["en", "bn"]).optional(),
+});
+
+export const LlmDietSchema = z.object({
+  title: z.string(),
+  bengaliTitle: z.string(),
+  summary: z.string(),
+  targetCalories: z.number(),
+  proteinGrams: z.number(),
+  carbsGrams: z.number(),
+  fatGrams: z.number(),
+  meals: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      bengaliTitle: z.string(),
+      time: z.string(),
+      items: z.array(
+        z.object({
+          name: z.string(),
+          bengaliName: z.string(),
+          portion: z.string(),
+          calories: z.number(),
+          proteinG: z.number(),
+          carbsG: z.number(),
+          fatG: z.number(),
+          notes: z.string().optional(),
+        }),
+      ),
+      tips: z.string().optional(),
+    }),
+  ),
+  groceryList: z.array(z.string()).optional(),
+  guidelines: z.array(z.string()),
+});
+

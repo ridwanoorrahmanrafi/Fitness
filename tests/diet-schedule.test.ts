@@ -61,3 +61,53 @@ describe("Weekly Schedule Engine", () => {
     expect(DAYS_OF_WEEK.length).toBe(7);
   });
 });
+
+describe("Gemini Diet Plan Serverless Engine", () => {
+  it("generates deterministic local diet with source tag when no API key provided", async () => {
+    const { generateDietPlan } = await import("../lib/server/diet-generate");
+    const result = await generateDietPlan({
+      weightKg: 72,
+      heightCm: 175,
+      age: 25,
+      gender: "male",
+      activity: "moderate",
+      goal: "muscle",
+      bmi: 23.5,
+      tdee: 2400,
+      targetCalories: 2700,
+      language: "bn",
+    });
+
+    expect(result.diet).toBeDefined();
+    expect(result.diet.source).toBe("local");
+    expect(result.diet.meals.length).toBe(5);
+    expect(result.diet.proteinGrams).toBeGreaterThan(120);
+    expect(result.diet.groceryList?.length).toBeGreaterThan(0);
+  });
+
+  it("validates GenerateDietRequestSchema properly", async () => {
+    const { GenerateDietRequestSchema } = await import("../lib/schemas");
+    const valid = GenerateDietRequestSchema.safeParse({
+      weightKg: 70,
+      heightCm: 175,
+      age: 24,
+      gender: "male",
+      activity: "moderate",
+      goal: "recomp",
+      bmi: 22.8,
+      tdee: 2200,
+      targetCalories: 2200,
+      preferences: ["high_protein", "student"],
+      budgetLevel: "standard",
+      language: "en",
+    });
+    expect(valid.success).toBe(true);
+
+    const invalid = GenerateDietRequestSchema.safeParse({
+      weightKg: 10, // below minimum 30kg
+      heightCm: 175,
+    });
+    expect(invalid.success).toBe(false);
+  });
+});
+

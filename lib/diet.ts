@@ -34,6 +34,10 @@ export interface BangladeshiDietPlan {
   waterLiters: number;
   meals: Meal[];
   guidelines: string[];
+  summary?: string;
+  source?: "gemini" | "openai" | "dual_ai" | "local";
+  groceryList?: string[];
+  consensus?: import("./types").AiConsensus;
 }
 
 /**

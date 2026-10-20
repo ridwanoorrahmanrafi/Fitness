@@ -56,8 +56,8 @@ interface Props {
 }
 
 const inputCls =
-  "w-full min-h-[44px] rounded-xl border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-100 focus:border-emerald-500 focus:outline-none";
-const labelCls = "mb-1 block text-xs font-medium text-zinc-400";
+  "w-full min-h-[44px] rounded-lg border border-cyan-500/35 bg-[#03081a]/90 px-3 text-sm font-mono text-cyan-100 placeholder:text-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.35)] focus:outline-none transition-all";
+const labelCls = "mb-1 block text-xs font-mono font-semibold tracking-wider text-cyan-400/80 uppercase";
 
 function Segmented<T extends string | number>({
   value,
@@ -76,10 +76,10 @@ function Segmented<T extends string | number>({
           type="button"
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`min-h-[44px] rounded-xl border px-2 text-sm transition-colors ${
+          className={`min-h-[44px] system-btn-chamfer border px-2 text-sm font-mono tracking-wide transition-all ${
             value === o.value
-              ? "border-emerald-500/70 bg-emerald-500/15 font-semibold text-emerald-300"
-              : "border-zinc-700 bg-zinc-950 text-zinc-400 hover:border-zinc-500"
+              ? "border-cyan-400 bg-cyan-500/25 font-bold text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]"
+              : "border-cyan-500/20 bg-[#03081a]/80 text-zinc-400 hover:border-cyan-500/40 hover:text-cyan-200"
           }`}
         >
           {o.label}
@@ -186,13 +186,13 @@ export function ProfileSheet({
             <h3 className="text-sm font-semibold text-white">{t.bodyBiometricsTitle}</h3>
             <div className="flex items-center gap-1.5">
               {/* Language Switcher */}
-              <div className="flex gap-1 rounded-lg border border-zinc-800 bg-zinc-950 p-0.5 text-xs">
+              <div className="flex gap-1 rounded-lg border border-cyan-500/30 bg-[#03081a] p-0.5 text-xs font-mono">
                 <button
                   type="button"
                   id="btn-profile-lang-en"
                   onClick={() => handleLanguageSwitch("en")}
-                  className={`rounded-md px-2 py-1 font-semibold transition-colors ${
-                    currentLang === "en" ? "bg-emerald-500 text-zinc-950" : "text-zinc-400 hover:text-white"
+                  className={`rounded px-2 py-1 font-bold transition-all ${
+                    currentLang === "en" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
                   }`}
                 >
                   EN
@@ -201,8 +201,8 @@ export function ProfileSheet({
                   type="button"
                   id="btn-profile-lang-bn"
                   onClick={() => handleLanguageSwitch("bn")}
-                  className={`rounded-md px-2 py-1 font-semibold transition-colors ${
-                    currentLang === "bn" ? "bg-emerald-500 text-zinc-950" : "text-zinc-400 hover:text-white"
+                  className={`rounded px-2 py-1 font-bold transition-all ${
+                    currentLang === "bn" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
                   }`}
                 >
                   বাংলা
@@ -210,12 +210,12 @@ export function ProfileSheet({
               </div>
 
               {/* Unit System Switcher */}
-              <div className="flex gap-1 rounded-lg border border-zinc-800 bg-zinc-950 p-0.5 text-xs">
+              <div className="flex gap-1 rounded-lg border border-cyan-500/30 bg-[#03081a] p-0.5 text-xs font-mono">
                 <button
                   type="button"
                   onClick={() => setCurrentUnit("metric")}
-                  className={`rounded-md px-2.5 py-1 transition-colors ${
-                    currentUnit === "metric" ? "bg-emerald-500 font-semibold text-zinc-950" : "text-zinc-400 hover:text-white"
+                  className={`rounded px-2.5 py-1 font-bold transition-all ${
+                    currentUnit === "metric" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
                   }`}
                 >
                   {t.metricOption}
@@ -223,8 +223,8 @@ export function ProfileSheet({
                 <button
                   type="button"
                   onClick={() => setCurrentUnit("imperial")}
-                  className={`rounded-md px-2.5 py-1 transition-colors ${
-                    currentUnit === "imperial" ? "bg-emerald-500 font-semibold text-zinc-950" : "text-zinc-400 hover:text-white"
+                  className={`rounded px-2.5 py-1 font-bold transition-all ${
+                    currentUnit === "imperial" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
                   }`}
                 >
                   {t.imperialOption}
@@ -532,10 +532,10 @@ export function ProfileSheet({
         </section>
 
         {/* AI Key & Access Code Section */}
-        <section className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-950/50 p-3.5">
+        <section className="space-y-3 system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/80 p-4 shadow-[0_0_20px_rgba(6,182,212,0.06)]">
           <div className="flex items-center gap-2">
-            <Key className="h-4 w-4 text-emerald-400" />
-            <h3 className="text-sm font-semibold text-white">{t.serverAccessTitle}</h3>
+            <Key className="h-4 w-4 text-cyan-400" />
+            <h3 className="text-xs font-mono font-bold tracking-widest text-cyan-300 uppercase">{t.serverAccessTitle}</h3>
           </div>
 
           <div>
@@ -549,7 +549,7 @@ export function ProfileSheet({
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
             />
-            <p className="mt-1 text-[11px] text-zinc-500">
+            <p className="mt-1 font-mono text-[10px] text-cyan-600">
               Leave blank to use server environment key or offline builder.
             </p>
           </div>
@@ -568,13 +568,13 @@ export function ProfileSheet({
           </div>
         </section>
 
-        {error && <p className="text-sm text-amber-400">{error}</p>}
+        {error && <p className="font-mono text-xs text-red-400 [text-shadow:0_0_8px_rgba(248,113,113,0.5)]">{error}</p>}
 
         <button
           type="submit"
-          className="min-h-[48px] w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 font-bold text-zinc-950 transition-opacity hover:opacity-95"
+          className="min-h-[48px] w-full system-btn-chamfer bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 font-mono font-black tracking-widest uppercase text-white shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all hover:brightness-110 active:scale-[0.98]"
         >
-          {firstRun ? (currentLang === "bn" ? "সংরক্ষণ করে এগিয়ে যান" : "Save and continue") : t.saveProfileBtn}
+          {firstRun ? (currentLang === "bn" ? "◆ সিস্টেম সক্রিয় করুন (AWAKEN) ◆" : "◆ CONFIRM & AWAKEN SYSTEM ◆") : t.saveProfileBtn}
         </button>
       </form>
     </Sheet>

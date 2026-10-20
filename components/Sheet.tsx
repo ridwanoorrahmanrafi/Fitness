@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { playSound } from "@/lib/audio";
 
 interface SheetProps {
   open: boolean;
@@ -34,7 +35,7 @@ export function Sheet({ open, title, onClose, children, dismissable = true }: Sh
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/90 backdrop-blur-xl sm:items-center p-0 sm:p-4 animate-in fade-in duration-200"
       onMouseDown={(e) => {
         if (dismissable && e.target === e.currentTarget) onClose();
       }}
@@ -45,15 +46,35 @@ export function Sheet({ open, title, onClose, children, dismissable = true }: Sh
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-2xl sm:max-w-lg sm:rounded-3xl"
+        className="relative max-h-[94dvh] sm:max-h-[90vh] w-full overflow-y-auto overscroll-contain rounded-t-3xl sm:rounded-2xl border-2 border-cyan-400/80 bg-[#03081a]/95 p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_0_50px_rgba(6,182,212,0.4)] sm:max-w-xl animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300 text-zinc-100 system-scanlines system-grid-bg"
       >
-        <div className="mb-4 flex items-center justify-between border-b border-zinc-800 pb-3">
-          <h2 className="text-lg font-bold text-white">{title}</h2>
+        {/* Luminous Diamond Corner Pins (Manhwa Accurate) */}
+        <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute top-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+
+        {/* Mobile Swipe Handle Indicator */}
+        <div className="mx-auto mb-2.5 h-1.5 w-12 rounded-full bg-cyan-500/40 sm:hidden" />
+
+        {/* Holographic Header Bar */}
+        <div className="mb-4 flex items-center justify-between border-b-2 border-cyan-500/40 pb-3">
+          <div>
+            <div className="text-[10px] font-mono tracking-widest text-cyan-400/90 uppercase font-black">
+              [ SYSTEM INTERFACE ]
+            </div>
+            <h2 className="text-base sm:text-lg font-black text-white tracking-wide uppercase text-glow-cyan font-mono">
+              {title}
+            </h2>
+          </div>
           {dismissable && (
             <button
-              onClick={onClose}
+              onClick={() => {
+                playSound("system-click");
+                onClose();
+              }}
               aria-label="Close"
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-zinc-400 hover:bg-zinc-800 hover:text-white"
+              className="system-btn-chamfer flex h-9 w-9 items-center justify-center border border-cyan-400/50 bg-black/60 text-cyan-300 hover:bg-cyan-500/20 hover:text-white active:scale-90 transition-all cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
@@ -80,11 +101,14 @@ export function Chip({
     <button
       type="button"
       aria-pressed={selected}
-      onClick={onClick}
-      className={`min-h-[40px] rounded-full border px-3.5 text-sm transition-colors ${
+      onClick={() => {
+        playSound("system-click");
+        onClick();
+      }}
+      className={`system-btn-chamfer min-h-[40px] px-3.5 py-1.5 text-xs font-mono font-bold tracking-wide transition-all duration-150 active:scale-95 cursor-pointer uppercase ${
         selected
-          ? "border-emerald-400 bg-emerald-500 font-semibold text-black"
-          : "border-zinc-700 bg-zinc-950 text-zinc-300 hover:border-zinc-500"
+          ? "border-2 border-cyan-400 bg-cyan-400 text-black font-black shadow-[0_0_15px_rgba(6,182,212,0.8)] scale-102"
+          : "border border-cyan-500/30 bg-black/70 text-zinc-300 hover:border-cyan-400/70 hover:text-cyan-200"
       } ${className}`}
     >
       {children}

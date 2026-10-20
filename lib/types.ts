@@ -150,6 +150,16 @@ export interface PlanWarmup {
   seconds: number;
 }
 
+export interface AiConsensus {
+  primaryModel: string;
+  reviewerModel: string;
+  verifiedBy: string;
+  status: "verified" | "refined" | "single_model" | "offline";
+  safetyScore?: number;
+  summary: string;
+  notes?: string[];
+}
+
 export interface WorkoutPlan {
   id: string;
   createdAt: number;
@@ -160,6 +170,7 @@ export interface WorkoutPlan {
   warmup: PlanWarmup[];
   exercises: PlanExercise[];
   coachNote: string;
+  consensus?: AiConsensus;
 }
 
 export interface PlanMeta {
@@ -227,5 +238,84 @@ export type GenerateResponse =
       meta: PlanMeta;
       /** Present when the plan is not what the person asked for (e.g. model unavailable). */
       warning?: string;
+      consensus?: AiConsensus;
     }
   | { ok: false; error: string; code: "bad_request" | "unauthorized" | "rate_limited" | "server" };
+
+export interface UserAccount {
+  id: string;
+  name: string;
+  emailOrHandle?: string;
+  pin?: string;
+  createdAt: number;
+  lastActive: number;
+  profile?: Profile;
+  supabaseUser?: boolean;
+}
+
+export interface GenerateDietRequest {
+  weightKg: number;
+  heightCm: number;
+  age: number;
+  gender: Gender;
+  activity: Activity;
+  goal: Goal | "recomp";
+  bmi: number;
+  tdee: number;
+  targetCalories: number;
+  preferences?: string[];
+  allergiesOrRestrictions?: string;
+  budgetLevel?: "student" | "standard" | "premium";
+  language?: "en" | "bn";
+}
+
+export interface GenerateDietResponse {
+  ok: boolean;
+  diet?: import("./diet").BangladeshiDietPlan;
+  source?: "gemini" | "openai" | "dual_ai" | "local";
+  warning?: string;
+  consensus?: AiConsensus;
+  error?: string;
+  code?: string;
+}
+
+export type GoalCategory = "strength" | "volume" | "consistency" | "weight" | "exercise";
+export type GoalStatus = "active" | "completed" | "suggested";
+
+export interface UserGoal {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  category: GoalCategory;
+  targetValue: number;
+  currentValue: number;
+  unit: "reps" | "kg" | "sessions" | "days" | "%";
+  status: GoalStatus;
+  deadline?: number;
+  createdAt: number;
+  completedAt?: number;
+}
+
+export interface ProgressEvaluation {
+  id: string;
+  userId: string;
+  evaluatedAt: number;
+  overallScore: number;
+  strengthScore: number;
+  consistencyScore: number;
+  volume7dKg: number;
+  volume30dKg: number;
+  sessions7d: number;
+  activeStreakDays: number;
+  aiSummary: string;
+  recommendations: string[];
+}
+
+export interface SupabaseConfig {
+  url: string;
+  anonKey: string;
+}
+
+
+
