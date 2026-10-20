@@ -19,6 +19,10 @@ import {
   Radio,
   CheckCircle2,
   X,
+  Star,
+  TrendingUp,
+  Mail,
+  User,
 } from "lucide-react";
 import type { Language } from "@/lib/i18n";
 import {
@@ -55,6 +59,7 @@ interface Props {
   onLanguageChange: (lang: Language) => void;
   onComplete: (profile: Profile, hunterName: string) => void;
   onClose?: () => void;
+  onOpenLogin?: () => void;
 }
 
 export function SoloLevelingWelcomeOnboarding({
@@ -65,14 +70,29 @@ export function SoloLevelingWelcomeOnboarding({
   onLanguageChange,
   onComplete,
   onClose,
+  onOpenLogin,
 }: Props) {
   const isBn = lang === "bn";
 
-  // Stepper: 1: Invitation & Name, 2: Biometrics, 3: Goal & Split, 4: Equipment, 5: Awakening
-  const [step, setStep] = useState<number>(1);
+  // Flow stages:
+  // 0: "AWAKEN" Splash Screen
+  // 1: Dialogue 1 ("HMM...?")
+  // 2: Dialogue 2 ("WAIT... COULD IT BE YOU?!")
+  // 3: Dialogue 3 ("I SENSE A PRESENCE... ONE WITH EXTRAORDINARY POTENTIAL.")
+  // 4: Dialogue 4 ("BEFORE ANYTHING ELSE, WHICH PATH WILL YOU FOLLOW?")
+  // 5: Class Selection ("Choose your class": Warrior, Assassin, Mage)
+  // 6: Dialogue 5 ("AND WHICH ULTIMATE QUEST DRIVES YOU TO RISE?")
+  // 7: Ultimate Quest Selection (Hero physique, Protect others, Improve Health, Surpassing yourself)
+  // 8: Dialogue 6 ("VERY WELL. YOU WILL NEED COURAGE TO HOLD ON...")
+  // 9: Final Dialogue ("ARE YOU READY TO BECOME A PLAYER? [ ACCEPT ] / [ DECLINE ]")
+  // 10: Biometric calibration (Name, Gender, Height, Weight, Equipment)
+  // 11: Final Awakening Confirmation
+  const [stage, setStage] = useState<number>(0);
 
   // Form State
   const [hunterName, setHunterName] = useState<string>(initialName);
+  const [selectedClass, setSelectedClass] = useState<"WARRIOR" | "ASSASSIN" | "MAGE">("WARRIOR");
+  const [selectedQuestMotivation, setSelectedQuestMotivation] = useState<string>("Hero physique");
   const [gender, setGender] = useState<Gender>(initialProfile?.gender ?? "male");
   const [age, setAge] = useState<number>(initialProfile?.age ?? 24);
   const [heightCm, setHeightCm] = useState<number>(initialProfile?.heightCm ?? 175);
@@ -93,32 +113,28 @@ export function SoloLevelingWelcomeOnboarding({
   const [equipment, setEquipment] = useState<Equipment[]>(initialProfile?.equipment ?? ["dumbbells", "pullup_bar"]);
   const [lowImpact, setLowImpact] = useState<boolean>(initialProfile?.lowImpact ?? false);
 
+  // Auth bottom sheet state
+  const [showAuthSheet, setShowAuthSheet] = useState(false);
+
   if (!open) return null;
 
-  // Real-time computed biometrics
-  const stats = profileStats({
-    gender,
-    age,
-    heightCm,
-    weightKg,
-    activity,
-  });
-
-  const nextStep = () => {
+  const nextStage = () => {
     playSound("system-click");
     vibrate(20);
-    setStep((prev) => Math.min(5, prev + 1));
+    setStage((prev) => prev + 1);
   };
 
-  const prevStep = () => {
+  const prevStage = () => {
     playSound("system-click");
     vibrate(15);
-    setStep((prev) => Math.max(1, prev - 1));
+    setStage((prev) => Math.max(0, prev - 1));
   };
 
   const handleFinish = () => {
     playSound("arise");
     vibrate([80, 120, 80, 200]);
+
+    const mappedGoal: Goal = selectedClass === "WARRIOR" ? "muscle" : selectedClass === "ASSASSIN" ? "strength" : "endurance";
 
     const finalProfile: Profile = {
       gender,
@@ -127,8 +143,8 @@ export function SoloLevelingWelcomeOnboarding({
       weightKg: Number(weightKg) || 70,
       activity,
       level,
-      goal,
-      dietGoal: goal === "muscle" ? "muscle" : goal === "endurance" ? "endurance" : "recomp",
+      goal: mappedGoal,
+      dietGoal: mappedGoal === "muscle" ? "muscle" : mappedGoal === "endurance" ? "endurance" : "recomp",
       equipment,
       focus: "full",
       minutes,
@@ -137,723 +153,650 @@ export function SoloLevelingWelcomeOnboarding({
       workoutDays,
     };
 
-    // Update Player Stats with Hunter Name
+    // Update Player Stats with Hunter Name & Class
     const currentStats = loadPlayerStats();
     const updatedStats: PlayerStats = {
       ...currentStats,
       name: hunterName.trim() || (isBn ? "সুং জিন-উ" : "Sung Jin-woo"),
+      hunterClass: selectedClass === "WARRIOR" ? "Warrior" : selectedClass === "ASSASSIN" ? "Assassin" : "Mage",
     };
     savePlayerStats(updatedStats);
 
     onComplete(finalProfile, updatedStats.name);
   };
 
-  const toggleEquipment = (eqId: Equipment) => {
-    playSound("system-click");
-    setEquipment((prev) =>
-      prev.includes(eqId) ? prev.filter((x) => x !== eqId) : [...prev, eqId]
-    );
-  };
-
-  const applyEquipmentPreset = (presetEq: Equipment[]) => {
-    playSound("system-click");
-    setEquipment(presetEq);
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-5 backdrop-blur-2xl overflow-y-auto font-mono text-zinc-100 system-scanlines">
-      {/* Outer Holographic System Window */}
-      <div className="relative w-full max-w-2xl rounded-2xl border-2 border-cyan-400 bg-gradient-to-b from-[#05112e]/98 via-[#07153a]/95 to-[#020510]/98 p-5 sm:p-7 shadow-[0_0_60px_rgba(6,182,212,0.45)] text-zinc-100 my-auto">
-        {/* Manhwa Luminous Corner Diamonds */}
-        <div className="absolute top-2 left-2 text-cyan-400 text-xs select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
-        <div className="absolute top-2 right-2 text-cyan-400 text-xs select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
-        <div className="absolute bottom-2 left-2 text-cyan-400 text-xs select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
-        <div className="absolute bottom-2 right-2 text-cyan-400 text-xs select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#030611] text-zinc-100 overflow-y-auto selection:bg-cyan-500 selection:text-black">
+      {/* Background Aura */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,110,255,0.18)_0%,transparent_70%)]" />
 
-        {/* Top Header Bar: System Title & Language Toggle */}
-        <div className="flex items-center justify-between border-b-2 border-cyan-500/40 pb-3 mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="relative h-9 w-9 rounded-xl overflow-hidden border border-cyan-400/80 shadow-[0_0_12px_rgba(6,182,212,0.5)] shrink-0">
-              <Image
-                src="/images/solo-leveling/system-crest-icon.jpg"
-                alt="System Crest"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div>
-              <span className="text-[10px] font-black tracking-widest text-cyan-400 uppercase block">
-                {isBn ? "[ সিস্টেম জাগরণ ও খেলোয়াড় রেজিস্ট্রি ]" : "[ SYSTEM AWAKENING & PLAYER REGISTRY ]"}
-              </span>
-              <h2 className="text-base sm:text-lg font-black text-white uppercase text-glow-cyan">
-                {isBn ? "হান্টার ক্যালিব্রেশন প্রোটোকল" : "HUNTER CALIBRATION PROTOCOL"}
-              </h2>
+      {/* Top Controls: Back and Language Toggle */}
+      <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
+        {stage > 0 && (
+          <button
+            type="button"
+            onClick={prevStage}
+            className="leveling-circle-btn"
+            aria-label="Back"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            playSound("system-click");
+            onLanguageChange(isBn ? "en" : "bn");
+          }}
+          className="rounded-full border border-cyan-500/40 bg-[#0c162d]/90 px-3 py-1.5 text-xs font-bold text-cyan-300 shadow-[0_0_12px_rgba(0,140,255,0.25)] flex items-center gap-1.5"
+        >
+          <span>🌐</span>
+          <span>{isBn ? "EN" : "বাংলা"}</span>
+        </button>
+
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="leveling-circle-btn"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
+      </div>
+
+      {/* ============================================================== */}
+      {/* STAGE 0: HERO SPLASH "AWAKEN" (Matches WhatsApp Image 2026-10-20 at 11.28.29 PM.jpeg) */}
+      {/* ============================================================== */}
+      {stage === 0 && (
+        <div className="relative w-full max-w-sm px-6 py-12 flex flex-col items-center justify-between min-h-[90vh] text-center animate-in fade-in duration-500">
+          {/* Brand Logo & Name */}
+          <div className="mt-8 flex flex-col items-center">
+            <span className="text-3xl sm:text-4xl font-black tracking-widest text-white uppercase drop-shadow-[0_2px_12px_rgba(0,140,255,0.4)]">
+              LEVELING
+            </span>
+            <span className="text-xs font-bold tracking-[0.35em] text-cyan-400 uppercase mt-0.5">
+              FITNESS
+            </span>
+          </div>
+
+          {/* Crossed Daggers Emblem Graphic with Glowing Reticle */}
+          <div className="my-8 relative flex items-center justify-center">
+            <div className="absolute h-56 w-56 rounded-full border border-cyan-500/20 animate-spin [animation-duration:30s]" />
+            <div className="absolute h-48 w-48 rounded-full border border-cyan-500/30" />
+            <div className="absolute h-44 w-44 rounded-full bg-cyan-500/10 blur-2xl" />
+
+            {/* Crossed Daggers Icon */}
+            <div className="relative flex h-32 w-32 items-center justify-center">
+              <Swords className="h-28 w-28 text-cyan-300 drop-shadow-[0_0_25px_rgba(0,140,255,0.8)] stroke-[1.5]" />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Language Toggle */}
+          {/* Awaken Title & Subtitle */}
+          <div className="space-y-3 mb-6">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-[0.2em] text-white uppercase text-glow-cyan">
+              AWAKEN
+            </h1>
+            <p className="text-xs sm:text-sm text-zinc-300/90 max-w-xs mx-auto leading-relaxed">
+              {isBn
+                ? "আপনার বিবর্তনের কোয়েস্টে প্রবেশ করুন। লেভেল আপ করুন এবং আপনার ফিটনেস জীবন রূপান্তর করুন।"
+                : "Embark on your quest for evolution. Level up and transform your fitness life."}
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="w-full space-y-4">
             <button
               type="button"
-              id="onboarding-lang-toggle"
-              onClick={() => {
-                playSound("system-click");
-                onLanguageChange(isBn ? "en" : "bn");
-              }}
-              className="system-btn-chamfer flex h-9 items-center gap-1.5 border border-cyan-400/60 bg-[#03081a] px-2.5 text-xs font-bold text-cyan-300 hover:border-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.3)] cursor-pointer"
+              id="btn-become-player"
+              onClick={nextStage}
+              className="w-full py-4 rounded-2xl leveling-btn-primary text-sm font-black tracking-widest uppercase shadow-[0_0_30px_rgba(0,110,255,0.6)] cursor-pointer"
             >
-              <Radio className="h-3 w-3 text-cyan-400 animate-pulse" />
-              <span className="font-black">{isBn ? "EN" : "বাংলা"}</span>
+              {isBn ? "একজন খেলোয়াড় হোন" : "BECOME A PLAYER"}
             </button>
 
-            {onClose && (
-              <button
-                type="button"
-                onClick={() => {
-                  playSound("system-click");
-                  onClose();
-                }}
-                className="system-btn-chamfer h-9 w-9 flex items-center justify-center border border-zinc-700 text-zinc-400 hover:text-white cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                playSound("system-click");
+                setShowAuthSheet(true);
+              }}
+              className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              {isBn ? "ইতিমধ্যে অ্যাকাউন্ট আছে? " : "Already have an account? "}
+              <span className="text-cyan-400 font-bold hover:underline">
+                {isBn ? "লগইন করুন" : "Log in"}
+              </span>
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Step Progress Indicators */}
-        <div className="mb-5">
-          <div className="flex justify-between items-center text-[10px] text-cyan-400/80 mb-1.5 uppercase font-bold tracking-wider">
-            <span>
-              {isBn ? `ধাপ ${step} / ৫ : ` : `PHASE ${step} OF 5 : `}
-              {step === 1 && (isBn ? "খেলোয়াড় পরিচিতি" : "HUNTER IDENTIFICATION")}
-              {step === 2 && (isBn ? "শারীরিক পরিমাপ" : "BIOMETRIC SCAN")}
-              {step === 3 && (isBn ? "ফিটনেস লক্ষ্য" : "COMBAT AMBITION")}
-              {step === 4 && (isBn ? "প্রশিক্ষণ সরঞ্জাম" : "ARSENAL CALIBRATION")}
-              {step === 5 && (isBn ? "সিস্টেম জাগরণ" : "SYSTEM ASCENSION")}
-            </span>
-            <span className="text-white font-mono font-black">{step * 20}%</span>
-          </div>
-          <div className="grid grid-cols-5 gap-1.5">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <div
-                key={s}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  s <= step
-                    ? "bg-gradient-to-r from-cyan-400 to-blue-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
-                    : "bg-zinc-800"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* ============================================================== */}
-        {/* STEP 1: SYSTEM INVITATION & HUNTER ALIAS */}
-        {/* ============================================================== */}
-        {step === 1 && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="rounded-xl border border-cyan-500/40 bg-[#020512]/90 p-4 shadow-inner space-y-2">
-              <div className="flex items-center gap-2 text-cyan-300 text-xs font-black uppercase tracking-wider">
-                <Sparkles className="h-4 w-4 text-cyan-400 animate-spin" />
-                <span>
-                  {isBn
-                    ? "[ জরুরি নোটিফিকেশন : আপনি নির্বাচিত হয়েছেন ]"
-                    : "[ SYSTEM NOTIFICATION : YOU HAVE BEEN CHOSEN ]"}
-                </span>
+      {/* ============================================================== */}
+      {/* CINEMATIC DIALOGUES 1 - 4 (Matches Screenshots) */}
+      {/* ============================================================== */}
+      {stage >= 1 && stage <= 4 && (
+        <div className="relative w-full max-w-md px-6 py-12 flex flex-col items-center justify-center min-h-[85vh] animate-in fade-in duration-300">
+          <div
+            onClick={nextStage}
+            className="leveling-dialog-box p-8 w-full text-center cursor-pointer select-none space-y-5"
+          >
+            {/* Header Tags: [ i ]  [ ??? ] */}
+            <div className="flex items-center justify-center gap-3">
+              <div className="leveling-dialog-tag h-12 w-12 rounded-xl text-lg">
+                ℹ
               </div>
-              <p className="text-xs text-cyan-200/80 leading-relaxed">
-                {isBn
-                  ? "স্বাগতম, হান্টার! সোলো লেভেলিং সিস্টেম আপনার শারীরিক সামর্থ্য পর্যবেক্ষণ করছে। আপনি কি একজন সক্রিয় খেলোয়াড় হিসেবে জেগে উঠতে প্রস্তুত?"
-                  : "Welcome, Hunter. The System has recognized your latent potential. Prepare your physical vessel to embark on daily quests, conquer dungeon raids, and ascend from E-Rank to the Monarch of Shadows."}
+              <div className="leveling-dialog-tag px-5 py-2.5 rounded-xl text-sm font-black tracking-widest">
+                ???
+              </div>
+            </div>
+
+            {/* Narrative Line */}
+            <div className="py-4">
+              {stage === 1 && (
+                <p className="text-base sm:text-lg font-bold text-white tracking-wide">
+                  [HMM...?]
+                </p>
+              )}
+              {stage === 2 && (
+                <p className="text-base sm:text-lg font-bold text-white tracking-wide">
+                  [WAIT... COULD IT BE{" "}
+                  <span className="text-cyan-400 text-glow-cyan font-black">
+                    YOU?!
+                  </span>
+                  ]
+                </p>
+              )}
+              {stage === 3 && (
+                <p className="text-base sm:text-lg font-bold text-white tracking-wide leading-relaxed">
+                  [I SENSE A PRESENCE... ONE WITH{" "}
+                  <span className="text-purple-400 text-glow-purple font-black">
+                    EXTRAORDINARY POTENTIAL
+                  </span>
+                  .]
+                </p>
+              )}
+              {stage === 4 && (
+                <p className="text-base sm:text-lg font-bold text-white tracking-wide leading-relaxed">
+                  [BEFORE ANYTHING ELSE, WHICH{" "}
+                  <span className="text-cyan-400 text-glow-cyan font-black">
+                    PATH
+                  </span>{" "}
+                  WILL YOU FOLLOW?]
+                </p>
+              )}
+            </div>
+
+            <p className="text-[11px] text-zinc-500 uppercase tracking-widest animate-pulse">
+              {isBn ? "এগিয়ে যেতে চাপুন →" : "Tap anywhere to continue →"}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* STAGE 5: CHOOSE YOUR CLASS (Matches WhatsApp Image 2026-10-20 at 11.28.31 PM (1).jpeg) */}
+      {/* ============================================================== */}
+      {stage === 5 && (
+        <div className="relative w-full max-w-md px-6 py-12 flex flex-col justify-between min-h-[85vh] animate-in fade-in duration-300">
+          <div>
+            <h2 className="text-2xl font-black text-white text-center">
+              {isBn ? "আপনার ক্লাস নির্বাচন করুন" : "Choose your class"}
+            </h2>
+            <p className="text-xs text-zinc-400 text-center mt-1">
+              {isBn
+                ? "কোন লক্ষ্যটি আপনি সবচেয়ে বেশি অর্জন করতে চান?"
+                : "Which goal would you most like to achieve?"}
+            </p>
+
+            <div className="mt-8 space-y-3">
+              {[
+                {
+                  id: "WARRIOR",
+                  name: "WARRIOR",
+                  nameBn: "যোদ্ধা (WARRIOR)",
+                  desc: "Muscle strengthening",
+                  descBn: "পেশী শক্তিশালীকরণ ও হাইপারট্রফি",
+                },
+                {
+                  id: "ASSASSIN",
+                  name: "ASSASSIN",
+                  nameBn: "অ্যাসাসিন (ASSASSIN)",
+                  desc: "Weight loss & lean cut",
+                  descBn: "ওজন হ্রাস ও লীন শারীরিক গঠন",
+                },
+                {
+                  id: "MAGE",
+                  name: "MAGE",
+                  nameBn: "মেইজ (MAGE)",
+                  desc: "Stay in shape & stamina",
+                  descBn: "শারীরিক সহনশীলতা ও ফিট থাকা",
+                },
+              ].map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    playSound("system-click");
+                    vibrate(20);
+                    setSelectedClass(c.id as any);
+                  }}
+                  className={`w-full p-5 rounded-2xl border text-left transition-all ${
+                    selectedClass === c.id
+                      ? "border-cyan-400 bg-cyan-950/40 shadow-[0_0_20px_rgba(0,140,255,0.35)]"
+                      : "border-cyan-500/20 bg-[#091326] hover:border-cyan-500/40"
+                  }`}
+                >
+                  <h3 className="text-base font-black text-white tracking-wider uppercase">
+                    {isBn ? c.nameBn : c.name}
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    {isBn ? c.descBn : c.desc}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <button
+              type="button"
+              onClick={nextStage}
+              className="w-full py-4 rounded-2xl leveling-btn-primary text-sm font-black uppercase tracking-wider"
+            >
+              {isBn ? "চালিয়ে যান" : "CONTINUE"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* STAGE 6: DIALOGUE 5 (ULTIMATE QUEST PROMPT) */}
+      {/* ============================================================== */}
+      {stage === 6 && (
+        <div className="relative w-full max-w-md px-6 py-12 flex flex-col items-center justify-center min-h-[85vh] animate-in fade-in duration-300">
+          <div
+            onClick={nextStage}
+            className="leveling-dialog-box p-8 w-full text-center cursor-pointer select-none space-y-5"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <div className="leveling-dialog-tag h-12 w-12 rounded-xl text-lg">
+                ℹ
+              </div>
+              <div className="leveling-dialog-tag px-5 py-2.5 rounded-xl text-sm font-black tracking-widest">
+                ???
+              </div>
+            </div>
+
+            <div className="py-4">
+              <p className="text-base sm:text-lg font-bold text-white tracking-wide leading-relaxed">
+                [AND WHICH{" "}
+                <span className="text-purple-400 text-glow-purple font-black">
+                  ULTIMATE QUEST
+                </span>{" "}
+                DRIVES YOU TO RISE?]
               </p>
             </div>
 
-            {/* Cinematic Solo Leveling Banner Frame */}
-            <div className="relative h-40 sm:h-48 w-full rounded-xl overflow-hidden border border-cyan-500/50 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-              <Image
-                src="/images/solo-leveling/system-monarch-banner.jpg"
-                alt="Solo Leveling Awakening"
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#020510] via-[#020510]/40 to-transparent flex flex-col justify-end p-3.5">
-                <span className="text-[10px] text-cyan-400 uppercase font-black tracking-widest">
-                  {isBn ? "খেলোয়াড় স্ট্যাটাস : ই-র‍্যাঙ্ক ক্যান্ডিডেট" : "PLAYER STATUS : E-RANK CANDIDATE"}
-                </span>
-                <span className="text-sm font-black text-white text-glow-cyan uppercase">
-                  {isBn ? "দৈনিক কোয়েস্ট: শক্তিশালী হওয়ার প্রস্তুতি" : "DAILY QUEST: PREPARATIONS TO BECOME STRONG"}
-                </span>
+            <p className="text-[11px] text-zinc-500 uppercase tracking-widest animate-pulse">
+              {isBn ? "এগিয়ে যেতে চাপুন →" : "Tap anywhere to continue →"}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* STAGE 7: ULTIMATE QUEST 2x2 SELECTION (Matches WhatsApp Image 2026-10-20 at 11.28.32 PM.jpeg) */}
+      {/* ============================================================== */}
+      {stage === 7 && (
+        <div className="relative w-full max-w-md px-6 py-12 flex flex-col justify-between min-h-[85vh] animate-in fade-in duration-300">
+          <div>
+            <h2 className="text-2xl font-black text-white text-center">
+              {isBn ? "আপনার চূড়ান্ত লক্ষ্য কী?" : "What's your ultimate quest?"}
+            </h2>
+            <p className="text-xs text-zinc-400 text-center mt-1">
+              {isBn
+                ? "ধারাবাহিক থাকার প্রেরণা বেছে নিন।"
+                : "Choose what will motivate you to stay consistent."}
+            </p>
+
+            {/* 2x2 Grid of Cards */}
+            <div className="mt-8 grid grid-cols-2 gap-3.5">
+              {[
+                {
+                  id: "Hero physique",
+                  name: "Hero physique",
+                  nameBn: "বীরোচিত অবয়ব",
+                  icon: <Star className="h-10 w-10 text-white fill-white" />,
+                },
+                {
+                  id: "Protect others",
+                  name: "Protect others",
+                  nameBn: "অন্যদের সুরক্ষা",
+                  icon: <Shield className="h-10 w-10 text-white fill-white" />,
+                },
+                {
+                  id: "Improve Health",
+                  name: "Improve Health",
+                  nameBn: "সুস্বাস্থ্য অর্জন",
+                  icon: <Heart className="h-10 w-10 text-white fill-white" />,
+                },
+                {
+                  id: "Surpassing yourself",
+                  name: "Surpassing yourself",
+                  nameBn: "নিজেকে অতিক্রম",
+                  icon: <TrendingUp className="h-10 w-10 text-white stroke-[2.5]" />,
+                },
+              ].map((quest) => (
+                <button
+                  key={quest.id}
+                  type="button"
+                  onClick={() => {
+                    playSound("system-click");
+                    vibrate(20);
+                    setSelectedQuestMotivation(quest.id);
+                  }}
+                  className={`aspect-square p-4 rounded-3xl border flex flex-col items-center justify-center text-center gap-3 transition-all ${
+                    selectedQuestMotivation === quest.id
+                      ? "border-cyan-400 bg-cyan-950/40 shadow-[0_0_20px_rgba(0,140,255,0.4)]"
+                      : "border-cyan-500/20 bg-[#091326] hover:border-cyan-500/40"
+                  }`}
+                >
+                  <div>{quest.icon}</div>
+                  <span className="text-xs font-bold text-white leading-tight">
+                    {isBn ? quest.nameBn : quest.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <button
+              type="button"
+              onClick={nextStage}
+              className="w-full py-4 rounded-2xl leveling-btn-primary text-sm font-black uppercase tracking-wider"
+            >
+              {isBn ? "চালিয়ে যান" : "CONTINUE"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* STAGE 8 & 9: FINAL COURAGE & ACCEPT / DECLINE PROMPT */}
+      {/* ============================================================== */}
+      {stage === 8 && (
+        <div className="relative w-full max-w-md px-6 py-12 flex flex-col items-center justify-center min-h-[85vh] animate-in fade-in duration-300">
+          <div
+            onClick={nextStage}
+            className="leveling-dialog-box p-8 w-full text-center cursor-pointer select-none space-y-5"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <div className="leveling-dialog-tag h-12 w-12 rounded-xl text-lg">
+                ℹ
+              </div>
+              <div className="leveling-dialog-tag px-5 py-2.5 rounded-xl text-sm font-black tracking-widest">
+                ???
               </div>
             </div>
 
-            {/* Hunter Name Input */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-black uppercase tracking-wider text-cyan-300">
-                {isBn ? "আপনার হান্টার নাম / ছদ্মনাম" : "YOUR HUNTER NAME / ALIAS"}
+            <div className="py-4">
+              <p className="text-base sm:text-lg font-bold text-white tracking-wide leading-relaxed">
+                [VERY WELL. YOU WILL NEED{" "}
+                <span className="text-amber-400 text-glow-amber font-black">
+                  COURAGE
+                </span>{" "}
+                TO HOLD ON, BUT YOU ARE{" "}
+                <span className="text-cyan-400 text-glow-cyan font-black">
+                  CAPABLE
+                </span>{" "}
+                OF IT.]
+              </p>
+            </div>
+
+            <p className="text-[11px] text-zinc-500 uppercase tracking-widest animate-pulse">
+              {isBn ? "এগিয়ে যেতে চাপুন →" : "Tap anywhere to continue →"}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {stage === 9 && (
+        <div className="relative w-full max-w-md px-6 py-12 flex flex-col items-center justify-center min-h-[85vh] animate-in fade-in duration-300">
+          <div className="leveling-dialog-box p-8 w-full text-center space-y-6">
+            <div className="flex items-center justify-center gap-3">
+              <div className="leveling-dialog-tag h-12 w-12 rounded-xl text-lg">
+                ℹ
+              </div>
+              <div className="leveling-dialog-tag px-5 py-2.5 rounded-xl text-sm font-black tracking-widest">
+                ???
+              </div>
+            </div>
+
+            <div className="py-2">
+              <p className="text-base sm:text-lg font-bold text-white tracking-wide leading-relaxed">
+                [VERY WELL THEN, ARE YOU READY TO BECOME A{" "}
+                <span className="text-cyan-400 text-glow-cyan font-black">
+                  PLAYER?
+                </span>
+                ]
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={nextStage}
+                className="py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(37,99,235,0.6)] active:scale-95 transition-all"
+              >
+                {isBn ? "সম্মতি (ACCEPT)" : "ACCEPT"}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="py-3.5 rounded-2xl bg-zinc-800/80 border border-zinc-700 text-zinc-400 hover:text-white font-bold text-xs uppercase tracking-wider active:scale-95 transition-all"
+              >
+                {isBn ? "প্রত্যাখ্যান (DECLINE)" : "DECLINE"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* STAGE 10: BIOMETRIC PROTOCOL (Name, Gender, Height, Weight, Equipment) */}
+      {/* ============================================================== */}
+      {stage === 10 && (
+        <div className="relative w-full max-w-lg px-6 py-12 flex flex-col justify-between min-h-[90vh] animate-in fade-in duration-300">
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="leveling-header-box mb-2">
+                {isBn ? "বায়োমেট্রিক ক্যালিব্রেশন" : "BIOMETRIC CALIBRATION"}
+              </div>
+              <p className="text-xs text-zinc-400">
+                {isBn
+                  ? "সিস্টেম ক্যালকুলেশন ও সঠিক পুষ্টির জন্য আপনার পরিমাপ দিন।"
+                  : "Calibrate your physical vessel for training formulas and metrics."}
+              </p>
+            </div>
+
+            {/* Hunter Alias */}
+            <div className="rounded-2xl border border-cyan-500/20 bg-[#091326] p-4 space-y-1.5">
+              <label className="block text-xs font-bold text-cyan-300 uppercase tracking-wider">
+                {isBn ? "হান্টার নাম / ছদ্মনাম" : "Hunter Name / Alias"}
               </label>
               <input
                 type="text"
                 value={hunterName}
                 onChange={(e) => setHunterName(e.target.value)}
-                placeholder={isBn ? "যেমন: সুং জিন-উ / আপনার নাম" : "e.g. Sung Jin-woo / Your Name"}
-                className="w-full rounded-xl border border-cyan-500/40 bg-black/80 p-3 text-sm font-bold text-white placeholder:text-zinc-600 focus:border-cyan-400 focus:outline-none focus:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all"
+                placeholder="Sung Jin-woo"
+                className="w-full rounded-xl border border-cyan-500/30 bg-black/60 p-3 text-sm font-bold text-white focus:border-cyan-400 focus:outline-none"
               />
-
-              {/* Quick Preset Names */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-                <span className="text-[10px] text-zinc-500 uppercase">{isBn ? "দ্রুত নির্বাচন:" : "Quick Picks:"}</span>
-                {["Sung Jin-woo", "Shadow Hunter", "Monarch Candidate"].map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => {
-                      playSound("system-click");
-                      setHunterName(preset);
-                    }}
-                    className="system-btn-chamfer px-2 py-0.5 text-[10px] border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 hover:border-cyan-400 cursor-pointer"
-                  >
-                    {preset}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ============================================================== */}
-        {/* STEP 2: BIOMETRIC SCAN & METRICS */}
-        {/* ============================================================== */}
-        {step === 2 && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-cyan-400 uppercase tracking-wider">
-                {isBn ? "[ বায়োমেট্রিক স্ক্যান ও হিসাব ]" : "[ BIOMETRIC SCAN & VITALS ]"}
-              </span>
-
-              {/* Unit Switcher */}
-              <div className="flex gap-1 rounded-lg border border-cyan-500/30 bg-black/70 p-0.5 text-xs font-mono">
-                <button
-                  type="button"
-                  onClick={() => {
-                    playSound("system-click");
-                    setUnitSystem("metric");
-                  }}
-                  className={`rounded px-2 py-0.5 font-bold transition-all ${
-                    unitSystem === "metric"
-                      ? "bg-cyan-500 text-black shadow-sm"
-                      : "text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  Metric (kg/cm)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    playSound("system-click");
-                    setUnitSystem("imperial");
-                  }}
-                  className={`rounded px-2 py-0.5 font-bold transition-all ${
-                    unitSystem === "imperial"
-                      ? "bg-cyan-500 text-black shadow-sm"
-                      : "text-zinc-400 hover:text-white"
-                  }`}
-                >
-                  Imperial (lbs/ft)
-                </button>
-              </div>
             </div>
 
-            {/* Gender & Age */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                  {isBn ? "লিঙ্গ (Gender)" : "Gender"}
-                </label>
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value as Gender)}
-                  className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none"
-                >
-                  <option value="male">{isBn ? "পুরুষ (Male)" : "Male"}</option>
-                  <option value="female">{isBn ? "নারী (Female)" : "Female"}</option>
-                  <option value="other">{isBn ? "অন্যান্য (Other)" : "Other"}</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                  {isBn ? "বয়স (Age)" : "Age"}
-                </label>
+            {/* Height, Weight, Age Grid */}
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="rounded-2xl border border-cyan-500/20 bg-[#091326] p-3 text-center">
+                <span className="block text-[10px] uppercase font-bold text-zinc-400">
+                  {isBn ? "বয়স" : "Age"}
+                </span>
                 <input
                   type="number"
-                  min="12"
-                  max="99"
                   value={age}
-                  onChange={(e) => setAge(Number(e.target.value) || 24)}
-                  className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
+                  onChange={(e) => setAge(Number(e.target.value))}
+                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="rounded-2xl border border-cyan-500/20 bg-[#091326] p-3 text-center">
+                <span className="block text-[10px] uppercase font-bold text-zinc-400">
+                  {isBn ? "উচ্চতা (cm)" : "Height (cm)"}
+                </span>
+                <input
+                  type="number"
+                  value={heightCm}
+                  onChange={(e) => setHeightCm(Number(e.target.value))}
+                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="rounded-2xl border border-cyan-500/20 bg-[#091326] p-3 text-center">
+                <span className="block text-[10px] uppercase font-bold text-zinc-400">
+                  {isBn ? "ওজন (kg)" : "Weight (kg)"}
+                </span>
+                <input
+                  type="number"
+                  value={weightKg}
+                  onChange={(e) => setWeightKg(Number(e.target.value))}
+                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none"
                 />
               </div>
             </div>
 
-            {/* Height & Weight */}
-            {unitSystem === "metric" ? (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                    {isBn ? "উচ্চতা (Height - cm)" : "Height (cm)"}
-                  </label>
-                  <input
-                    type="number"
-                    min="100"
-                    max="250"
-                    value={heightCm}
-                    onChange={(e) => {
-                      const cm = Number(e.target.value);
-                      setHeightCm(cm);
-                      const fi = cmToFtIn(cm);
-                      setFeet(fi.feet);
-                      setInches(fi.inches);
-                    }}
-                    className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                    {isBn ? "ওজন (Weight - kg)" : "Weight (kg)"}
-                  </label>
-                  <input
-                    type="number"
-                    min="30"
-                    max="250"
-                    step="0.5"
-                    value={weightKg}
-                    onChange={(e) => {
-                      const kg = Number(e.target.value);
-                      setWeightKg(kg);
-                      setWeightLbs(Math.round(kgToLbs(kg)));
-                    }}
-                    className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                    {isBn ? "ফুট (Feet)" : "Feet"}
-                  </label>
-                  <input
-                    type="number"
-                    min="3"
-                    max="8"
-                    value={feet}
-                    onChange={(e) => {
-                      const ft = Number(e.target.value);
-                      setFeet(ft);
-                      setHeightCm(ftInToCm(ft, inches));
-                    }}
-                    className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                    {isBn ? "ইঞ্চি (Inches)" : "Inches"}
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="11"
-                    value={inches}
-                    onChange={(e) => {
-                      const inc = Number(e.target.value);
-                      setInches(inc);
-                      setHeightCm(ftInToCm(feet, inc));
-                    }}
-                    className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                    {isBn ? "ওজন (lbs)" : "Weight (lbs)"}
-                  </label>
-                  <input
-                    type="number"
-                    min="60"
-                    max="500"
-                    value={weightLbs}
-                    onChange={(e) => {
-                      const lbs = Number(e.target.value);
-                      setWeightLbs(lbs);
-                      setWeightKg(Math.round(lbsToKg(lbs) * 10) / 10);
-                    }}
-                    className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Daily Physical Activity Factor */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                {isBn ? "দৈনিক শারীরিক পরিশ্রমের মাত্রা" : "Daily Activity Level"}
-              </label>
-              <select
-                value={activity}
-                onChange={(e) => setActivity(e.target.value as ActivityType)}
-                className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none"
-              >
-                <option value="sedentary">{isBn ? "বসে থাকা জীবন (ডেস্ক কাজ, কম নড়াচড়া)" : "Sedentary (desk job, low movement)"}</option>
-                <option value="light">{isBn ? "হালকা সক্রিয় (সপ্তাহে ১-৩ দিন ব্যায়াম)" : "Light (1-3 workout sessions / week)"}</option>
-                <option value="moderate">{isBn ? "মাঝারি সক্রিয় (সপ্তাহে ৩-৫ দিন ব্যায়াম)" : "Moderate (3-5 sessions / week)"}</option>
-                <option value="active">{isBn ? "বেশ সক্রিয় (সপ্তাহে ৬-৭ দিন ব্যায়াম)" : "Active (6-7 sessions / week)"}</option>
-                <option value="very_active">{isBn ? "অতিরিক্ত সক্রিয় (শারীরিক কাজ ও ভারী ট্রেনিং)" : "Very Active (physical work & heavy training)"}</option>
-              </select>
-            </div>
-
-            {/* Real-time Telemetry Cards */}
-            <div className="grid grid-cols-3 gap-2 pt-2">
-              <div className="system-btn-chamfer border border-cyan-500/30 bg-[#020512] p-2.5 text-center">
-                <span className="text-[10px] text-cyan-400 block font-bold">BMI</span>
-                <span className="text-sm font-black text-white">{stats.bmi}</span>
-                <span className="text-[9px] text-zinc-400 block truncate">{stats.bmiCategory}</span>
-              </div>
-              <div className="system-btn-chamfer border border-cyan-500/30 bg-[#020512] p-2.5 text-center">
-                <span className="text-[10px] text-cyan-400 block font-bold">BMR</span>
-                <span className="text-sm font-black text-white">{stats.bmr}</span>
-                <span className="text-[9px] text-zinc-400 block">kcal/day</span>
-              </div>
-              <div className="system-btn-chamfer border border-cyan-500/30 bg-[#020512] p-2.5 text-center">
-                <span className="text-[10px] text-cyan-400 block font-bold">TDEE</span>
-                <span className="text-sm font-black text-white">{stats.tdee}</span>
-                <span className="text-[9px] text-zinc-400 block">kcal/day</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ============================================================== */}
-        {/* STEP 3: COMBAT AMBITION & ROUTINE */}
-        {/* ============================================================== */}
-        {step === 3 && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div>
-              <span className="text-xs font-black text-cyan-400 uppercase tracking-wider block mb-2">
-                {isBn ? "[ প্রধান ফিটনেস লক্ষ্য নির্বাচন করুন ]" : "[ PRIMARY FITNESS GOAL ]"}
+            {/* Equipment Selection */}
+            <div className="rounded-2xl border border-cyan-500/20 bg-[#091326] p-4">
+              <span className="block text-xs font-bold text-cyan-300 uppercase tracking-wider mb-2">
+                {isBn ? "প্রশিক্ষণ সরঞ্জাম" : "Training Equipment"}
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {[
-                  {
-                    id: "muscle" as Goal,
-                    title: isBn ? "মাসল বৃদ্ধি" : "Build Muscle",
-                    desc: isBn ? "পেশীবহুল শরীর (+৩০০ ক্যালোরি)" : "Hypertrophy (+300 kcal)",
-                    icon: Dumbbell,
-                  },
-                  {
-                    id: "strength" as Goal,
-                    title: isBn ? "শক্তি বৃদ্ধি" : "Pure Strength",
-                    desc: isBn ? "ভারোত্তোলন শক্তি (ক্যালোরি ব্যালেন্স)" : "Peak power (Maintenance)",
-                    icon: Zap,
-                  },
-                  {
-                    id: "endurance" as Goal,
-                    title: isBn ? "ওজন ও চর্বি কমানো" : "Fat Loss",
-                    desc: isBn ? "ক্ষিপ্রতা ও ফ্যাট বার্ন (-৩৫০ ক্যালোরি)" : "Agility & deficit (-350 kcal)",
-                    icon: Flame,
-                  },
-                ].map((item) => {
-                  const isSelected = goal === item.id;
-                  const Icon = item.icon;
+              <div className="flex flex-wrap gap-2">
+                {EQUIPMENT.map((eq) => {
+                  const isSelected = equipment.includes(eq.id);
                   return (
                     <button
-                      key={item.id}
+                      key={eq.id}
                       type="button"
                       onClick={() => {
                         playSound("system-click");
-                        setGoal(item.id);
+                        setEquipment((prev) =>
+                          prev.includes(eq.id) ? prev.filter((x) => x !== eq.id) : [...prev, eq.id]
+                        );
                       }}
-                      className={`system-btn-chamfer p-3 text-left border transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
                         isSelected
-                          ? "border-cyan-400 bg-cyan-950/60 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                          : "border-zinc-800 bg-black/60 hover:border-cyan-500/40 opacity-80"
+                          ? "bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-[0_0_10px_rgba(0,140,255,0.3)]"
+                          : "border-zinc-800 bg-black/40 text-zinc-400"
                       }`}
                     >
-                      <Icon className={`h-5 w-5 mb-1.5 ${isSelected ? "text-cyan-400" : "text-zinc-500"}`} />
-                      <div className="text-xs font-black text-white uppercase">{item.title}</div>
-                      <div className="text-[10px] text-zinc-400 mt-0.5 leading-snug">{item.desc}</div>
+                      {eq.label}
                     </button>
                   );
                 })}
               </div>
             </div>
-
-            {/* Weekly Workout Days Preset */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
-                {isBn ? "সাপ্তাহিক রেইড সময়সূচী (Workout Days)" : "Weekly Raid Schedule"}
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { days: [1, 3, 5], label: isBn ? "৩ দিন (PPL)" : "3 Days (PPL)" },
-                  { days: [1, 2, 4, 5], label: isBn ? "৪ দিন (Upper/Lower)" : "4 Days (Upper/Lower)" },
-                  { days: [1, 2, 3, 4, 5], label: isBn ? "৫ দিন (হাইপারট্রফি)" : "5 Days (Hypertrophy)" },
-                ].map((p, idx) => {
-                  const isMatch =
-                    workoutDays.length === p.days.length &&
-                    p.days.every((d) => workoutDays.includes(d));
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => {
-                        playSound("system-click");
-                        setWorkoutDays(p.days);
-                      }}
-                      className={`system-btn-chamfer p-2.5 text-center text-xs font-black border transition-all cursor-pointer ${
-                        isMatch
-                          ? "border-cyan-400 bg-cyan-500/20 text-cyan-200 shadow-sm"
-                          : "border-zinc-800 bg-black/60 text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Experience Level & Session Length */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                  {isBn ? "দক্ষতার মাত্রা (Level)" : "Experience Level"}
-                </label>
-                <select
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value as Level)}
-                  className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none"
-                >
-                  <option value="beginner">{isBn ? "বিগিনার (Beginner)" : "Beginner"}</option>
-                  <option value="intermediate">{isBn ? "মাঝারি (Intermediate)" : "Intermediate"}</option>
-                  <option value="advanced">{isBn ? "অ্যাডভান্সড (Advanced)" : "Advanced"}</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                  {isBn ? "প্রতি সেশনের দৈর্ঘ্য" : "Session Duration"}
-                </label>
-                <select
-                  value={minutes}
-                  onChange={(e) => setMinutes(Number(e.target.value) as any)}
-                  className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-xs text-white focus:border-cyan-400 focus:outline-none font-mono"
-                >
-                  <option value={20}>20 {isBn ? "মিনিট" : "Minutes"}</option>
-                  <option value={30}>30 {isBn ? "মিনিট" : "Minutes"}</option>
-                  <option value={45}>45 {isBn ? "মিনিট" : "Minutes"}</option>
-                  <option value={60}>60 {isBn ? "মিনিট" : "Minutes"}</option>
-                </select>
-              </div>
-            </div>
           </div>
-        )}
 
-        {/* ============================================================== */}
-        {/* STEP 4: ARSENAL & EQUIPMENT */}
-        {/* ============================================================== */}
-        {step === 4 && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-cyan-400 uppercase tracking-wider">
-                {isBn ? "[ প্রশিক্ষণ সরঞ্জাম নির্বাচন করুন ]" : "[ COMBAT EQUIPMENT ARSENAL ]"}
-              </span>
-
-              {/* Quick Presets */}
-              <div className="flex items-center gap-1.5 text-xs">
-                {EQUIPMENT_PRESETS.map((preset) => (
-                  <button
-                    key={preset.id}
-                    type="button"
-                    onClick={() => applyEquipmentPreset(preset.equipment)}
-                    className="system-btn-chamfer px-2 py-0.5 text-[10px] font-bold border border-cyan-500/30 bg-black/60 text-zinc-300 hover:text-cyan-300 hover:border-cyan-400 cursor-pointer"
-                  >
-                    {preset.id === "bodyweight"
-                      ? isBn ? "বডিওয়েট" : "Bodyweight"
-                      : preset.id === "home"
-                      ? isBn ? "হোম জিম" : "Home"
-                      : isBn ? "ফুল জিম" : "Full Gym"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Equipment Chips Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {EQUIPMENT.map((item) => {
-                const isSelected = equipment.includes(item.id);
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => toggleEquipment(item.id)}
-                    className={`system-btn-chamfer p-2.5 text-left border transition-all cursor-pointer flex items-center justify-between ${
-                      isSelected
-                        ? "border-cyan-400 bg-cyan-950/60 text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.3)]"
-                        : "border-zinc-800 bg-black/60 text-zinc-400 hover:border-cyan-500/40"
-                    }`}
-                  >
-                    <span className="text-xs font-bold leading-tight">{item.label}</span>
-                    <CheckCircle2
-                      className={`h-4 w-4 shrink-0 ml-1.5 ${
-                        isSelected ? "text-cyan-400 opacity-100" : "opacity-0"
-                      }`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Joint-Friendly / Low-Impact Safety Check */}
-            <label className="flex items-start gap-2.5 rounded-xl border border-emerald-500/40 bg-emerald-950/20 p-3 text-xs text-zinc-200 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={lowImpact}
-                onChange={(e) => setLowImpact(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-emerald-400 shrink-0"
-              />
-              <div>
-                <span className="font-bold text-emerald-300 block">
-                  {isBn ? "জয়েন্ট-ফ্রেন্ডলি সেফটি মোড (Joint-Friendly)" : "Joint-Friendly Safety Mode"}
-                </span>
-                <span className="text-[11px] text-zinc-400 leading-snug">
-                  {isBn
-                    ? "হাঁটু বা কোমরে অতিরিক্ত চাপ সৃষ্টিকারী ভারী লাফঝাঁপ এড়িয়ে চলা হবে।"
-                    : "Eliminates high-impact plyometrics and ballistic knee stress movements."}
-                </span>
-              </div>
-            </label>
-          </div>
-        )}
-
-        {/* ============================================================== */}
-        {/* STEP 5: FINAL SYSTEM AWAKENING & HUNTER LICENSE */}
-        {/* ============================================================== */}
-        {step === 5 && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            {/* Holographic Hunter ID Card */}
-            <div className="relative rounded-2xl border-2 border-cyan-400 bg-gradient-to-br from-[#061845] via-[#091538] to-[#030818] p-4 sm:p-5 shadow-[0_0_35px_rgba(6,182,212,0.5)] overflow-hidden">
-              <div className="flex items-center justify-between border-b border-cyan-400/40 pb-3">
-                <div className="flex items-center gap-3">
-                  <div className="relative h-14 w-14 rounded-xl overflow-hidden border-2 border-cyan-400 shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.6)]">
-                    <Image
-                      src="/images/solo-leveling/monarch-player-avatar.jpg"
-                      alt="Player Avatar"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-cyan-400 font-mono font-black uppercase tracking-widest block">
-                      HUNTER LICENSE #00492-SL
-                    </span>
-                    <h3 className="text-lg font-black text-white uppercase text-glow-cyan">
-                      {hunterName || "Sung Jin-woo"}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-purple-300 font-bold">
-                      <Crown className="h-3.5 w-3.5 text-purple-400" />
-                      <span>{isBn ? "ই-র‍্যাঙ্ক ক্যান্ডিডেট (E-Rank)" : "E-Rank Candidate"}</span>
-                      <span className="text-zinc-500">·</span>
-                      <span className="text-cyan-300">Lv.1</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <span className="px-2.5 py-1 rounded text-xs font-black bg-cyan-400 text-black shadow-md uppercase">
-                    AWAKENED
-                  </span>
-                </div>
-              </div>
-
-              {/* Status Gauges */}
-              <div className="grid grid-cols-3 gap-2 mt-3 pt-2 text-xs font-mono">
-                <div className="bg-red-950/40 border border-red-500/40 rounded-lg p-2">
-                  <span className="text-[10px] text-red-400 font-black block">HP</span>
-                  <span className="font-bold text-white">100 / 100</span>
-                </div>
-                <div className="bg-blue-950/40 border border-blue-500/40 rounded-lg p-2">
-                  <span className="text-[10px] text-cyan-400 font-black block">MP</span>
-                  <span className="font-bold text-white">50 / 50</span>
-                </div>
-                <div className="bg-amber-950/40 border border-amber-500/40 rounded-lg p-2">
-                  <span className="text-[10px] text-amber-400 font-black block">FATIGUE</span>
-                  <span className="font-bold text-white">0%</span>
-                </div>
-              </div>
-
-              {/* Unlocked Daily Quest Banner */}
-              <div className="mt-3 rounded-xl border border-purple-500/40 bg-purple-950/30 p-2.5 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <Flame className="h-4 w-4 text-purple-400 shrink-0" />
-                  <span className="font-bold text-purple-200">
-                    {isBn
-                      ? "দৈনিক কোয়েস্ট আনলক হয়েছে: ১০০ পুশ-আপ, ১০০ সিট-আপ, ১০০ স্কোয়াট, ১০ কিমি রান"
-                      : "Daily Quest Unlocked: 100 Push-ups, 100 Sit-ups, 100 Squats, 10km Run"}
-                  </span>
-                </div>
-                <span className="text-[10px] text-emerald-400 font-black uppercase shrink-0">
-                  +3 STAT PTS
-                </span>
-              </div>
-            </div>
-
-            {/* Motivational Awakening Speech */}
-            <p className="text-xs text-center text-cyan-200/80 leading-relaxed font-mono px-2">
-              {isBn
-                ? "সিস্টেম সক্রিয় করার সাথে সাথেই আপনার প্রথম ওয়ার্কআউট সেশন ও দৈনিক রুটিন লোড হবে। আপনি কি সিস্টেমে প্রবেশ করতে চান?"
-                : "Upon activating The System, your calibrated workout deployment and first dungeon raid will be initialized. Will you Arise?"}
-            </p>
-          </div>
-        )}
-
-        {/* Bottom Stepper Navigation Controls */}
-        <div className="flex items-center justify-between border-t border-cyan-500/30 pt-4 mt-5">
-          {step > 1 ? (
+          <div className="mt-8">
             <button
               type="button"
-              onClick={prevStep}
-              className="system-btn-chamfer flex min-h-[42px] items-center gap-1.5 border border-zinc-700 bg-black/60 px-4 text-xs font-bold text-zinc-300 hover:text-white hover:border-cyan-400 transition-all cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span>{isBn ? "পূর্ববর্তী" : "Back"}</span>
-            </button>
-          ) : (
-            <div />
-          )}
-
-          {step < 5 ? (
-            <button
-              type="button"
-              onClick={nextStep}
-              className="system-btn-chamfer flex min-h-[42px] items-center gap-2 bg-gradient-to-r from-cyan-400 to-blue-500 px-6 text-xs font-black uppercase text-black hover:brightness-110 shadow-[0_0_15px_rgba(6,182,212,0.5)] active:scale-95 transition-all cursor-pointer"
-            >
-              <span>{isBn ? "পরবর্তী ধাপ" : "Proceed"}</span>
-              <ChevronRight className="h-4 w-4 stroke-[3]" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              id="btn-confirm-arise"
               onClick={handleFinish}
-              className="system-btn-chamfer flex min-h-[48px] items-center gap-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 px-8 text-sm font-black uppercase text-black hover:brightness-110 shadow-[0_0_30px_rgba(6,182,212,0.8)] active:scale-95 transition-all cursor-pointer tracking-wider"
+              className="w-full py-4 rounded-2xl leveling-btn-primary text-sm font-black uppercase tracking-wider shadow-[0_0_35px_rgba(0,110,255,0.7)]"
             >
-              <Sparkles className="h-4 w-4 text-black animate-spin" />
-              <span>{isBn ? "◆ ARISE : জাগ্রত হও ◆" : "◆ ARISE : ACCEPT SYSTEM ◆"}</span>
+              {isBn ? "সিস্টেম জাগ্রত করুন (ARISE)" : "AWAKEN SYSTEM (ARISE)"}
             </button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* AUTH BOTTOM SHEET [WELCOME, PLAYER] (Matches WhatsApp Image 2026-10-20 at 11.28.34 PM.jpeg) */}
+      {/* ============================================================== */}
+      {showAuthSheet && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-t-3xl border-t border-x border-cyan-500/40 bg-[#091429] p-6 shadow-[0_-10px_40px_rgba(0,140,255,0.3)] text-zinc-100">
+            {/* Grab handle */}
+            <div className="mx-auto h-1 w-12 rounded-full bg-zinc-600 mb-6" />
+
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-black text-white tracking-widest uppercase text-glow-cyan">
+                [WELCOME, PLAYER]
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAuthSheet(false);
+                  if (onOpenLogin) onOpenLogin();
+                }}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-white text-black font-bold text-sm shadow-md active:scale-95 transition-all"
+              >
+                <span></span>
+                <span>Continue with Apple</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAuthSheet(false);
+                  if (onOpenLogin) onOpenLogin();
+                }}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-[#111827] border border-zinc-700 text-white font-bold text-sm shadow-md active:scale-95 transition-all"
+              >
+                <span className="text-base font-bold text-red-400">G</span>
+                <span>Continue with Google</span>
+              </button>
+
+              <div className="my-3 flex items-center gap-3 text-zinc-500 text-xs font-semibold">
+                <div className="h-px flex-1 bg-zinc-800" />
+                <span>other options</span>
+                <div className="h-px flex-1 bg-zinc-800" />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAuthSheet(false);
+                  if (onOpenLogin) onOpenLogin();
+                }}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl bg-[#0e1e3b] border border-cyan-500/40 text-cyan-200 font-bold text-sm shadow-sm active:scale-95 transition-all"
+              >
+                <Mail className="h-4 w-4 text-cyan-400" />
+                <span>Continue with Email</span>
+              </button>
+            </div>
+
+            <p className="text-[10px] text-zinc-500 text-center mt-6 leading-relaxed">
+              By continuing you agree to the{" "}
+              <span className="text-blue-400 hover:underline">Terms of Service</span> and{" "}
+              <span className="text-blue-400 hover:underline">Privacy Policy</span>.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setShowAuthSheet(false)}
+              className="mt-4 w-full py-2 text-xs font-bold text-zinc-400 hover:text-white"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

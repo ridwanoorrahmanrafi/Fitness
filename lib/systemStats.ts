@@ -20,7 +20,12 @@ export interface PlayerStats {
   level: number;
   exp: number;
   expToNext: number;
+  expToNextLevel?: number;
   rank: HunterRank;
+  coins?: number;
+  keys?: number;
+  gems?: number;
+  hunterClass?: string;
   hp: { current: number; max: number };
   mp: { current: number; max: number };
   fatigue: number; // 0% to 100%
@@ -33,6 +38,7 @@ export interface PlayerStats {
   };
   unallocatedPoints: number;
   shadowArmyUnlocked: boolean;
+  shadowSoldiers?: ShadowSoldier[];
   totalWorkoutsCleared: number;
   totalSetsCompleted: number;
 }
@@ -152,6 +158,11 @@ export function getDefaultPlayerStats(): PlayerStats {
       int: 10,
       per: 9,
     },
+    coins: 1450,
+    keys: 3,
+    gems: 25,
+    hunterClass: "Assassin",
+    shadowSoldiers: INITIAL_SHADOW_SOLDIERS,
     unallocatedPoints: 3,
     shadowArmyUnlocked: false,
     totalWorkoutsCleared: 0,
@@ -169,6 +180,13 @@ export function loadPlayerStats(): PlayerStats {
     const jt = getJobTitleFromLevel(parsed.level);
     if (!parsed.job || parsed.job === "None") parsed.job = jt.job;
     if (!parsed.title) parsed.title = jt.title;
+    if (parsed.coins === undefined) parsed.coins = 1450;
+    if (parsed.keys === undefined) parsed.keys = 3;
+    if (parsed.gems === undefined) parsed.gems = 25;
+    if (!parsed.hunterClass) parsed.hunterClass = "Assassin";
+    if (!parsed.shadowSoldiers || parsed.shadowSoldiers.length === 0) {
+      parsed.shadowSoldiers = INITIAL_SHADOW_SOLDIERS;
+    }
     parsed.expToNext = calculateExpToNext(parsed.level);
     return parsed;
   } catch {

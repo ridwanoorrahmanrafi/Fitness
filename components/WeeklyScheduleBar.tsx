@@ -48,7 +48,7 @@ export function WeeklyScheduleBar({
             {lang === "bn" ? "[ WEEKLY SCHEDULE : সাপ্তাহিক রুটিন ]" : "[ WEEKLY SCHEDULE : DEPLOYMENT ]"}
           </h3>
         </div>
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-xs">
           {[
             { label: t.daysPpl, days: [1, 3, 5], active: count === 3 && activeDays.includes(1) && activeDays.includes(3) && activeDays.includes(5) },
             { label: t.daysFour, days: [1, 2, 4, 5], active: count === 4 && activeDays.includes(1) && activeDays.includes(2) && activeDays.includes(4) && activeDays.includes(5) },
@@ -61,7 +61,7 @@ export function WeeklyScheduleBar({
                 playSound("system-click");
                 onSetDays(preset.days);
               }}
-              className={`system-btn-chamfer px-2.5 py-1 text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
+              className={`system-btn-chamfer px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
                 preset.active
                   ? "border-cyan-400 bg-cyan-400 text-black shadow-[0_0_12px_rgba(6,182,212,0.7)]"
                   : "border-cyan-500/30 bg-black/60 text-zinc-400 hover:text-cyan-300 hover:border-cyan-400/60"
@@ -74,7 +74,7 @@ export function WeeklyScheduleBar({
       </div>
 
       {/* 7 Days Selector Strip */}
-      <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center">
         {DAYS_OF_WEEK.map((d) => {
           const isSelected = activeDays.includes(d.dayIndex);
           const isToday = d.dayIndex === todayIndex;
@@ -87,28 +87,28 @@ export function WeeklyScheduleBar({
                 playSound("system-click");
                 onToggleDay(d.dayIndex);
               }}
-              className={`system-btn-chamfer relative flex flex-col items-center justify-between p-2 min-h-[72px] border transition-all cursor-pointer ${
+              className={`system-btn-chamfer relative flex flex-col items-center justify-between p-1 sm:p-2 min-h-[60px] sm:min-h-[72px] border transition-all cursor-pointer ${
                 isSelected
                   ? "border-cyan-400/80 bg-cyan-950/60 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.35)] scale-102"
                   : "border-zinc-800 bg-black/60 text-zinc-500 hover:border-cyan-500/40 hover:text-zinc-300"
               } ${isToday ? "ring-2 ring-cyan-400 ring-offset-2 ring-offset-black" : ""}`}
             >
               {isToday && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded bg-cyan-400 px-1 py-0.2 text-[8px] font-black uppercase text-black tracking-wider shadow-sm">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded bg-cyan-400 px-1 py-0.2 text-[7px] sm:text-[8px] font-black uppercase text-black tracking-wider shadow-sm">
                   {t.todayLabel}
                 </span>
               )}
 
-              <span className="text-[10px] font-black uppercase tracking-wider">{d.short}</span>
-              <span className="text-[10px] opacity-75">
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">{d.short}</span>
+              <span className="text-[9px] sm:text-[10px] opacity-75">
                 {lang === "bn" ? d.bengaliName.slice(0, 3) : d.name.slice(0, 3)}
               </span>
 
-              <div className="mt-1 flex h-5 w-5 items-center justify-center rounded-full">
+              <div className="mt-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full">
                 {isSelected ? (
-                  <Swords className="h-3.5 w-3.5 text-cyan-400" />
+                  <Swords className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-cyan-400" />
                 ) : (
-                  <Moon className="h-3 w-3 text-zinc-600" />
+                  <Moon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-zinc-600" />
                 )}
               </div>
             </button>

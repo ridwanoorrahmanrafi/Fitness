@@ -3,6 +3,7 @@
 import {
   Activity,
   AlertTriangle,
+  Bell,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -13,6 +14,8 @@ import {
   History as HistoryIcon,
   Info,
   Loader2,
+  Menu,
+  Package,
   Play,
   RotateCcw,
   SlidersHorizontal,
@@ -51,6 +54,13 @@ import AriseAwakeningOverlay from "@/components/AriseAwakeningOverlay";
 import SystemNotificationToast, { type SystemToast } from "@/components/SystemNotificationToast";
 import { SoloLevelingWelcomeOnboarding } from "@/components/SoloLevelingWelcomeOnboarding";
 import { SoloLevelingWelcomeBackModal } from "@/components/SoloLevelingWelcomeBackModal";
+import { LevelingQuestCarouselCard } from "@/components/LevelingQuestCarouselCard";
+import { LevelingStatisticsView } from "@/components/LevelingStatisticsView";
+import { LevelingInventoryView } from "@/components/LevelingInventoryView";
+import { LevelingStatusView } from "@/components/LevelingStatusView";
+import { AchievementsModal } from "@/components/AchievementsModal";
+import { GuildHubModal } from "@/components/GuildHubModal";
+import { LevelingSettingsDrawer } from "@/components/LevelingSettingsDrawer";
 import { getTodaySchedule } from "@/lib/schedule";
 import {
   type PlayerStats,
@@ -121,11 +131,16 @@ export default function Page() {
 
   const [activeView, setActiveView] = useState<ActiveView>("app");
   const [view, setView] = useState<View>("today");
+  const [activeTab, setActiveTab] = useState<"home" | "stats" | "inventory" | "status">("home");
   const [showProfile, setShowProfile] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showFinish, setShowFinish] = useState(false);
   const [showDietSheet, setShowDietSheet] = useState(false);
   const [showLibraryModal, setShowLibraryModal] = useState(false);
+  const [showAchievementsModal, setShowAchievementsModal] = useState(false);
+  const [showGuildHubModal, setShowGuildHubModal] = useState(false);
+  const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
+  const [hapticsOn, setHapticsOn] = useState(true);
 
   const [selectedAnimationEx, setSelectedAnimationEx] = useState<Exercise | null>(null);
   const [warmupOpen, setWarmupOpen] = useState(true);
@@ -163,32 +178,50 @@ export default function Page() {
     setDailyQuest(getTodaySystemQuest());
   }, []);
 
+  // Formatted date string for Leveling header: "TODAY, 21 OCT"
+  const headerDateString = useMemo(() => {
+    const now = new Date();
+    if (lang === "bn") {
+      const monthNamesBn = ["জানু", "ফেব্রু", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টে", "অক্টো", "নভে", "ডিসে"];
+      return `আজ, ${now.getDate()} ${monthNamesBn[now.getMonth()]}`.toUpperCase();
+    }
+    const monthNamesEn = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    return `TODAY, ${now.getDate()} ${monthNamesEn[now.getMonth()]}`;
+  }, [lang]);
+
   // URL Hash & return visitor synchronization for intuitive forward/back browser navigation
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.toLowerCase();
-      if (hash === "#landing" || hash === "#home") {
+      if (hash === "#landing") {
         setActiveView("landing");
       } else if (hash === "#onboarding" || hash === "#welcome") {
         setActiveView("app");
         setShowWelcomeOnboarding(true);
       } else {
         setActiveView("app");
-        if (hash === "#history") {
-          setView("history");
-        } else if (hash === "#goals" || hash === "#evaluation" || hash === "#progress") {
-          setView("goals");
+        if (hash === "#stats" || hash === "#history" || hash === "#activities") {
+          setActiveTab("stats");
+        } else if (hash === "#inventory" || hash === "#items" || hash === "#shop") {
+          setActiveTab("inventory");
+        } else if (hash === "#status" || hash === "#player" || hash === "#attributes") {
+          setActiveTab("status");
+        } else if (hash === "#achievements") {
+          setShowAchievementsModal(true);
+        } else if (hash === "#guild" || hash === "#guilds") {
+          setShowGuildHubModal(true);
+        } else if (hash === "#settings" || hash === "#drawer") {
+          setShowSettingsDrawer(true);
         } else if (hash === "#diet") {
           setShowDietSheet(true);
         } else if (hash === "#library" || hash === "#exercises" || hash === "#animations") {
           setShowLibraryModal(true);
         } else if (hash === "#auth" || hash === "#login") {
           setShowAuthModal(true);
-        } else if (hash === "#status" || hash === "#stats" || hash === "#system") {
-          setShowStatusModal(true);
         } else if (hash === "#arise") {
           setShowAriseModal(true);
         } else {
+          setActiveTab("home");
           setView("today");
         }
       }
@@ -837,19 +870,21 @@ export default function Page() {
   return (
     <div className="min-h-screen pb-40">
       <header className="sticky top-0 z-30 border-b border-cyan-500/30 bg-[#040817]/90 px-4 py-3 backdrop-blur-md shadow-[0_4px_25px_rgba(6,182,212,0.15)]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2">
-          {/* Brand Logo & Solo Leveling System Title */}
-          <div className="flex items-center gap-2.5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+          {/* Left: Brand Logo & Solo Leveling System Title */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <button
               type="button"
+              id="btn-header-crest"
               onClick={() => {
                 playSound("system-alert");
-                setShowStatusModal(true);
+                vibrate(20);
+                setActiveTab("status");
               }}
               title="Open Solo Leveling System Status Window"
-              className="flex items-center gap-2.5 group cursor-pointer text-left focus:outline-none"
+              className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer text-left focus:outline-none shrink-0 whitespace-nowrap"
             >
-              <div className="relative h-10 w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
+              <div className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
                 <Image
                   src="/images/solo-leveling/system-crest-icon.jpg"
                   alt="Solo Leveling System Crest"
@@ -857,14 +892,14 @@ export default function Page() {
                   className="object-cover"
                 />
               </div>
-              <div>
-                <h1 className="flex items-center gap-1.5 text-base font-black tracking-wide text-white">
+              <div className="shrink-0">
+                <h1 className="flex items-center gap-1.5 text-sm sm:text-base font-black tracking-wide text-white whitespace-nowrap">
                   ARISE
-                  <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)]">
+                  <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)] shrink-0 whitespace-nowrap">
                     [ SYSTEM ]
                   </span>
                 </h1>
-                <p className="text-[11px] font-mono text-cyan-400/80 flex items-center gap-1">
+                <p className="text-[10px] sm:text-[11px] font-mono text-cyan-400/80 flex items-center gap-1 whitespace-nowrap">
                   <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"} : Lv.{playerStats.level}</span>
                   <span className="text-zinc-600">·</span>
                   <span className="text-purple-300 font-bold">{playerStats.rank}-RANK</span>
@@ -873,181 +908,96 @@ export default function Page() {
             </button>
           </div>
 
-          {/* Desktop Navigation Group (Hidden on Mobile) */}
-          <div className="hidden md:flex items-center gap-1.5">
-            {/* System Status Modal Trigger */}
+          {/* Center: Desktop Navigation Tabs (Hidden on mobile) */}
+          <nav
+            aria-label="Desktop Tab Navigation"
+            className="hidden md:flex items-center gap-0.5 lg:gap-1.5 rounded-2xl border border-cyan-500/30 bg-[#030712]/80 p-1 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.15)] shrink-0"
+          >
             <button
-              id="btn-desktop-system-status"
               type="button"
+              id="desktop-nav-home"
               onClick={() => {
-                playSound("system-alert");
-                setShowStatusModal(true);
+                playSound("system-click");
+                vibrate(15);
+                setActiveTab("home");
               }}
-              className="flex h-11 items-center gap-2 rounded-xl border border-cyan-500/50 bg-cyan-950/40 px-3 text-xs font-mono font-bold text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/40 shadow-[0_0_15px_rgba(6,182,212,0.25)] active:scale-95 transition-all"
+              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                activeTab === "home"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+              }`}
             >
-              <Activity className="h-4 w-4 text-cyan-400" />
-              <span>{lang === "bn" ? "[ STATUS : স্ট্যাটাস ]" : "[ STATUS : ATTRIBUTES ]"}</span>
+              <Home className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
+              <span className="hidden xl:inline">[ {lang === "bn" ? "কোয়েস্ট" : "QUESTS"} ]</span>
+              <span className="inline xl:hidden">{lang === "bn" ? "কোয়েস্ট" : "QUESTS"}</span>
             </button>
 
-            {/* ARISE Awakening Button */}
+            <button
+              type="button"
+              id="desktop-nav-stats"
+              onClick={() => {
+                playSound("system-click");
+                vibrate(15);
+                setActiveTab("stats");
+              }}
+              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                activeTab === "stats"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+              }`}
+            >
+              <Activity className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
+              <span className="hidden xl:inline">[ {lang === "bn" ? "পরিসংখ্যান" : "STATISTICS"} ]</span>
+              <span className="inline xl:hidden">{lang === "bn" ? "রেকর্ড" : "STATS"}</span>
+            </button>
+
+            <button
+              type="button"
+              id="desktop-nav-inventory"
+              onClick={() => {
+                playSound("system-click");
+                vibrate(15);
+                setActiveTab("inventory");
+              }}
+              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                activeTab === "inventory"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+              }`}
+            >
+              <Package className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
+              <span className="hidden xl:inline">[ {lang === "bn" ? "ইনভেন্টরি" : "INVENTORY"} ]</span>
+              <span className="inline xl:hidden">{lang === "bn" ? "গিয়ার" : "ITEMS"}</span>
+            </button>
+
+            <button
+              type="button"
+              id="desktop-nav-status"
+              onClick={() => {
+                playSound("system-click");
+                vibrate(15);
+                setActiveTab("status");
+              }}
+              className={`flex items-center gap-1.5 lg:gap-2 rounded-xl px-2 lg:px-3.5 py-1.5 lg:py-2 text-[10px] lg:text-xs font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                activeTab === "status"
+                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                  : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+              }`}
+            >
+              <UserIcon className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-cyan-400 shrink-0" />
+              <span className="hidden xl:inline">[ {lang === "bn" ? "স্ট্যাটাস" : "STATUS"} ]</span>
+              <span className="inline xl:hidden">{lang === "bn" ? "স্ট্যাটাস" : "STATUS"}</span>
+              {playerStats.unallocatedPoints > 0 && (
+                <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+              )}
+            </button>
+          </nav>
+
+          {/* Right: Quick Action Controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Desktop Awakening Trigger */}
             <button
               id="btn-desktop-arise"
-              type="button"
-              onClick={() => {
-                playSound("arise");
-                vibrate([50, 100, 50]);
-                setAriseModalText({
-                  title: lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN",
-                  subtitle: lang === "bn" ? "শ্যাডো মনার্ক জাগ্রত হচ্ছে" : "THE SHADOW MONARCH AWAKENS",
-                });
-                setShowAriseModal(true);
-              }}
-              className="flex h-11 items-center gap-1.5 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/60 to-indigo-950/60 px-3 text-xs font-black text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)] active:scale-95 transition-all"
-            >
-              <Sparkles className="h-4 w-4 text-purple-400 animate-pulse" />
-              <span>ARISE</span>
-            </button>
-
-            <button
-              id="btn-nav-home"
-              type="button"
-              onClick={() => {
-                setActiveView("landing");
-                window.location.hash = "landing";
-              }}
-              aria-label={tr.navHome}
-              title={tr.navHome}
-              className="flex h-11 items-center gap-1.5 rounded-xl border border-zinc-700/60 bg-zinc-800/60 px-3 text-xs font-semibold text-zinc-200 hover:bg-zinc-800 hover:text-white transition-colors"
-            >
-              <Home className="h-4 w-4 text-cyan-400" />
-              <span>{tr.navHome}</span>
-            </button>
-
-            <button
-              id="btn-auth-user"
-              type="button"
-              onClick={() => setShowAuthModal(true)}
-              aria-label={tr.authTitle}
-              title={activeUser ? `${activeUser.name} (${activeUser.supabaseUser ? "Supabase Cloud Synced" : "Local"})` : "Guest Profile"}
-              className={`flex h-11 items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold transition-all ${
-                activeUser?.supabaseUser
-                  ? "border-emerald-500/50 bg-emerald-950/30 text-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.25)]"
-                  : "border-zinc-700/60 bg-zinc-800/60 text-zinc-200 hover:bg-zinc-800 hover:text-white"
-              }`}
-            >
-              {activeUser?.supabaseUser ? (
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-              ) : (
-                <UserIcon className="h-4 w-4 text-cyan-400" />
-              )}
-              <span className="max-w-[80px] truncate">
-                {activeUser ? activeUser.name : (lang === "bn" ? "গেস্ট" : "Guest")}
-              </span>
-            </button>
-
-            <button
-              id="btn-lang-toggle"
-              type="button"
-              onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-              aria-label={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-              title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-              className="flex h-11 items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-zinc-800/80 px-3 text-xs font-bold text-zinc-100 hover:border-cyan-500 hover:bg-zinc-800 shadow-sm transition-colors"
-            >
-              <span className="text-sm">🌐</span>
-              <span className="font-bold text-cyan-400">{lang === "bn" ? "EN" : "বাংলা"}</span>
-            </button>
-
-            <button
-              id="btn-nav-library"
-              onClick={() => setShowLibraryModal(true)}
-              aria-label={lang === "bn" ? "হান্টার আর্সেনাল ও অ্যানিমেশন" : "Hunter Arsenal & Animations"}
-              title={lang === "bn" ? "সম্পূর্ণ হান্টার আর্সেনাল ও অ্যানিমেশন" : "Browse hunter arsenal & movements"}
-              className="flex h-11 items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 text-xs font-semibold text-cyan-300 hover:bg-cyan-500/20 active:scale-95 transition-all shadow-sm"
-            >
-              <Dumbbell className="h-4 w-4 text-cyan-400" />
-              <span>{lang === "bn" ? "আর্সেনাল" : "Arsenal"}</span>
-            </button>
-
-            <button
-              id="btn-bangladeshi-diet"
-              onClick={() => setShowDietSheet(true)}
-              aria-label={tr.dietBtn}
-              title={tr.dietBtn}
-              className="flex h-11 items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 text-xs font-semibold text-cyan-400 hover:bg-cyan-500/20 shadow-sm transition-colors"
-            >
-              <Utensils className="h-4 w-4" />
-              <span>{tr.dietBtnShort}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                unlockAudio();
-                setSoundOn(!soundOn);
-              }}
-              aria-label={soundOn ? tr.soundMute : tr.soundUnmute}
-              aria-pressed={soundOn}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 hover:bg-zinc-800"
-            >
-              {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
-            </button>
-
-            <button
-              onClick={() => setView(view === "goals" ? "today" : "goals")}
-              aria-label="Quests & Hunter Progression"
-              aria-pressed={view === "goals"}
-              title={lang === "bn" ? "কোয়েস্ট ও হান্টার র‍্যাঙ্ক" : "Quests & Hunter Rank Progression"}
-              className={`flex h-11 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition-all active:scale-95 ${
-                view === "goals"
-                  ? "border-cyan-500 bg-cyan-500/20 text-cyan-300 shadow-sm"
-                  : "border-zinc-700/60 bg-zinc-800/60 text-zinc-300 hover:text-white hover:bg-zinc-800"
-              }`}
-            >
-              <Target className="h-4 w-4 text-cyan-400" />
-              <span>{lang === "bn" ? "কোয়েস্ট ও র‍্যাঙ্ক" : "Quests"}</span>
-            </button>
-
-            <button
-              onClick={() => setView(view === "history" ? "today" : "history")}
-              aria-label={view === "history" ? "Back to today" : tr.historyBtn}
-              aria-pressed={view === "history"}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 hover:bg-zinc-800"
-            >
-              <HistoryIcon className={`h-4 w-4 ${view === "history" ? "text-cyan-400" : "text-zinc-300"}`} />
-            </button>
-
-            <button
-              onClick={() => setShowProfile(true)}
-              aria-label={tr.profileBtn}
-              className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Mobile Clean Top Bar */}
-          <div className="flex md:hidden items-center gap-1.5">
-            {/* Mobile Status Pill */}
-            <button
-              id="btn-mobile-system-status"
-              type="button"
-              onClick={() => {
-                playSound("system-alert");
-                setShowStatusModal(true);
-              }}
-              className="flex h-10 items-center gap-1.5 px-2 rounded-xl bg-cyan-950/60 border border-cyan-400/50 text-cyan-300 text-xs font-mono font-bold active:scale-95 transition-all shadow-[0_0_10px_rgba(6,182,212,0.3)]"
-            >
-              <span className="text-[11px] font-black">Lv.{playerStats.level}</span>
-              <span className="px-1 py-0.5 rounded text-[9px] bg-cyan-500/20 text-cyan-200 border border-cyan-400/40">
-                {playerStats.rank}
-              </span>
-            </button>
-
-            {/* Mobile Arise Button */}
-            <button
-              id="btn-mobile-arise"
               type="button"
               onClick={() => {
                 playSound("arise");
@@ -1058,73 +1008,137 @@ export default function Page() {
                 });
                 setShowAriseModal(true);
               }}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-500/50 bg-purple-950/60 text-purple-300 active:scale-95 transition-all shadow-[0_0_10px_rgba(168,85,247,0.3)]"
+              aria-label="Trigger Arise Awakening"
+              title="Trigger Arise Awakening"
+              className="hidden xl:flex h-9 lg:h-10 items-center gap-1.5 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/60 to-indigo-950/60 px-2.5 lg:px-3 text-xs font-black text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)] active:scale-95 transition-all shrink-0"
             >
-              <Sparkles className="h-4 w-4 text-purple-400 animate-pulse" />
+              <Sparkles className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-purple-400 animate-pulse" />
+              <span className="tracking-wider">ARISE</span>
             </button>
 
-            {/* Mobile Supabase Cloud Sync Button */}
+            {/* Arsenal / Exercise Library shortcut (Large screens) */}
             <button
-              id="btn-mobile-supabase-cloud"
+              id="btn-desktop-arsenal"
               type="button"
-              onClick={() => setShowAuthModal(true)}
-              aria-label="Supabase Cloud"
-              title={isSupabaseConfigured() ? "Supabase Cloud: Connected" : "Configure Supabase"}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl border active:scale-95 transition-all ${
-                isSupabaseConfigured()
-                  ? "border-cyan-500/60 bg-cyan-950/60 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.3)]"
-                  : "border-zinc-700/60 bg-zinc-800/60 text-zinc-400"
-              }`}
-            >
-              <Database className={`h-4 w-4 ${isSupabaseConfigured() ? "text-cyan-400" : "text-zinc-500"}`} />
-            </button>
-
-            <button
-              id="btn-lang-toggle-mobile"
-              type="button"
-              onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-              aria-label={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-              className="flex h-10 items-center gap-1 rounded-xl border border-cyan-500/30 bg-zinc-800/80 px-2 text-xs font-bold text-zinc-100 hover:border-cyan-500 active:scale-95 transition-all shadow-sm"
-            >
-              <span className="text-xs">🌐</span>
-              <span className="font-bold text-cyan-400 text-xs">{lang === "bn" ? "EN" : "বাংলা"}</span>
-            </button>
-
-            <button
               onClick={() => {
-                unlockAudio();
-                setSoundOn(!soundOn);
+                playSound("system-click");
+                setShowLibraryModal(true);
               }}
-              aria-label={soundOn ? tr.soundMute : tr.soundUnmute}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 active:scale-95"
+              aria-label="Open Exercise Arsenal"
+              title="Open Exercise Arsenal"
+              className="hidden 2xl:flex h-10 items-center gap-1.5 rounded-xl border border-zinc-700/60 bg-zinc-800/60 px-3 text-xs font-semibold text-zinc-200 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0"
+            >
+              <Dumbbell className="h-3.5 w-3.5 text-cyan-400" />
+              <span>{lang === "bn" ? "অস্ত্রাগার" : "Arsenal"}</span>
+            </button>
+
+            {/* Diet Sheet shortcut (Large screens) */}
+            <button
+              id="btn-desktop-rations"
+              type="button"
+              onClick={() => {
+                playSound("system-click");
+                setShowDietSheet(true);
+              }}
+              aria-label="Open Nutrition Rations"
+              title="Open Nutrition Rations"
+              className="hidden 2xl:flex h-10 items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 px-3 text-xs font-semibold text-emerald-300 hover:bg-emerald-900/40 transition-colors shrink-0"
+            >
+              <Utensils className="h-3.5 w-3.5 text-emerald-400" />
+              <span>{lang === "bn" ? "ডায়েট চার্ট" : "Rations"}</span>
+            </button>
+
+            {/* Language Switcher */}
+            <button
+              id="btn-lang-switcher"
+              type="button"
+              onClick={() => {
+                playSound("system-click");
+                const nextLang = lang === "bn" ? "en" : "bn";
+                setLang(nextLang);
+                addSystemToast(
+                  nextLang === "bn" ? "[ ভাষা পরিবর্তন : বাংলা ]" : "[ LANGUAGE : ENGLISH ]",
+                  nextLang === "bn" ? "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।" : "System interface set to English."
+                );
+              }}
+              aria-label="Switch Language"
+              title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
+              className="flex h-9 sm:h-10 items-center gap-1 rounded-xl border border-cyan-500/30 bg-cyan-950/40 px-2 sm:px-2.5 text-xs font-mono font-bold text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/40 shadow-[0_0_10px_rgba(6,182,212,0.2)] active:scale-95 transition-all shrink-0"
+            >
+              <span className="text-sm">🌐</span>
+              <span className="font-mono text-[11px] font-black">{lang === "bn" ? "EN" : "বাং"}</span>
+            </button>
+
+            {/* Audio Toggle */}
+            <button
+              id="btn-sound-toggle"
+              type="button"
+              onClick={() => {
+                const next = !soundOn;
+                setSoundOn(next);
+                if (next) playSound("system-click");
+              }}
+              aria-label={soundOn ? "Mute System Audio" : "Unmute System Audio"}
+              title={soundOn ? "Sound: ON" : "Sound: MUTED"}
+              className="hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0"
             >
               {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
             </button>
 
+            {/* Bell System Notification */}
             <button
-              onClick={() => setShowProfile(true)}
-              aria-label={tr.profileBtn}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 active:scale-95"
+              type="button"
+              id="btn-leveling-bell"
+              onClick={() => {
+                playSound("system-alert");
+                vibrate(25);
+                addSystemToast(
+                  lang === "bn" ? "[ সিস্টেম স্ট্যাটাস : সক্রিয় ]" : "[ SYSTEM STATUS : ACTIVE ]",
+                  lang === "bn"
+                    ? `খেলোয়াড় ${playerStats.name}: কোনো বকেয়া পেনাল্টি নেই। দৈনিক অগ্রগতি সর্বোত্তম।`
+                    : `Player ${playerStats.name}: No pending penalties. Progression optimal.`
+                );
+              }}
+              aria-label="System Notifications"
+              title="System Notifications"
+              className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 transition-colors shrink-0"
             >
-              <SlidersHorizontal className="h-4 w-4" />
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse" />
+            </button>
+
+            {/* Menu Drawer button */}
+            <button
+              type="button"
+              id="btn-leveling-menu"
+              onClick={() => {
+                playSound("system-click");
+                setShowSettingsDrawer(true);
+              }}
+              aria-label="Settings and System Menu"
+              title="System Settings & Hub"
+              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all cursor-pointer shrink-0"
+            >
+              <Menu className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        {view === "today" && session && t && (
-          <div className="mx-auto mt-2.5 max-w-3xl">
-            <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-zinc-400">
-              <span className="flex items-center gap-1">
-                <Activity className="h-3.5 w-3.5 text-emerald-400" /> {tr.sessionProgress}
+        {/* Active workout progress indicator */}
+        {activeTab === "home" && session && t && (
+          <div className="mx-auto mt-2 max-w-7xl">
+            <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-cyan-300/80">
+              <span className="flex items-center gap-1 font-mono">
+                <Activity className="h-3.5 w-3.5 text-cyan-400 animate-pulse" /> {tr.sessionProgress}
                 {elapsedMin !== null && <span className="text-zinc-500">· {elapsedMin} {tr.minIn}</span>}
               </span>
-              <span className="font-semibold text-emerald-400">
+              <span className="font-mono font-bold text-cyan-300">
                 {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}% ({t.setsDone}/{t.setsTotal} {tr.sets})
               </span>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-900 border border-cyan-500/30">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-[width] duration-300"
+                className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 transition-[width] duration-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
                 style={{ width: `${t.setsTotal ? (t.setsDone / t.setsTotal) * 100 : 0}%` }}
               />
             </div>
@@ -1132,7 +1146,7 @@ export default function Page() {
         )}
       </header>
 
-      <main className="mx-auto max-w-3xl space-y-5 px-4 pt-5">
+      <main className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8 pt-6">
         {error && (
           <div role="alert" className="rounded-2xl border border-red-900/60 bg-red-950/40 p-4">
             <div className="flex items-start gap-3">
@@ -1163,214 +1177,394 @@ export default function Page() {
           </div>
         )}
 
-        {view === "history" ? (
-          <HistoryView
-            history={history}
-            lang={lang}
-            onExport={exportData}
-            onImport={importData}
-            onClear={() => setHistory([])}
-          />
-        ) : view === "goals" ? (
-          <GoalsProgressView
-            goals={goals}
-            evaluation={evaluation}
-            history={history}
-            profile={activeProfile}
-            lang={lang}
-            onSyncCloud={async () => {
-              const userId = activeUser?.id ?? "default";
-              await syncProfileToSupabase(activeProfile, userId);
-              for (const h of history) {
-                await syncWorkoutToSupabase(h, userId);
-              }
-              await syncGoalsToSupabase(goals, userId);
-              if (evaluation) {
-                await syncEvaluationToSupabase(evaluation, userId);
-              }
-            }}
-            onOpenSupabaseConfig={() => setShowAuthModal(true)}
-            onAddCustomGoal={(newGoal) => {
-              const fullGoal: UserGoal = {
-                ...newGoal,
-                id: `goal_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-                createdAt: Date.now(),
-                currentValue: 0,
-                status: "active",
-              };
-              setGoals((prev) => [fullGoal, ...prev]);
-              if (isSupabaseConfigured()) {
-                void syncGoalsToSupabase([fullGoal], activeUser?.id ?? "default");
-              }
-            }}
-          />
-        ) : !plan || !session ? (
-          // ---------------- empty state with Solo Leveling System Quest ----------------
-          <section className="space-y-4">
-            {saved && (
-              <div role="status" className="flex items-center gap-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/40 p-3 text-sm text-cyan-200">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" /> {saved}
-              </div>
-            )}
-
-            {/* Solo Leveling Daily System Quest (100 pushups, 100 situps, 100 squats, 10km run) */}
-            <DailyQuestCard
-              quest={dailyQuest}
+        {/* 1. Statistics Tab */}
+        {activeTab === "stats" && (
+          <div className="max-w-5xl mx-auto space-y-6">
+            <LevelingStatisticsView
               lang={lang}
-              onUpdateQuest={setDailyQuest}
-              onClaimReward={handleClaimDailyQuest}
+              history={history}
+              profile={activeProfile}
+              onOpenAchievements={() => setShowAchievementsModal(true)}
+              workoutDurationMinutes={history.reduce((acc, h) => acc + (h.minutes || 0), 0)}
+              xpEarnedToday={playerStats.exp}
+              distanceKmToday={dailyQuest.objectives.runKm.current}
+              caloriesBurnedToday={history.reduce((acc, h) => acc + (h.kcalEstimate || 0), 0)}
             />
+          </div>
+        )}
 
-            {/* Weekly Schedule & Smart Split Bar */}
-            <WeeklyScheduleBar
-              workoutDays={activeProfile.workoutDays ?? [1, 3, 5]}
+        {/* 2. Inventory & Gear Tab */}
+        {activeTab === "inventory" && (
+          <div className="max-w-5xl mx-auto space-y-6">
+            <LevelingInventoryView
               lang={lang}
-              onToggleDay={(dayIndex) => {
-                const cur = new Set(activeProfile.workoutDays ?? [1, 3, 5]);
-                if (cur.has(dayIndex)) {
-                  if (cur.size > 1) cur.delete(dayIndex);
-                } else {
-                  cur.add(dayIndex);
+              goldCount={playerStats.coins ?? 1450}
+              keysCount={playerStats.keys ?? 3}
+              gemsCount={playerStats.gems ?? 25}
+              unlockedEquipment={activeProfile.equipment}
+              onEquipChange={(eq) => quickPatch({ equipment: eq })}
+              onOpenArsenal={() => setShowLibraryModal(true)}
+            />
+          </div>
+        )}
+
+        {/* 3. Player Status Tab */}
+        {activeTab === "status" && (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <LevelingStatusView
+              lang={lang}
+              stats={playerStats}
+              onUpdateStats={(updated) => {
+                setPlayerStats(updated);
+                savePlayerStats(updated);
+                if (isSupabaseConfigured()) {
+                  void syncPlayerStatsToSupabase(updated, activeUser?.id ?? "default");
                 }
-                quickPatch({ workoutDays: Array.from(cur).sort((a, b) => a - b) });
               }}
-              onSetDays={(days) => quickPatch({ workoutDays: days })}
-              onApplyTodayFocus={(focusId) => quickPatch({ focus: focusId })}
+              onTriggerArise={() => {
+                playSound("arise");
+                vibrate([40, 80, 40]);
+                setAriseModalText({
+                  title: lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN",
+                  subtitle: lang === "bn" ? "শ্যাডো মনার্ক জাগ্রত হচ্ছে" : "THE SHADOW MONARCH AWAKENS",
+                });
+                setShowAriseModal(true);
+              }}
+              onOpenCalibration={() => setShowWelcomeOnboarding(true)}
+              goldCount={playerStats.coins ?? 1450}
+              keysCount={playerStats.keys ?? 3}
             />
+          </div>
+        )}
 
-            {/* Solo Leveling Dungeon Gate Generation Card */}
-            <div className="relative overflow-hidden rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-b from-[#050e24]/90 via-[#071330]/80 to-[#040814]/95 p-5 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-              {/* Dungeon Portal Banner */}
-              <div className="relative h-32 sm:h-44 w-full rounded-xl overflow-hidden border border-cyan-400/50 mb-4 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-                <Image
-                  src="/images/solo-leveling/system-monarch-banner.jpg"
-                  alt="Solo Leveling System Gate"
-                  fill
-                  className="object-cover object-top"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-3">
-                  <span className="text-[10px] font-mono font-black text-cyan-300 uppercase tracking-widest">[ DUNGEON GATE : SYSTEM PORTAL ]</span>
-                  <span className="text-sm font-black text-white">DEFEAT WEAKNESS · CLAIM STAT POINTS</span>
-                </div>
-              </div>
+        {/* 4. Home / Quests & Dungeon Tab */}
+        {activeTab === "home" && (
+          <>
+            {!plan || !session ? (
+              // ---------------- Responsive 2-Column Dashboard ----------------
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start max-w-3xl lg:max-w-none mx-auto">
+                {/* Left Column (8 cols): Quests, Schedule & Dungeon Gate */}
+                <div className="lg:col-span-8 space-y-6">
+                  {saved && (
+                    <div role="status" className="flex items-center gap-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/40 p-3 text-sm text-cyan-200">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" /> {saved}
+                    </div>
+                  )}
 
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-xl sm:text-2xl font-black tracking-wide text-white uppercase">[ DUNGEON MISSION : {tr.readyTitle} ]</h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
-                  {playerStats.rank}-RANK
-                </span>
-              </div>
-              <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                {tr.readySubtitle}
-              </p>
+                  {/* Leveling Quest Carousel (Daily, Focus, Urgent, Custom) */}
+                  <LevelingQuestCarouselCard
+                    dailyQuest={dailyQuest}
+                    onUpdateDailyQuest={setDailyQuest}
+                    onClaimDailyQuest={handleClaimDailyQuest}
+                    focusPlan={plan}
+                    onStartFocusWorkout={() => {
+                      if (!session) {
+                        void generate(activeProfile);
+                      } else {
+                        startWorkout();
+                      }
+                    }}
+                    onOpenExerciseAnimation={(ex) => setSelectedAnimationEx(ex)}
+                    lang={lang}
+                  />
 
-              <div className="mt-4">
-                <span className="mb-1.5 block text-xs font-mono font-bold text-cyan-400/90">{tr.focusLabel}</span>
-                <div className="flex flex-wrap gap-2">
-                  {FOCUSES.map((f) => (
-                    <Chip key={f.id} selected={activeProfile.focus === f.id} onClick={() => quickPatch({ focus: f.id })}>
-                      {FOCUS_LABELS_I18N[lang]?.[f.id] ?? f.label}
-                    </Chip>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4">
-                <span className="mb-1.5 block text-xs font-mono font-bold text-cyan-400/90">{tr.timeLabel}</span>
-                <div className="flex flex-wrap gap-2">
-                  {([20, 30, 45, 60] as const).map((m) => (
-                    <Chip key={m} selected={activeProfile.minutes === m} onClick={() => quickPatch({ minutes: m })}>
-                      {m} {lang === "bn" ? "মি." : "min"}
-                    </Chip>
-                  ))}
-                </div>
-              </div>
+                  {/* Weekly Schedule & Smart Split Bar */}
+                  <WeeklyScheduleBar
+                    workoutDays={activeProfile.workoutDays ?? [1, 3, 5]}
+                    lang={lang}
+                    onToggleDay={(dayIndex) => {
+                      const cur = new Set(activeProfile.workoutDays ?? [1, 3, 5]);
+                      if (cur.has(dayIndex)) {
+                        if (cur.size > 1) cur.delete(dayIndex);
+                      } else {
+                        cur.add(dayIndex);
+                      }
+                      quickPatch({ workoutDays: Array.from(cur).sort((a, b) => a - b) });
+                    }}
+                    onSetDays={(days) => quickPatch({ workoutDays: days })}
+                    onApplyTodayFocus={(focusId) => quickPatch({ focus: focusId })}
+                  />
 
-              <button
-                id="btn-generate-ai"
-                onClick={() => {
-                  unlockAudio();
-                  playSound("system-click");
-                  void generate(activeProfile);
-                }}
-                disabled={busy || !profile}
-                className="mt-5 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 font-black text-sm uppercase tracking-wider text-black shadow-lg shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 cursor-pointer"
-              >
-                {busy ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin text-black" /> {tr.buildingSessionBtn}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 stroke-[2.5] text-black animate-pulse" /> [ ENTER DUNGEON : {tr.generateWorkoutBtn} ]
-                  </>
-                )}
-              </button>
-              <button
-                id="btn-generate-offline"
-                onClick={() => void generate(activeProfile, { offline: true })}
-                disabled={busy || !profile}
-                className="mt-2 min-h-[44px] w-full text-xs text-zinc-400 underline-offset-2 hover:text-zinc-200 hover:underline disabled:opacity-50"
-              >
-                {tr.offlineBuildBtn}
-              </button>
-            </div>
+                  {/* Solo Leveling Dungeon Gate Generation Card */}
+                  <div className="relative overflow-hidden rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-b from-[#050e24]/90 via-[#071330]/80 to-[#040814]/95 p-5 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+                    {/* Dungeon Portal Banner */}
+                    <div className="relative h-36 sm:h-48 w-full rounded-xl overflow-hidden border border-cyan-400/50 mb-4 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
+                      <Image
+                        src="/images/solo-leveling/system-monarch-banner.jpg"
+                        alt="Solo Leveling System Gate"
+                        fill
+                        className="object-cover object-top"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-3 sm:p-4">
+                        <span className="text-[10px] sm:text-xs font-mono font-black text-cyan-300 uppercase tracking-widest">[ DUNGEON GATE : SYSTEM PORTAL ]</span>
+                        <span className="text-sm sm:text-base font-black text-white">DEFEAT WEAKNESS · CLAIM STAT POINTS</span>
+                      </div>
+                    </div>
 
-            {/* Visual BMI Gauge & Energy / Macro Split Card */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 space-y-3.5 shadow-md">
-              <BmiGauge bmi={stats.bmi} category={stats.bmiCategory} />
+                    <div className="flex items-center justify-between gap-2">
+                      <h2 className="text-xl sm:text-2xl font-black tracking-wide text-white uppercase">[ DUNGEON MISSION : {tr.readyTitle} ]</h2>
+                      <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm">
+                        {playerStats.rank}-RANK
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+                      {tr.readySubtitle}
+                    </p>
 
-              <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-zinc-800/60">
-                <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
-                  <div className="text-[10px] text-zinc-400">{tr.restingBmr}</div>
-                  <div className="text-base font-bold text-white font-mono">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
-                </div>
-                <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
-                  <div className="text-[10px] text-zinc-400">{tr.dailyTdee}</div>
-                  <div className="text-base font-bold text-emerald-400 font-mono">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
-                </div>
-              </div>
+                    <div className="mt-4">
+                      <span className="mb-1.5 block text-xs font-mono font-bold text-cyan-400/90">{tr.focusLabel}</span>
+                      <div className="flex flex-wrap gap-2">
+                        {FOCUSES.map((f) => (
+                          <Chip key={f.id} selected={activeProfile.focus === f.id} onClick={() => quickPatch({ focus: f.id })}>
+                            {FOCUS_LABELS_I18N[lang]?.[f.id] ?? f.label}
+                          </Chip>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <span className="mb-1.5 block text-xs font-mono font-bold text-cyan-400/90">{tr.timeLabel}</span>
+                      <div className="flex flex-wrap gap-2">
+                        {([20, 30, 45, 60] as const).map((m) => (
+                          <Chip key={m} selected={activeProfile.minutes === m} onClick={() => quickPatch({ minutes: m })}>
+                            {m} {lang === "bn" ? "মি." : "min"}
+                          </Chip>
+                        ))}
+                      </div>
+                    </div>
 
-              {nutrition && (
-                <div className="rounded-xl bg-zinc-950/80 p-3 border border-zinc-800 text-center space-y-1.5">
-                  <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
-                    <span>{tr.targetCalories(activeProfile.goal)}</span>
-                    <strong className="text-white font-mono">{nutrition.targetCalories} kcal/day</strong>
+                    <button
+                      id="btn-generate-ai"
+                      onClick={() => {
+                        unlockAudio();
+                        playSound("system-click");
+                        void generate(activeProfile);
+                      }}
+                      disabled={busy || !profile}
+                      className="mt-5 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 font-black text-sm uppercase tracking-wider text-black shadow-lg shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 cursor-pointer"
+                    >
+                      {busy ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin text-black" /> {tr.buildingSessionBtn}
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 stroke-[2.5] text-black animate-pulse" /> [ ENTER DUNGEON : {tr.generateWorkoutBtn} ]
+                        </>
+                      )}
+                    </button>
+                    <button
+                      id="btn-generate-offline"
+                      onClick={() => void generate(activeProfile, { offline: true })}
+                      disabled={busy || !profile}
+                      className="mt-2 min-h-[44px] w-full text-xs text-zinc-400 underline-offset-2 hover:text-zinc-200 hover:underline disabled:opacity-50"
+                    >
+                      {tr.offlineBuildBtn}
+                    </button>
+
+                    {history[0] && (
+                      <p className="mt-3 text-center text-xs text-zinc-500 border-t border-zinc-800/80 pt-3">
+                        {tr.lastSessionFelt(history[0].title, history[0].difficulty)}
+                      </p>
+                    )}
                   </div>
-                  <div className="grid grid-cols-3 gap-1.5 text-xs">
-                    <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                      <span className="text-emerald-400 font-semibold block text-[10px]">{tr.proteinLabel}</span>
-                      <strong className="text-white font-mono">{nutrition.proteinGrams}g</strong>
+                </div>
+
+                {/* Right Column (4 cols): Hunter Vitality HUD, BMI & Rations, Gear Vault */}
+                <div className="lg:col-span-4 space-y-6">
+                  {/* 1. Hunter Vitality HUD Card */}
+                  <div className="rounded-2xl border-2 border-cyan-500/30 bg-[#060b18]/90 p-4 shadow-[0_4px_25px_rgba(6,182,212,0.12)] space-y-3.5 backdrop-blur-md">
+                    <div className="flex items-center justify-between border-b border-cyan-500/20 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-9 w-9 rounded-lg overflow-hidden border border-cyan-400/60 relative">
+                          <Image src="/images/solo-leveling/system-crest-icon.jpg" alt="Hunter" fill className="object-cover" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-mono font-black text-white">{playerStats.name || "Sung Jin-Woo"}</div>
+                          <div className="text-[10px] font-mono text-purple-300 font-semibold">{playerStats.title || "Shadow Monarch"}</div>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-cyan-950/80 text-cyan-300 border border-cyan-400/40">
+                        {playerStats.rank}-RANK
+                      </span>
                     </div>
-                    <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                      <span className="text-teal-400 font-semibold block text-[10px]">{tr.carbsLabel}</span>
-                      <strong className="text-white font-mono">{nutrition.carbGrams}g</strong>
+
+                    {/* Level & Exp */}
+                    <div>
+                      <div className="flex justify-between text-[11px] font-mono mb-1">
+                        <span className="text-cyan-300 font-bold">LEVEL {playerStats.level}</span>
+                        <span className="text-zinc-400">{playerStats.exp} / {playerStats.expToNext || 500} EXP</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-slate-900 border border-cyan-500/30 overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.round((playerStats.exp / (playerStats.expToNext || 500)) * 100))}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                      <span className="text-amber-400 font-semibold block text-[10px]">{tr.fatsLabel}</span>
-                      <strong className="text-white font-mono">{nutrition.fatGrams}g</strong>
+
+                    {/* HP & MP gauges */}
+                    <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                      <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-2">
+                        <div className="flex justify-between text-red-300 font-bold mb-1">
+                          <span>HP</span>
+                          <span>{playerStats.hp?.current ?? 100}/{playerStats.hp?.max ?? 100}</span>
+                        </div>
+                        <div className="h-1 bg-zinc-900 rounded-full overflow-hidden">
+                          <div className="h-full bg-red-500 w-full" />
+                        </div>
+                      </div>
+                      <div className="bg-cyan-950/30 border border-cyan-500/30 rounded-xl p-2">
+                        <div className="flex justify-between text-cyan-300 font-bold mb-1">
+                          <span>MP</span>
+                          <span>{playerStats.mp?.current ?? 100}/{playerStats.mp?.max ?? 100}</span>
+                        </div>
+                        <div className="h-1 bg-zinc-900 rounded-full overflow-hidden">
+                          <div className="h-full bg-cyan-400 w-full" />
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Unallocated Stat Points Banner */}
+                    {playerStats.unallocatedPoints > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playSound("system-click");
+                          setActiveTab("status");
+                        }}
+                        className="w-full py-2 px-3 rounded-xl border border-amber-400/60 bg-gradient-to-r from-amber-500/20 to-yellow-500/10 text-amber-300 text-xs font-mono font-bold flex items-center justify-between hover:bg-amber-500/30 transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)] animate-pulse"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                          <span>+{playerStats.unallocatedPoints} STAT POINTS AVAILABLE</span>
+                        </span>
+                        <span className="text-[10px] underline">ASSIGN &gt;</span>
+                      </button>
+                    )}
+
+                    {/* Quick Attributes Row */}
+                    <div className="grid grid-cols-5 gap-1 text-center font-mono text-[10px]">
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <span className="text-zinc-500 block text-[9px]">STR</span>
+                        <strong className="text-red-400 font-bold">{playerStats.attributes?.str ?? 10}</strong>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <span className="text-zinc-500 block text-[9px]">AGI</span>
+                        <strong className="text-emerald-400 font-bold">{playerStats.attributes?.agi ?? 10}</strong>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <span className="text-zinc-500 block text-[9px]">VIT</span>
+                        <strong className="text-amber-400 font-bold">{playerStats.attributes?.vit ?? 10}</strong>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <span className="text-zinc-500 block text-[9px]">INT</span>
+                        <strong className="text-blue-400 font-bold">{playerStats.attributes?.int ?? 10}</strong>
+                      </div>
+                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
+                        <span className="text-zinc-500 block text-[9px]">PER</span>
+                        <strong className="text-purple-400 font-bold">{playerStats.attributes?.per ?? 10}</strong>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playSound("system-click");
+                        setActiveTab("status");
+                      }}
+                      className="w-full py-2 text-center text-xs font-mono font-bold text-cyan-300 hover:text-cyan-100 hover:underline border border-cyan-500/20 rounded-xl bg-cyan-950/20 transition-colors"
+                    >
+                      [ {lang === "bn" ? "পূর্ণাঙ্গ স্ট্যাটাস ও স্কিল দেখুন" : "VIEW FULL STATUS & SKILLS"} ]
+                    </button>
+                  </div>
+
+                  {/* 2. Visual BMI Gauge & Energy / Macro Split Card */}
+                  <div className="rounded-2xl border border-zinc-800 bg-[#060b18]/90 p-4 space-y-3.5 shadow-md backdrop-blur-md">
+                    <BmiGauge bmi={stats.bmi} category={stats.bmiCategory} />
+
+                    <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-zinc-800/60">
+                      <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
+                        <div className="text-[10px] text-zinc-400">{tr.restingBmr}</div>
+                        <div className="text-base font-bold text-white font-mono">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
+                      </div>
+                      <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
+                        <div className="text-[10px] text-zinc-400">{tr.dailyTdee}</div>
+                        <div className="text-base font-bold text-emerald-400 font-mono">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
+                      </div>
+                    </div>
+
+                    {nutrition && (
+                      <div className="rounded-xl bg-zinc-950/80 p-3 border border-zinc-800 text-center space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
+                          <span>{tr.targetCalories(activeProfile.goal)}</span>
+                          <strong className="text-white font-mono">{nutrition.targetCalories} kcal/day</strong>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1.5 text-xs">
+                          <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
+                            <span className="text-emerald-400 font-semibold block text-[10px]">{tr.proteinLabel}</span>
+                            <strong className="text-white font-mono">{nutrition.proteinGrams}g</strong>
+                          </div>
+                          <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
+                            <span className="text-teal-400 font-semibold block text-[10px]">{tr.carbsLabel}</span>
+                            <strong className="text-white font-mono">{nutrition.carbGrams}g</strong>
+                          </div>
+                          <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
+                            <span className="text-amber-400 font-semibold block text-[10px]">{tr.fatsLabel}</span>
+                            <strong className="text-white font-mono">{nutrition.fatGrams}g</strong>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowDietSheet(true)}
+                      className="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2.5 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors shadow-sm"
+                    >
+                      <Utensils className="h-4 w-4" />
+                      <span>{tr.viewDietChartBtn}</span>
+                    </button>
+                  </div>
+
+                  {/* 3. Hunter Vault & Arsenal Preview */}
+                  <div className="rounded-2xl border border-cyan-500/20 bg-[#060b18]/90 p-4 space-y-3 backdrop-blur-md">
+                    <div className="flex items-center justify-between text-xs font-mono font-bold text-zinc-400">
+                      <span className="flex items-center gap-1.5 text-cyan-300">
+                        <Package className="h-3.5 w-3.5" /> [ HUNTER VAULT ]
+                      </span>
+                      <span className="text-amber-400 font-mono">🪙 {playerStats.coins ?? 1450}</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center font-mono text-[11px]">
+                      <div className="bg-zinc-950/70 p-2 rounded-xl border border-zinc-800/80">
+                        <span className="text-zinc-500 block text-[9px]">GOLD</span>
+                        <strong className="text-amber-400">{playerStats.coins ?? 1450}</strong>
+                      </div>
+                      <div className="bg-zinc-950/70 p-2 rounded-xl border border-zinc-800/80">
+                        <span className="text-zinc-500 block text-[9px]">DUNGEON KEYS</span>
+                        <strong className="text-cyan-400">{playerStats.keys ?? 3}</strong>
+                      </div>
+                      <div className="bg-zinc-950/70 p-2 rounded-xl border border-zinc-800/80">
+                        <span className="text-zinc-500 block text-[9px]">MANA GEMS</span>
+                        <strong className="text-purple-400">{playerStats.gems ?? 25}</strong>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playSound("system-click");
+                        setActiveTab("inventory");
+                      }}
+                      className="w-full py-2 text-center text-xs font-mono font-bold text-cyan-300 hover:text-cyan-100 hover:underline border border-cyan-500/20 rounded-xl bg-cyan-950/20 transition-colors"
+                    >
+                      [ {lang === "bn" ? "ইনভেন্টরি ও গিয়ার সজ্জিত করুন" : "MANAGE GEAR & ARSENAL"} ]
+                    </button>
                   </div>
                 </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setShowDietSheet(true)}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2.5 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors shadow-sm"
-              >
-                <Utensils className="h-4 w-4" />
-                <span>{tr.viewDietChartBtn}</span>
-              </button>
-            </div>
-
-            {history[0] && (
-              <p className="text-center text-xs text-zinc-500">
-                {tr.lastSessionFelt(history[0].title, history[0].difficulty)}
-              </p>
-            )}
-          </section>
-        ) : (
+              </div>
+            ) : (
           // ---------------- active workout ----------------
           <>
             <section className="relative overflow-hidden rounded-2xl border-2 border-cyan-400/80 bg-gradient-to-b from-[#05112e]/95 via-[#07153a]/90 to-[#030818]/95 p-5 shadow-[0_0_40px_rgba(6,182,212,0.35)] system-scanlines system-grid-bg">
@@ -1607,6 +1801,8 @@ export default function Page() {
             </section>
           </>
         )}
+      </>
+    )}
 
         <p className="pb-4 text-center text-[11px] leading-relaxed text-zinc-600">
           {tr.medicalDisclaimer}
@@ -1785,19 +1981,82 @@ export default function Page() {
         onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
       />
 
-      {/* Active Workout Mobile Sticky Action Bar */}
-      {view === "today" && session && t && (
+      {/* Leveling Achievements Modal */}
+      <AchievementsModal
+        open={showAchievementsModal}
+        onClose={() => setShowAchievementsModal(false)}
+        lang={lang}
+        questsCompletedCount={playerStats.totalWorkoutsCleared || 0}
+        totalRepsCount={playerStats.totalSetsCompleted || 0}
+        totalTimeHours={Math.round((history.reduce((acc, h) => acc + (h.minutes || 0), 0) / 60) * 10) / 10}
+        onClaim={({ xp, coins: c, gems: g }) => {
+          const expResult = addPlayerExp(playerStats, xp);
+          const updated: PlayerStats = {
+            ...expResult.stats,
+            coins: (expResult.stats.coins ?? 1450) + c,
+            gems: (expResult.stats.gems ?? 25) + (g ?? 0),
+          };
+          savePlayerStats(updated);
+          setPlayerStats(updated);
+          addSystemToast(
+            lang === "bn" ? "[ অর্জন পুরষ্কার : সম্পন্ন ]" : "[ ACHIEVEMENT CLAIMED ]",
+            lang === "bn"
+              ? `+${xp} EXP এবং +${c} গোল্ড আপনার অ্যাকাউন্টে জমা হয়েছে!`
+              : `+${xp} EXP and +${c} Gold acquired!`
+          );
+        }}
+      />
+
+      {/* Leveling Guild Hub Modal */}
+      <GuildHubModal
+        open={showGuildHubModal}
+        onClose={() => setShowGuildHubModal(false)}
+        lang={lang}
+      />
+
+      {/* Leveling Settings Drawer */}
+      <LevelingSettingsDrawer
+        open={showSettingsDrawer}
+        onClose={() => setShowSettingsDrawer(false)}
+        lang={lang}
+        onLanguageChange={setLang}
+        soundOn={soundOn}
+        onToggleSound={() => {
+          unlockAudio();
+          setSoundOn(!soundOn);
+        }}
+        hapticsOn={hapticsOn}
+        onToggleHaptics={() => setHapticsOn(!hapticsOn)}
+        playerStats={playerStats}
+        activeAccount={activeUser}
+        profile={activeProfile}
+        onOpenAuth={() => setShowAuthModal(true)}
+        onOpenDiet={() => setShowDietSheet(true)}
+        onOpenArsenal={() => setShowLibraryModal(true)}
+        onOpenAchievements={() => setShowAchievementsModal(true)}
+        onOpenGuildHub={() => setShowGuildHubModal(true)}
+        onExportData={exportData}
+        onResetData={() => {
+          if (confirm(lang === "bn" ? "স্থানীয় ডাটা রিসেট করবেন?" : "Reset local data?")) {
+            localStorage.clear();
+            window.location.reload();
+          }
+        }}
+      />
+
+      {/* Active Workout Sticky Action Bar */}
+      {activeTab === "home" && session && t && (
         <aside
-          aria-label="Active session mobile controls"
-          className="md:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] inset-x-3 z-30 mx-auto max-w-lg system-btn-chamfer border border-cyan-500/50 bg-[#020512]/95 p-2.5 backdrop-blur-xl shadow-[0_0_25px_rgba(6,182,212,0.3)] flex items-center justify-between gap-2 transition-all animate-in slide-in-from-bottom-4"
+          aria-label="Active session controls"
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] inset-x-3 z-30 mx-auto max-w-lg leveling-card p-2.5 backdrop-blur-xl flex items-center justify-between gap-2 transition-all animate-in slide-in-from-bottom-4 shadow-[0_0_25px_rgba(6,182,212,0.3)]"
         >
           <div className="flex items-center gap-2 pl-1.5">
-            <span className="flex h-8 w-8 items-center justify-center system-btn-chamfer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold text-xs font-mono">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 font-bold text-xs font-mono">
               {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}%
             </span>
-            <div className="text-[11px] leading-tight">
-              <span className="text-white font-mono font-bold block">{t.setsDone}/{t.setsTotal} {tr.sets}</span>
-              <span className="text-cyan-400 font-mono">{t.volumeKg} kg {lang === "bn" ? "ভলিউম" : "vol"}</span>
+            <div className="text-[11px] leading-tight font-mono">
+              <span className="text-white font-bold block">{t.setsDone}/{t.setsTotal} {tr.sets}</span>
+              <span className="text-cyan-400">{t.volumeKg} kg {lang === "bn" ? "ভলিউম" : "vol"}</span>
             </div>
           </div>
 
@@ -1806,7 +2065,7 @@ export default function Page() {
               <button
                 type="button"
                 onClick={startWorkout}
-                className="flex min-h-[42px] items-center gap-1.5 system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-4 text-xs font-mono font-bold text-white active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                className="flex min-h-[42px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-600 to-indigo-600 px-4 text-xs font-mono font-bold text-white active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
                 <span>{tr.startWorkoutBtn}</span>
@@ -1815,7 +2074,7 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setShowFinish(true)}
-                className="flex min-h-[42px] items-center gap-1.5 system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-4 text-xs font-mono font-black text-white active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)] animate-pulse"
+                className="flex min-h-[42px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-4 text-xs font-mono font-black text-white active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)] animate-pulse"
               >
                 <CheckCircle2 className="h-4 w-4 stroke-[3]" />
                 <span>{tr.finishWorkoutBtn}</span>
@@ -1824,7 +2083,7 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setShowFinish(true)}
-                className="flex min-h-[42px] items-center gap-1 system-btn-chamfer border border-cyan-500/40 bg-[#03081a] px-3 text-xs font-mono font-semibold text-cyan-300 hover:text-white active:scale-95"
+                className="flex min-h-[42px] items-center gap-1 rounded-xl border border-cyan-500/40 bg-[#03081a] px-3 text-xs font-mono font-semibold text-cyan-300 hover:text-white active:scale-95"
               >
                 <span>{tr.finishWorkoutBtn}</span>
               </button>
@@ -1833,83 +2092,90 @@ export default function Page() {
         </aside>
       )}
 
-      {/* Mobile Floating Bottom Navigation Dock (Tab Bar) */}
+      {/* Floating Bottom Navigation Dock (Leveling Dock - Mobile Only) */}
       <nav
-        aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#020512]/95 backdrop-blur-2xl border-t border-cyan-500/30 px-2 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-5px_25px_rgba(6,182,212,0.15)]"
+        aria-label="Main Navigation Dock"
+        className="md:hidden fixed bottom-3 sm:bottom-4 inset-x-0 z-40 flex justify-center pointer-events-none px-4 pb-[max(0.25rem,env(safe-area-inset-bottom))]"
       >
-        <div className="grid grid-cols-5 items-center gap-1 text-center font-mono">
-          {/* 1. Today Dungeon Workout */}
+        <div className="leveling-dock pointer-events-auto flex items-center justify-between gap-1 px-3 py-2 w-full max-w-xs sm:max-w-sm">
+          {/* 1. Home / Quests & Dungeon */}
           <button
-            id="btn-mobile-tab-workout"
             type="button"
-            onClick={() => setView("today")}
-            aria-pressed={view === "today"}
-            className={`flex flex-col items-center justify-center min-h-[48px] py-1 rounded-xl transition-all active:scale-90 ${
-              view === "today"
-                ? "text-cyan-300 font-bold bg-cyan-500/15 shadow-[0_0_10px_rgba(6,182,212,0.2)] border border-cyan-500/30"
+            id="nav-tab-home"
+            onClick={() => {
+              playSound("system-click");
+              vibrate(15);
+              setActiveTab("home");
+            }}
+            aria-label="Quests & Workout"
+            title={lang === "bn" ? "কোয়েস্ট ও ডানজন" : "Quests & Workout"}
+            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+              activeTab === "home"
+                ? "leveling-dock-active text-cyan-200"
                 : "text-zinc-400 hover:text-cyan-200"
             }`}
           >
-            <Dumbbell className={`h-5 w-5 mb-0.5 ${view === "today" ? "stroke-[2.5]" : ""}`} />
-            <span className="text-[10px] tracking-tight truncate max-w-full px-0.5">{lang === "bn" ? "রেইড" : "Dungeon"}</span>
-            {view === "today" && <span className="h-1 w-1 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400 mt-0.5" />}
+            <Home className="h-5 w-5" />
           </button>
 
-          {/* 2. Quests & Rank */}
+          {/* 2. Statistics / Activities */}
           <button
-            id="btn-mobile-tab-goals"
             type="button"
-            onClick={() => setView("goals")}
-            aria-pressed={view === "goals"}
-            className={`flex flex-col items-center justify-center min-h-[48px] py-1 rounded-xl transition-all active:scale-90 ${
-              view === "goals"
-                ? "text-cyan-300 font-bold bg-cyan-500/15 shadow-[0_0_10px_rgba(6,182,212,0.2)] border border-cyan-500/30"
+            id="nav-tab-stats"
+            onClick={() => {
+              playSound("system-click");
+              vibrate(15);
+              setActiveTab("stats");
+            }}
+            aria-label="Statistics & Activities"
+            title={lang === "bn" ? "পরিসংখ্যান ও রেকর্ড" : "Statistics & Activities"}
+            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+              activeTab === "stats"
+                ? "leveling-dock-active text-cyan-200"
                 : "text-zinc-400 hover:text-cyan-200"
             }`}
           >
-            <Target className={`h-5 w-5 mb-0.5 ${view === "goals" ? "stroke-[2.5]" : ""}`} />
-            <span className="text-[10px] tracking-tight truncate max-w-full px-0.5">{lang === "bn" ? "কোয়েস্ট" : "Quests"}</span>
-            {view === "goals" && <span className="h-1 w-1 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400 mt-0.5" />}
+            <Activity className="h-5 w-5" />
           </button>
 
-          {/* 3. Arsenal Library */}
+          {/* 3. Inventory & Gear */}
           <button
-            id="btn-mobile-tab-library"
             type="button"
-            onClick={() => setShowLibraryModal(true)}
-            className="flex flex-col items-center justify-center min-h-[48px] py-1 rounded-xl text-zinc-400 hover:text-zinc-200 transition-all active:scale-90"
-          >
-            <Sparkles className="h-5 w-5 mb-0.5 text-teal-400" />
-            <span className="text-[10px] tracking-tight truncate max-w-full px-0.5">{lang === "bn" ? "আর্সেনাল" : "Arsenal"}</span>
-          </button>
-
-          {/* 4. Hunter Rations */}
-          <button
-            id="btn-mobile-tab-diet"
-            type="button"
-            onClick={() => setShowDietSheet(true)}
-            className="flex flex-col items-center justify-center min-h-[48px] py-1 rounded-xl text-zinc-400 hover:text-zinc-200 transition-all active:scale-90"
-          >
-            <Utensils className="h-5 w-5 mb-0.5 text-amber-400" />
-            <span className="text-[10px] tracking-tight truncate max-w-full px-0.5">{lang === "bn" ? "রেশন" : "Rations"}</span>
-          </button>
-
-          {/* 5. Combat Archives */}
-          <button
-            id="btn-mobile-tab-history"
-            type="button"
-            onClick={() => setView("history")}
-            aria-pressed={view === "history"}
-            className={`flex flex-col items-center justify-center min-h-[48px] py-1 rounded-xl transition-all active:scale-90 ${
-              view === "history"
-                ? "text-cyan-300 font-bold bg-cyan-500/15 shadow-[0_0_10px_rgba(6,182,212,0.2)] border border-cyan-500/30"
+            id="nav-tab-inventory"
+            onClick={() => {
+              playSound("system-click");
+              vibrate(15);
+              setActiveTab("inventory");
+            }}
+            aria-label="Inventory & Shop"
+            title={lang === "bn" ? "ইনভেন্টরি ও শপ" : "Inventory & Shop"}
+            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+              activeTab === "inventory"
+                ? "leveling-dock-active text-cyan-200"
                 : "text-zinc-400 hover:text-cyan-200"
             }`}
           >
-            <HistoryIcon className={`h-5 w-5 mb-0.5 ${view === "history" ? "stroke-[2.5]" : ""}`} />
-            <span className="text-[10px] tracking-tight truncate max-w-full px-0.5">{lang === "bn" ? "আর্কাইভ" : "Archives"}</span>
-            {view === "history" && <span className="h-1 w-1 rounded-full bg-cyan-400 shadow-sm shadow-cyan-400 mt-0.5" />}
+            <Package className="h-5 w-5" />
+          </button>
+
+          {/* 4. Player Status */}
+          <button
+            type="button"
+            id="nav-tab-status"
+            onClick={() => {
+              playSound("system-click");
+              vibrate(15);
+              setActiveTab("status");
+            }}
+            aria-label="Player Status"
+            title={lang === "bn" ? "খেলোয়াড়ের স্ট্যাটাস" : "Player Status"}
+            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+              activeTab === "status"
+                ? "leveling-dock-active text-cyan-200"
+                : "text-zinc-400 hover:text-cyan-200"
+            }`}
+          >
+            <UserIcon className="h-5 w-5" />
           </button>
         </div>
       </nav>
