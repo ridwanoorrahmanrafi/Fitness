@@ -1,4 +1,12 @@
+import dns from "node:dns";
 import { MongoClient, type Db, type Collection } from "mongodb";
+
+// Ensure Windows/ISP local resolvers can resolve MongoDB Atlas SRV records reliably
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch {
+  // ignore in sandboxed environments
+}
 
 const uri =
   process.env.MONGODB_URI ||

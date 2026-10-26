@@ -12,7 +12,7 @@
     "test:mongo": "node scripts/test_mongodb_connection.js"
   },
   "dependencies": {
-    "@better-auth/infra": "^0.4.20",
+    "@better-auth/infra": "^0.4.22",
     "@google/genai": "^2.7.0",
     "@supabase/server": "^1.9.2",
     "@supabase/ssr": "^0.12.7",

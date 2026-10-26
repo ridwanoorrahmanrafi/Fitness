@@ -1,6 +1,13 @@
 const fs = require("fs");
 const path = require("path");
+const dns = require("dns");
 const { MongoClient } = require("mongodb");
+
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch {
+  // ignore
+}
 
 // 1. Read environment variables from .env.local or .env if present
 function loadEnv() {
