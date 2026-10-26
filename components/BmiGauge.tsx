@@ -11,14 +11,14 @@ interface Props {
 export function BmiGauge({ bmi, category, compact = false }: Props) {
   const percent = bmiScalePercent(bmi);
 
-  const categoryColor =
+  const categoryBadgeClass =
     bmi < 18.5
-      ? "text-cyan-400 border-cyan-500/30 bg-cyan-950/50"
+      ? "badge-info badge-outline"
       : bmi < 25
-      ? "text-emerald-400 border-emerald-500/30 bg-emerald-950/50"
+      ? "badge-success"
       : bmi < 30
-      ? "text-amber-400 border-amber-500/30 bg-amber-950/50"
-      : "text-rose-400 border-rose-500/30 bg-rose-950/50";
+      ? "badge-warning"
+      : "badge-error";
 
   return (
     <div className={`w-full ${compact ? "space-y-1.5" : "space-y-2.5"}`}>
@@ -26,7 +26,7 @@ export function BmiGauge({ bmi, category, compact = false }: Props) {
         <span className="font-semibold text-zinc-300">
           BMI <strong className="font-mono text-white text-sm ml-1">{bmi || "-"}</strong>
         </span>
-        <span className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${categoryColor}`}>
+        <span className={`badge badge-sm font-bold ${categoryBadgeClass}`}>
           {category || "Unknown"}
         </span>
       </div>

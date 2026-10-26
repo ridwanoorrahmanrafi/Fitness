@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getModelChain } from "@/lib/server/gemini";
+import { isMongoConfigured } from "@/lib/server/mongodb";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,7 @@ export async function GET() {
   );
 
   const openaiConfigured = Boolean(process.env.OPENAI_API_KEY);
+  const mongodbConfigured = isMongoConfigured();
   const supabaseConfigured = Boolean(
     process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   );
@@ -20,6 +22,7 @@ export async function GET() {
     ok: true,
     geminiConfigured,
     openaiConfigured,
+    mongodbConfigured,
     supabaseConfigured,
     activeModelChain: getModelChain(),
     accessCodeRequired: Boolean(process.env.ACCESS_CODE),

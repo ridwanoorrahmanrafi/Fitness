@@ -56,7 +56,7 @@ interface Props {
 }
 
 const inputCls =
-  "w-full min-h-[44px] rounded-lg border border-cyan-500/35 bg-[#03081a]/90 px-3 text-sm font-mono text-cyan-100 placeholder:text-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.35)] focus:outline-none transition-all";
+  "input input-bordered input-primary w-full min-h-[44px] bg-[#03081a]/90 px-3 text-sm font-mono text-cyan-100 placeholder:text-cyan-800 focus:outline-none transition-all";
 const labelCls = "mb-1 block text-xs font-mono font-semibold tracking-wider text-cyan-400/80 uppercase";
 
 function Segmented<T extends string | number>({
@@ -76,10 +76,10 @@ function Segmented<T extends string | number>({
           type="button"
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`min-h-[44px] system-btn-chamfer border px-2 text-sm font-mono tracking-wide transition-all ${
+          className={`btn btn-sm min-h-[44px] px-2 text-xs sm:text-sm font-mono tracking-wide transition-all ${
             value === o.value
-              ? "border-cyan-400 bg-cyan-500/25 font-bold text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]"
-              : "border-cyan-500/20 bg-[#03081a]/80 text-zinc-400 hover:border-cyan-500/40 hover:text-cyan-200"
+              ? "btn-primary font-bold shadow-[0_0_12px_rgba(6,182,212,0.35)]"
+              : "btn-ghost border border-cyan-500/20 bg-[#03081a]/80 text-zinc-400 hover:border-cyan-500/40 hover:text-cyan-200"
           }`}
         >
           {o.label}
@@ -493,10 +493,10 @@ export function ProfileSheet({
 
         <section className="space-y-3">
           <h3 className="text-sm font-semibold text-white">{currentLang === "bn" ? "নিরাপত্তা ও পছন্দ" : "Preferences & Safety"}</h3>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 text-sm">
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 text-sm cursor-pointer">
             <input
               type="checkbox"
-              className="h-5 w-5 accent-emerald-500"
+              className="checkbox checkbox-primary h-5 w-5"
               checked={draft.lowImpact}
               onChange={(e) => set("lowImpact", e.target.checked)}
             />
@@ -515,7 +515,7 @@ export function ProfileSheet({
               id="limits"
               rows={2}
               maxLength={300}
-              className={`${inputCls} py-2`}
+              className="textarea textarea-bordered textarea-primary w-full bg-[#03081a]/90 font-mono text-sm text-cyan-100"
               placeholder={t.limitationsPlaceholder}
               value={draft.limitations}
               onChange={(e) => set("limitations", e.target.value)}
@@ -529,13 +529,11 @@ export function ProfileSheet({
           </div>
         </section>
 
-
-
         {error && <p className="font-mono text-xs text-red-400 [text-shadow:0_0_8px_rgba(248,113,113,0.5)]">{error}</p>}
 
         <button
           type="submit"
-          className="min-h-[48px] w-full system-btn-chamfer bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 font-mono font-black tracking-widest uppercase text-white shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all hover:brightness-110 active:scale-[0.98]"
+          className="btn btn-primary w-full min-h-[48px] font-mono font-black tracking-widest uppercase text-black shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all active:scale-[0.98]"
         >
           {firstRun ? (currentLang === "bn" ? "◆ সিস্টেম সক্রিয় করুন (AWAKEN) ◆" : "◆ CONFIRM & AWAKEN SYSTEM ◆") : t.saveProfileBtn}
         </button>

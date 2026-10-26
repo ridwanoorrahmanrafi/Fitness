@@ -115,13 +115,13 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onSave, onCl
               {isBn ? "অর্জিত পুরস্কার:" : "CLEAR REWARDS:"}
             </span>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-400/50 text-cyan-300 text-[11px] font-black shadow-sm">
+              <span className="badge badge-info badge-outline font-black text-[11px]">
                 +250 EXP
               </span>
-              <span className="px-2 py-0.5 rounded bg-purple-950 border border-purple-400/50 text-purple-300 text-[11px] font-black shadow-sm">
+              <span className="badge badge-secondary badge-outline font-black text-[11px]">
                 {isBn ? "+১ স্ট্যাট পয়েন্ট" : "+1 STAT POINT"}
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-400/50 text-emerald-300 text-[11px] font-black shadow-sm">
+              <span className="badge badge-success badge-outline font-black text-[11px]">
                 {isBn ? "ক্লান্তি মুক্তি" : "FATIGUE RECOVERY"}
               </span>
             </div>
@@ -129,30 +129,32 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onSave, onCl
         </div>
 
         {/* Combat Stats Grid */}
-        <dl className="grid grid-cols-3 gap-2 text-center text-xs">
-          <div className="rounded-xl border border-cyan-500/30 bg-black/70 p-2.5 shadow-sm">
-            <dt className="text-[10px] text-zinc-400 uppercase font-bold">
+        <div className="stats stats-horizontal shadow w-full bg-base-300/80 border border-cyan-500/30">
+          <div className="stat p-2.5 text-center">
+            <div className="stat-title text-[10px] text-zinc-400 uppercase font-bold">
               {isBn ? "সময়" : "TIME ELAPSED"}
-            </dt>
-            <dd className="text-base font-black text-white font-mono text-glow-cyan">
+            </div>
+            <div className="stat-value text-base font-black text-white font-mono text-glow-cyan">
               {minutes} {isBn ? "মি." : "min"}
-            </dd>
+            </div>
           </div>
-          <div className="rounded-xl border border-cyan-500/30 bg-black/70 p-2.5 shadow-sm">
-            <dt className="text-[10px] text-zinc-400 uppercase font-bold">
+          <div className="stat p-2.5 text-center">
+            <div className="stat-title text-[10px] text-zinc-400 uppercase font-bold">
               {isBn ? "মোট ওজন" : "VOLUME LOAD"}
-            </dt>
-            <dd className="text-base font-black text-white font-mono text-glow-cyan">
+            </div>
+            <div className="stat-value text-base font-black text-white font-mono text-glow-cyan">
               {t.volumeKg ? `${t.volumeKg} kg` : "-"}
-            </dd>
+            </div>
           </div>
-          <div className="rounded-xl border border-cyan-500/30 bg-black/70 p-2.5 shadow-sm">
-            <dt className="text-[10px] text-zinc-400 uppercase font-bold">
+          <div className="stat p-2.5 text-center">
+            <div className="stat-title text-[10px] text-zinc-400 uppercase font-bold">
               {isBn ? "ক্যালোরি" : "ENERGY (EST.)"}
-            </dt>
-            <dd className="text-base font-black text-amber-400 font-mono">~{kcal} kcal</dd>
+            </div>
+            <div className="stat-value text-base font-black text-amber-400 font-mono">
+              ~{kcal} kcal
+            </div>
           </div>
-        </dl>
+        </div>
 
         {/* Perceived Dungeon Difficulty */}
         <section>
@@ -166,14 +168,14 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onSave, onCl
                 type="button"
                 aria-pressed={difficulty === d.id}
                 onClick={() => setDifficulty(d.id)}
-                className={`system-btn-chamfer min-h-[56px] px-2 text-center transition-all cursor-pointer ${
+                className={`btn min-h-[56px] h-auto p-2 flex flex-col items-center justify-center transition-all cursor-pointer ${
                   difficulty === d.id
-                    ? "bg-cyan-500/20 border-2 border-cyan-400 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.6)] text-glow-cyan"
-                    : "border border-zinc-800 bg-black/60 text-zinc-400 hover:border-zinc-700"
+                    ? "btn-primary shadow-[0_0_15px_rgba(6,182,212,0.6)]"
+                    : "btn-outline btn-neutral text-zinc-400 hover:text-white"
                 }`}
               >
                 <div className="text-xs font-black uppercase">{d.label}</div>
-                <div className="text-[10px] text-zinc-400">{d.hint}</div>
+                <div className="text-[10px] opacity-80">{d.hint}</div>
               </button>
             ))}
           </div>
@@ -210,7 +212,7 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onSave, onCl
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={isBn ? "যেমন: শেষ সেটে খুব ভালো পাম্প পেয়েছি, ফর্ম সঠিক ছিল" : "e.g. explosive leg drive, form remained rigid through final set"}
-            className="w-full rounded-xl border border-cyan-500/30 bg-black/80 px-3 py-2 text-xs text-zinc-100 focus:border-cyan-400 focus:outline-none"
+            className="textarea textarea-bordered textarea-primary w-full bg-black/80 text-xs text-zinc-100 font-mono"
           />
         </section>
 
@@ -218,10 +220,8 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onSave, onCl
         <button
           onClick={() => onSave({ difficulty, soreMuscles: sore, notes: notes.trim(), minutes, kcal })}
           disabled={t.setsDone === 0}
-          className={`system-btn-chamfer min-h-[52px] w-full font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${
-            t.setsDone === 0
-              ? "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed opacity-50"
-              : "bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:brightness-110 text-black shadow-[0_0_25px_rgba(6,182,212,0.8)] active:scale-95"
+          className={`btn btn-primary w-full min-h-[52px] font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.8)] ${
+            t.setsDone === 0 ? "btn-disabled opacity-50" : ""
           }`}
         >
           {t.setsDone === 0

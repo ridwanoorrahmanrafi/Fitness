@@ -114,7 +114,7 @@ export function LevelingSettingsDrawer({
               playSound("system-click");
               onClose();
             }}
-            className="leveling-circle-btn"
+            className="btn btn-sm btn-circle btn-ghost text-zinc-400 hover:text-white"
             aria-label="Back"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -129,13 +129,13 @@ export function LevelingSettingsDrawer({
 
         {/* Search settings input */}
         <div className="relative my-2">
-          <Search className="absolute left-3.5 top-3 h-4 w-4 text-cyan-400" />
+          <Search className="absolute left-3.5 top-3 h-4 w-4 text-cyan-400 z-10 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={isBn ? "সেটিংস খুঁজুন..." : "Search settings"}
-            className="w-full rounded-2xl border border-cyan-500/30 bg-[#091326] py-2.5 pl-10 pr-4 text-xs font-medium text-white placeholder-zinc-500 focus:border-cyan-400 focus:outline-none transition-all"
+            className="input input-bordered input-primary input-sm w-full bg-[#091326] pl-10 text-xs font-medium text-white placeholder-zinc-500"
           />
         </div>
 
@@ -150,7 +150,7 @@ export function LevelingSettingsDrawer({
                   HUNTER PASS
                 </span>
               </div>
-              <span className="text-[10px] font-bold text-cyan-300/80 bg-cyan-950/60 border border-cyan-500/40 px-2 py-0.5 rounded-full">
+              <span className="badge badge-primary badge-outline text-[10px] font-bold">
                 {isBn ? "৭ দিন ফ্রি ট্রায়াল" : "7-day free trial"}
               </span>
             </div>
@@ -182,7 +182,7 @@ export function LevelingSettingsDrawer({
                 playSound("system-click");
                 onOpenAchievements();
               }}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              className="btn btn-sm btn-primary w-full shadow-md gap-1.5"
             >
               <span>{isBn ? "সকল সুবিধা দেখুন →" : "See everything included →"}</span>
             </button>
@@ -204,7 +204,7 @@ export function LevelingSettingsDrawer({
                       {playerStats.name}
                     </h4>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="rounded bg-cyan-950/80 border border-cyan-500/40 px-1.5 py-0.5 text-[9px] font-black text-cyan-300">
+                      <span className="badge badge-primary badge-outline text-[9px] font-black">
                         RANK {playerStats.rank}
                       </span>
                       <span className="text-zinc-500 text-xs">·</span>
@@ -252,10 +252,10 @@ export function LevelingSettingsDrawer({
                   {isBn ? "জেমিনাই এআই ব্যাকএন্ড" : "Gemini AI Backend Engine"}
                 </span>
               </div>
-              <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
+              <span className={`badge badge-sm font-mono font-bold ${
                 backendStatus?.geminiConfigured
-                  ? "bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.3)]"
-                  : "bg-amber-950/80 border-amber-500/60 text-amber-300 animate-pulse"
+                  ? "badge-success badge-outline shadow-[0_0_8px_rgba(52,211,153,0.3)]"
+                  : "badge-warning badge-outline animate-pulse"
               }`}>
                 {backendStatus?.geminiConfigured ? "ONLINE (SERVER)" : "NEEDS VERCEL KEY"}
               </span>
@@ -296,22 +296,16 @@ export function LevelingSettingsDrawer({
                     </span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
+                <input
+                  type="checkbox"
+                  aria-label={isBn ? "সাউন্ড ইফেক্টস" : "Sound Effects"}
+                  checked={soundOn}
+                  onChange={() => {
                     unlockAudio();
                     onToggleSound();
                   }}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    soundOn ? "bg-blue-600" : "bg-zinc-700"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      soundOn ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
+                  className="toggle toggle-primary toggle-sm"
+                />
               </div>
 
               {/* Haptic Feedback Toggle */}
@@ -327,22 +321,16 @@ export function LevelingSettingsDrawer({
                     </span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
+                <input
+                  type="checkbox"
+                  aria-label={isBn ? "হ্যাপটিক ফিডব্যাক" : "Haptic Feedback"}
+                  checked={hapticsOn}
+                  onChange={() => {
                     vibrate(30);
                     onToggleHaptics();
                   }}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    hapticsOn ? "bg-blue-600" : "bg-zinc-700"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      hapticsOn ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
+                  className="toggle toggle-primary toggle-sm"
+                />
               </div>
 
               {/* Language Switcher */}
@@ -364,9 +352,9 @@ export function LevelingSettingsDrawer({
                     playSound("system-click");
                     onLanguageChange(lang === "bn" ? "en" : "bn");
                   }}
-                  className="rounded-xl border border-cyan-500/40 bg-cyan-950/40 px-3 py-1 text-xs font-bold text-cyan-300"
+                  className="btn btn-xs btn-outline btn-primary"
                 >
-                  {lang === "bn" ? "Switch to English" : "বাংলায় দেখুন"}
+                  {lang === "bn" ? "Switch to English" : "বাংলায় দেখুন"}
                 </button>
               </div>
             </div>
@@ -443,10 +431,10 @@ export function LevelingSettingsDrawer({
                   playSound("system-click");
                   onExportData();
                 }}
-                className="w-full flex items-center justify-between p-2 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-xs font-bold"
+                className="btn btn-sm btn-outline btn-info w-full justify-between"
               >
                 <span>{isBn ? "ব্যাকআপ ফাইল ডাউনলোড (JSON)" : "Export Hunter Backup (JSON)"}</span>
-                <Share2 className="h-4 w-4 text-cyan-400" />
+                <Share2 className="h-4 w-4" />
               </button>
 
               <button
@@ -456,10 +444,10 @@ export function LevelingSettingsDrawer({
                     onResetData();
                   }
                 }}
-                className="w-full flex items-center justify-between p-2 rounded-xl bg-red-950/20 border border-red-500/30 text-red-300 text-xs font-bold"
+                className="btn btn-sm btn-outline btn-error w-full justify-between"
               >
                 <span>{isBn ? "ডাটা রিসেট করুন" : "Reset Local Data"}</span>
-                <LogOut className="h-4 w-4 text-red-400" />
+                <LogOut className="h-4 w-4" />
               </button>
             </div>
           </div>

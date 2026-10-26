@@ -137,7 +137,7 @@ export default function DailyQuestCard({
   ];
 
   return (
-    <div id="daily-quest-card" className="relative rounded-2xl bg-gradient-to-b from-[#05112e]/95 via-[#07153a]/90 to-[#030818]/95 border-2 border-cyan-400/70 shadow-[0_0_35px_rgba(6,182,212,0.35)] p-4 sm:p-5 overflow-hidden transition-all hover:border-cyan-400 system-scanlines system-grid-bg">
+    <div id="daily-quest-card" className="card relative rounded-2xl bg-gradient-to-b from-[#05112e]/95 via-[#07153a]/90 to-[#030818]/95 border-2 border-cyan-400/70 shadow-[0_0_35px_rgba(6,182,212,0.35)] p-4 sm:p-5 overflow-hidden transition-all hover:border-cyan-400 system-scanlines system-grid-bg">
       {/* Corner Luminous Diamonds */}
       <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
       <div className="absolute top-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
@@ -148,10 +148,10 @@ export default function DailyQuestCard({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-cyan-500/40">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-black tracking-widest uppercase bg-cyan-400 text-black shadow-md">
+            <span className="badge badge-primary text-[10px] font-mono font-black tracking-widest uppercase">
               {isBn ? "QUEST INFO : কোয়েস্ট তথ্য" : "QUEST INFO : DAILY ASSIGNMENT"}
             </span>
-            <span className="text-xs font-mono text-cyan-300 font-black text-glow-cyan">
+            <span className="badge badge-outline badge-info text-xs font-mono font-black">
               {overallPercent}% {isBn ? "সম্পন্ন" : "COMPLETE"}
             </span>
           </div>
@@ -166,18 +166,18 @@ export default function DailyQuestCard({
         {/* Live Countdown & Status Pill */}
         <div className="flex items-center gap-2">
           {timeLeft && (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/70 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold shadow-[0_0_10px_rgba(245,158,11,0.3)]">
-              <Clock className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+            <div className="badge badge-warning badge-outline gap-1.5 px-3 py-3 font-mono text-xs font-bold shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+              <Clock className="h-3.5 w-3.5 animate-pulse" />
               <span>{isBn ? "বাকি সময়" : "TIME"} : {timeLeft}</span>
             </div>
           )}
 
           {completed ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/60 shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+            <span className="badge badge-success gap-1.5 px-3 py-3 text-xs font-black shadow-[0_0_15px_rgba(16,185,129,0.5)]">
               <CheckCircle2 className="h-4 w-4" /> {isBn ? "সম্পন্ন" : "CLEARED"}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black bg-cyan-500/15 text-cyan-300 border border-cyan-400/50">
+            <span className="badge badge-info badge-outline gap-1.5 px-3 py-3 text-xs font-black">
               <Zap className="h-3.5 w-3.5 animate-pulse text-cyan-400" /> {isBn ? "চলমান" : "ACTIVE"}
             </span>
           )}
@@ -210,27 +210,22 @@ export default function DailyQuestCard({
                 </span>
               </div>
 
-              {/* Progress Bar */}
-              <div className="h-2 w-full rounded-full bg-zinc-950 border border-cyan-500/30 overflow-hidden mb-2">
-                <div
-                  className={`h-full transition-all duration-300 ${
-                    isDone
-                      ? "bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.8)]"
-                      : "bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
-                  }`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
+              {/* DaisyUI Progress Bar */}
+              <progress
+                className={`progress w-full h-2 ${isDone ? "progress-success" : "progress-primary"}`}
+                value={item.current}
+                max={item.target}
+              />
 
               {/* Quick Action Buttons */}
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] text-zinc-500">{pct}%</span>
+                <span className="text-[10px] text-zinc-500 font-bold">{pct}%</span>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => handleIncrement(item.key, -item.step)}
                     disabled={item.current <= 0}
-                    className="system-btn-chamfer px-2 py-0.5 text-[11px] font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-400 disabled:opacity-30 active:scale-95 transition-all cursor-pointer"
+                    className="btn btn-xs btn-outline btn-ghost text-zinc-400 disabled:opacity-30 active:scale-95 transition-all cursor-pointer"
                   >
                     -{item.step}
                   </button>
@@ -238,7 +233,7 @@ export default function DailyQuestCard({
                     type="button"
                     onClick={() => handleIncrement(item.key, item.step)}
                     disabled={isDone}
-                    className="system-btn-chamfer px-3 py-0.5 text-[11px] font-bold bg-cyan-400/25 hover:bg-cyan-400/40 text-cyan-200 border border-cyan-400/60 active:scale-95 transition-all disabled:opacity-30 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.4)]"
+                    className="btn btn-xs btn-primary font-bold active:scale-95 transition-all disabled:opacity-30 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.4)]"
                   >
                     +{item.step} {item.unit}
                   </button>
@@ -250,8 +245,8 @@ export default function DailyQuestCard({
       </div>
 
       {/* Penalty Warning Box */}
-      <div className="flex items-center gap-2.5 p-3 rounded-xl bg-red-950/40 border-2 border-red-500/50 text-xs font-mono text-red-200 mb-3 shadow-[0_0_15px_rgba(239,68,68,0.25)]">
-        <ShieldAlert className="h-5 w-5 text-red-400 shrink-0 animate-pulse" />
+      <div className="alert alert-error bg-red-950/60 border-2 border-red-500/60 text-xs font-mono text-red-200 mb-3 shadow-[0_0_15px_rgba(239,68,68,0.25)] flex items-start gap-2.5">
+        <ShieldAlert className="h-5 w-5 text-red-400 shrink-0 animate-pulse mt-0.5" />
         <div className="leading-snug">
           <strong className="text-red-400 block font-black uppercase">
             {isBn ? "[ পেনাল্টি কোয়েস্ট সতর্কতা : PENALTY WARNING ]" : "[ PENALTY QUEST WARNING : PENALTY ZONE ]"}
@@ -288,10 +283,10 @@ export default function DailyQuestCard({
             vibrate([100, 50, 100]);
             onClaimReward();
           }}
-          className={`system-btn-chamfer w-full sm:w-auto px-6 py-3 font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+          className={`btn w-full sm:w-auto font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
             completed
-              ? "bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 hover:brightness-110 text-black shadow-[0_0_25px_rgba(6,182,212,0.8)] active:scale-95 cursor-pointer text-glow-cyan"
-              : "bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed opacity-50"
+              ? "btn-primary shadow-[0_0_25px_rgba(6,182,212,0.8)] active:scale-95 cursor-pointer text-black"
+              : "btn-disabled bg-zinc-900 text-zinc-600 border border-zinc-800"
           }`}
         >
           <Flame className="h-4 w-4" />

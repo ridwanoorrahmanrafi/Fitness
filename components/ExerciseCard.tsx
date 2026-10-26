@@ -84,7 +84,7 @@ export function ExerciseCard({
 
   return (
     <article
-      className={`group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 shadow-xl ${
+      className={`card group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 shadow-xl ${
         allDone
           ? "border-cyan-400 bg-[#040e29]/95 shadow-[0_0_30px_rgba(6,182,212,0.45)]"
           : "border-cyan-500/35 bg-[#05112e]/90 hover:border-cyan-400/80 shadow-lg"
@@ -98,7 +98,7 @@ export function ExerciseCard({
         />
       </div>
 
-      <div className="p-4 sm:p-5">
+      <div className="p-4 sm:p-5 card-body p-0">
         {/* Header with Exercise Title and Live Animated Thumbnail */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
@@ -124,7 +124,7 @@ export function ExerciseCard({
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-cyan-950 border border-cyan-400/60 text-[11px] font-mono font-black text-cyan-300">
+                <span className="badge badge-primary badge-sm font-mono font-black">
                   {index + 1}
                 </span>
                 <h3 className="text-base font-black text-white sm:text-lg truncate tracking-tight uppercase">
@@ -135,7 +135,7 @@ export function ExerciseCard({
                 {exercise.muscles.slice(0, 3).map((m) => MUSCLE_LABEL[m]).join(" · ")}
               </p>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
-                <span className="rounded bg-black/60 border border-cyan-500/25 px-1.5 py-0.5 font-bold text-zinc-300">
+                <span className="badge badge-outline badge-sm font-bold text-zinc-300">
                   {equipmentText}
                 </span>
               </div>
@@ -143,7 +143,7 @@ export function ExerciseCard({
           </div>
 
           <div className="shrink-0 text-right">
-            <span className="inline-block rounded-lg border border-zinc-700/70 bg-zinc-800/90 px-2.5 py-1 text-xs font-bold text-zinc-100 shadow-sm">
+            <span className="badge badge-neutral badge-lg font-mono font-bold text-zinc-100 shadow-sm">
               {pe.sets} × {pe.reps}
             </span>
             <div className="mt-1 flex items-center justify-end gap-1 text-[11px] text-zinc-400">
@@ -172,10 +172,10 @@ export function ExerciseCard({
               data-testid={`btn-animation-${exercise.id}`}
               type="button"
               onClick={onOpenAnimation}
-              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-emerald-500/60 bg-emerald-500/15 px-3.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/25 transition-all shadow-sm active:scale-95"
+              className="btn btn-sm btn-outline btn-success gap-1.5 text-xs font-bold shadow-sm active:scale-95"
               title={`Watch animated demonstration and form guide for ${exercise.name}`}
             >
-              <Play className="h-3.5 w-3.5 fill-emerald-400 text-emerald-400" />
+              <Play className="h-3.5 w-3.5 fill-current" />
               <span>{t.animationBtn}</span>
             </button>
           )}
@@ -184,7 +184,7 @@ export function ExerciseCard({
             <button
               onClick={() => onSwap(easier.id)}
               disabled={!canSwap}
-              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 hover:border-zinc-500 hover:text-white disabled:opacity-40 transition-colors active:scale-95"
+              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95"
             >
               <TrendingDown className="h-3.5 w-3.5 text-amber-400" /> {t.easierBtn(easier.name)}
             </button>
@@ -193,7 +193,7 @@ export function ExerciseCard({
             <button
               onClick={() => onSwap(harder.id)}
               disabled={!canSwap}
-              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 hover:border-zinc-500 hover:text-white disabled:opacity-40 transition-colors active:scale-95"
+              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95"
             >
               <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> {t.harderBtn(harder.name)}
             </button>
@@ -203,7 +203,7 @@ export function ExerciseCard({
               onClick={() => setSwapOpen((o) => !o)}
               aria-expanded={swapOpen}
               disabled={!canSwap}
-              className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-700 px-3 text-xs text-zinc-300 hover:border-zinc-500 hover:text-white disabled:opacity-40 transition-colors active:scale-95"
+              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95"
             >
               <ArrowLeftRight className="h-3.5 w-3.5 text-cyan-400" /> {t.swapBtn}
             </button>
@@ -214,7 +214,7 @@ export function ExerciseCard({
             href={`https://www.youtube.com/results?search_query=proper+form+${encodeURIComponent(exercise.name)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-zinc-700/80 bg-zinc-800/40 px-3 text-xs text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors ml-auto"
+            className="btn btn-sm btn-ghost border border-zinc-700/80 text-xs text-zinc-300 hover:text-white ml-auto gap-1.5"
             title={`Search proper biomechanical form for ${exercise.name}`}
           >
             <ExternalLink className="h-3 w-3 text-emerald-400" />
@@ -301,7 +301,7 @@ export function ExerciseCard({
                             reps: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)),
                           })
                         }
-                        className="min-h-[44px] w-14 sm:w-16 rounded-xl border border-zinc-700 bg-zinc-900 px-1 text-center text-base sm:text-sm font-semibold text-zinc-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-colors"
+                        className="input input-bordered input-primary input-sm w-14 sm:w-16 font-mono text-center font-bold"
                       />
                       <span className="text-[11px] sm:text-xs text-zinc-400 font-medium hidden xs:inline">reps</span>
                     </div>
@@ -326,7 +326,7 @@ export function ExerciseCard({
                               onChangeSet(i, { weightKg: kgVal });
                             }
                           }}
-                          className="min-h-[44px] w-16 sm:w-20 rounded-xl border border-zinc-700 bg-zinc-900 px-1 text-center text-base sm:text-sm font-semibold text-zinc-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-colors"
+                          className="input input-bordered input-primary input-sm w-16 sm:w-20 font-mono text-center font-bold"
                         />
                         <span className="text-[11px] sm:text-xs text-zinc-400 font-medium">{weightUnit}</span>
                       </div>
@@ -335,15 +335,15 @@ export function ExerciseCard({
                   </>
                 )}
 
-                {/* Complete Set Checkbox Button with Solo Leveling Chamfer & Glow */}
+                {/* Complete Set Checkbox Button with DaisyUI button */}
                 <button
                   onClick={() => onToggleSet(i)}
                   aria-pressed={s.done}
                   aria-label={`Mark set ${i + 1} ${s.done ? "not done" : "done"}`}
-                  className={`system-btn-chamfer flex h-11 w-11 shrink-0 items-center justify-center transition-all duration-200 active:scale-90 cursor-pointer ${
+                  className={`btn btn-sm btn-square h-10 w-10 sm:h-11 sm:w-11 transition-all duration-200 active:scale-90 cursor-pointer ${
                     s.done
-                      ? "bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-[0_0_18px_rgba(6,182,212,0.85)] scale-105"
-                      : "border border-cyan-500/40 bg-black/60 text-cyan-400/80 hover:bg-cyan-950/40 hover:text-cyan-200 hover:border-cyan-400"
+                      ? "btn-primary shadow-[0_0_18px_rgba(6,182,212,0.85)] scale-105"
+                      : "btn-outline btn-ghost border-cyan-500/40 text-cyan-400 hover:bg-cyan-950/40 hover:text-cyan-200 hover:border-cyan-400"
                   }`}
                 >
                   <CheckCircle2 className={`h-5 w-5 ${s.done ? "stroke-[3]" : ""}`} />

@@ -33,7 +33,7 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
       {/* Header Banner */}
       <div className="rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-r from-cyan-950/80 via-black to-purple-950/70 p-4 shadow-[0_0_25px_rgba(6,182,212,0.25)] system-scanlines system-grid-bg">
         <div className="flex items-center gap-2 mb-1">
-          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-cyan-400 text-black">
+          <span className="badge badge-primary font-black uppercase text-[10px]">
             {isBn ? "হান্টার আর্কাইভ" : "HUNTER ARCHIVES"}
           </span>
           <span className="text-xs text-cyan-300 font-bold uppercase tracking-wider">
@@ -46,24 +46,24 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
       </div>
 
       {/* 3 Metric Pills */}
-      <div className="grid grid-cols-3 gap-2.5 text-center">
-        <div className="rounded-xl border border-cyan-500/40 bg-black/70 p-3 shadow-md">
-          <div className="text-xl font-black text-white text-glow-cyan">{week}</div>
-          <div className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+      <div className="stats stats-horizontal shadow w-full bg-[#081226] border border-cyan-500/30">
+        <div className="stat p-3 text-center">
+          <div className="stat-title text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
             {isBn ? "৭ দিনের সেশন" : "7D RAIDS"}
           </div>
+          <div className="stat-value text-xl font-black text-white text-glow-cyan">{week}</div>
         </div>
-        <div className="rounded-xl border border-purple-500/40 bg-black/70 p-3 shadow-md">
-          <div className="text-xl font-black text-purple-300 text-glow-purple">{history.length}</div>
-          <div className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">
+        <div className="stat p-3 text-center border-x border-cyan-500/20">
+          <div className="stat-title text-[10px] text-purple-400 font-bold uppercase tracking-wider">
             {isBn ? "মোট সেশন" : "TOTAL CLEARS"}
           </div>
+          <div className="stat-value text-xl font-black text-purple-300 text-glow-purple">{history.length}</div>
         </div>
-        <div className="rounded-xl border border-cyan-500/40 bg-black/70 p-3 shadow-md">
-          <div className="text-xl font-black text-amber-400 text-glow-amber">{totalVolume.toLocaleString()}</div>
-          <div className="text-[10px] text-amber-400/90 font-bold uppercase tracking-wider">
+        <div className="stat p-3 text-center">
+          <div className="stat-title text-[10px] text-amber-400/90 font-bold uppercase tracking-wider">
             {isBn ? "উত্তোলিত কেজি" : "KG LIFTED"}
           </div>
+          <div className="stat-value text-xl font-black text-amber-400 text-glow-amber">{totalVolume.toLocaleString()}</div>
         </div>
       </div>
 
@@ -165,7 +165,7 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
               playSound("system-click");
               onExport();
             }}
-            className="system-btn-chamfer flex min-h-[40px] items-center gap-1.5 border border-cyan-500/50 bg-cyan-950/40 px-3.5 text-xs font-black uppercase text-cyan-200 hover:bg-cyan-900/50 active:scale-95 transition-all cursor-pointer"
+            className="btn btn-sm btn-primary gap-1.5 uppercase font-mono text-xs"
           >
             <Download className="h-4 w-4" /> {isBn ? "[ ব্যাকআপ এক্সপোর্ট ]" : "[ EXPORT BACKUP ]"}
           </button>
@@ -174,7 +174,7 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
               playSound("system-click");
               fileRef.current?.click();
             }}
-            className="system-btn-chamfer flex min-h-[40px] items-center gap-1.5 border border-cyan-500/50 bg-black px-3.5 text-xs font-black uppercase text-zinc-200 hover:border-cyan-400 active:scale-95 transition-all cursor-pointer"
+            className="btn btn-sm btn-outline btn-neutral text-zinc-200 gap-1.5 uppercase font-mono text-xs"
           >
             <Upload className="h-4 w-4" /> {isBn ? "[ ব্যাকআপ ইমপোর্ট ]" : "[ IMPORT BACKUP ]"}
           </button>
@@ -189,7 +189,7 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
                   onClear();
                 }
               }}
-              className="system-btn-chamfer flex min-h-[40px] items-center gap-1.5 border border-red-500/50 bg-red-950/40 px-3.5 text-xs font-black uppercase text-red-300 hover:bg-red-950 active:scale-95 transition-all cursor-pointer"
+              className="btn btn-sm btn-outline btn-error gap-1.5 uppercase font-mono text-xs"
             >
               <Trash2 className="h-4 w-4" /> {isBn ? "[ হিস্ট্রি মুছুন ]" : "[ PURGE ARCHIVES ]"}
             </button>
@@ -207,7 +207,7 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
             }}
           />
         </div>
-        {message && <p role="status" className="text-xs text-cyan-300 font-bold">{message}</p>}
+        {message && <div role="status" className="alert alert-info py-2 text-xs font-bold text-cyan-300 font-mono mt-2">{message}</div>}
       </div>
     </div>
   );

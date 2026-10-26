@@ -108,7 +108,7 @@ export function RestTimer({
               playSound("system-click");
               onAdjust(-15);
             }}
-            className="system-btn-chamfer min-h-[36px] px-2.5 border border-cyan-500/40 bg-black/60 text-xs font-black text-zinc-300 hover:text-white hover:border-cyan-400 active:scale-95 transition-all cursor-pointer"
+            className="btn btn-xs btn-outline btn-neutral text-zinc-300 hover:text-white font-mono font-black"
             title="Subtract 15 seconds"
           >
             -15s
@@ -118,7 +118,7 @@ export function RestTimer({
               playSound("system-click");
               onAdjust(15);
             }}
-            className="system-btn-chamfer min-h-[36px] px-2.5 border border-cyan-500/40 bg-black/60 text-xs font-black text-cyan-300 hover:text-white hover:border-cyan-400 active:scale-95 transition-all cursor-pointer"
+            className="btn btn-xs btn-outline btn-neutral text-cyan-300 hover:text-white font-mono font-black"
             title="Add 15 seconds"
           >
             +15s
@@ -129,7 +129,7 @@ export function RestTimer({
               state === "running" ? onPause() : onResume();
             }}
             aria-label={state === "running" ? "Pause" : "Resume"}
-            className="system-btn-chamfer flex h-9 w-9 items-center justify-center bg-cyan-400 text-black hover:bg-cyan-300 active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.8)] transition-all font-black cursor-pointer"
+            className="btn btn-sm btn-primary btn-square shadow-[0_0_15px_rgba(6,182,212,0.8)]"
           >
             {state === "running" ? (
               <Pause className="h-4 w-4 stroke-[3]" />
@@ -144,7 +144,7 @@ export function RestTimer({
             }}
             aria-label="Skip timer"
             title="Skip timer"
-            className="system-btn-chamfer flex h-9 w-9 items-center justify-center border border-zinc-700 bg-black/60 text-zinc-400 hover:text-white hover:border-cyan-400 active:scale-95 transition-all cursor-pointer"
+            className="btn btn-sm btn-ghost btn-square text-zinc-400 hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
@@ -152,12 +152,11 @@ export function RestTimer({
       </div>
 
       {/* Fluid progress indicator bar */}
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-950 border border-cyan-500/30">
-        <div
-          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-300 ease-out shadow-[0_0_8px_rgba(6,182,212,0.9)]"
-          style={{ width: `${Math.max(0, Math.min(100, (1 - progress) * 100))}%` }}
-        />
-      </div>
+      <progress
+        className="progress progress-primary w-full h-1.5 mt-3"
+        value={Math.max(0, Math.min(100, Math.round((1 - progress) * 100)))}
+        max="100"
+      />
     </aside>
   );
 }

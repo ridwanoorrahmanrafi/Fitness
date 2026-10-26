@@ -144,7 +144,7 @@ export function LandingPage({
               id="landing-lang-toggle"
               type="button"
               onClick={onLanguageToggle}
-              className="flex h-10 items-center gap-1.5 system-btn-chamfer border border-cyan-500/40 bg-[#03081a] px-3 font-mono text-xs font-bold text-cyan-300 hover:border-cyan-400 hover:shadow-[0_0_10px_rgba(6,182,212,0.35)] transition-all"
+              className="btn btn-sm btn-outline btn-primary gap-1.5 font-mono text-xs font-bold text-cyan-300"
             >
               <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
               <span className="font-black text-cyan-200">{lang === "bn" ? "EN" : "বাংলা"}</span>
@@ -154,7 +154,7 @@ export function LandingPage({
             <button
               onClick={onOpenAuth}
               type="button"
-              className="flex h-10 items-center gap-1.5 system-btn-chamfer border border-cyan-500/30 bg-[#03081a] px-3 font-mono text-xs font-medium text-cyan-300/80 hover:text-white hover:border-cyan-400 transition-all"
+              className="btn btn-sm btn-outline btn-neutral gap-1.5 font-mono text-xs text-cyan-300 hover:text-white"
             >
               <User className="h-4 w-4 text-cyan-400" />
               <span className="hidden sm:inline">{userName ? `[ ${userName} ]` : t.navLogin}</span>
@@ -168,7 +168,7 @@ export function LandingPage({
                 onLaunchApp();
               }}
               type="button"
-              className="flex h-10 items-center gap-2 system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-4 font-mono text-xs font-black uppercase text-white shadow-[0_0_20px_rgba(6,182,212,0.45)] hover:brightness-110 active:scale-95 transition-all"
+              className="btn btn-sm btn-primary gap-2 font-mono text-xs font-black uppercase text-white shadow-[0_0_20px_rgba(6,182,212,0.45)]"
             >
               <span>{t.landingLaunchApp}</span>
               <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
@@ -255,7 +255,7 @@ export function LandingPage({
                 onLaunchApp();
               }}
               type="button"
-              className="flex min-h-[54px] items-center gap-2.5 system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-8 font-mono text-sm font-black uppercase text-white shadow-[0_0_25px_rgba(6,182,212,0.5)] hover:brightness-110 transition-all active:scale-95 cursor-pointer tracking-wider"
+              className="btn btn-primary min-h-[54px] px-8 font-mono text-sm font-black uppercase text-white shadow-[0_0_25px_rgba(6,182,212,0.5)] tracking-wider gap-2.5 cursor-pointer"
             >
               <Play className="h-4 w-4 fill-current stroke-none" />
               <span>{isBn ? "◆ সিস্টেমে প্রবেশ করুন (ARISE) ◆" : "◆ ENTER THE SYSTEM (ARISE) ◆"}</span>
@@ -267,7 +267,7 @@ export function LandingPage({
                 onOpenDiet();
               }}
               type="button"
-              className="flex min-h-[54px] items-center gap-2 system-btn-chamfer border border-cyan-500/40 bg-[#03081a]/90 px-6 font-mono text-sm font-bold text-cyan-300 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.35)] transition-all active:scale-95"
+              className="btn btn-outline btn-primary min-h-[54px] px-6 font-mono text-sm font-bold gap-2 text-cyan-300"
             >
               <Utensils className="h-4 w-4 text-cyan-400" />
               <span>{isBn ? "[ হান্টার পুষ্টি : বাঙালি ডায়েট ]" : "[ HUNTER NUTRITION ARCHIVES ]"}</span>
@@ -280,7 +280,7 @@ export function LandingPage({
                   onOpenExercises();
                 }}
                 type="button"
-                className="flex min-h-[54px] items-center gap-2 system-btn-chamfer border border-purple-500/40 bg-[#080418]/90 px-6 font-mono text-sm font-bold text-purple-300 hover:border-purple-400 hover:shadow-[0_0_15px_rgba(168,85,247,0.35)] transition-all active:scale-95"
+                className="btn btn-outline btn-secondary min-h-[54px] px-6 font-mono text-sm font-bold gap-2 text-purple-300"
               >
                 <Dumbbell className="h-4 w-4 text-purple-400" />
                 <span>{isBn ? "[ কমব্যাট কোডেক্স : ১০০+ মুভমেন্ট ]" : "[ COMBAT CODEX : 93+ MOVEMENTS ]"}</span>
@@ -614,36 +614,27 @@ export function LandingPage({
         </div>
 
         <div className="space-y-3">
-          {faqs.map((faq, idx) => {
-            const isOpen = openFaqIndex === idx;
-            return (
-              <div
-                key={idx}
-                className="system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/90 overflow-hidden transition-all"
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    playSound("system-click");
-                    setOpenFaqIndex(isOpen ? null : idx);
-                  }}
-                  className="flex w-full items-center justify-between p-4 text-left font-mono font-bold text-xs sm:text-sm text-cyan-200 hover:text-white transition-colors"
-                >
-                  <span>{faq.q}</span>
-                  {isOpen ? (
-                    <ChevronUp className="h-4 w-4 text-cyan-400 shrink-0" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-cyan-600 shrink-0" />
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="p-4 pt-1 font-mono text-xs text-cyan-300/80 leading-relaxed border-t border-cyan-500/20 bg-[#020512]">
-                    {faq.a}
-                  </div>
-                )}
+          {faqs.map((faq, idx) => (
+            <div
+              key={idx}
+              className="collapse collapse-arrow border border-cyan-500/30 bg-[#03081a]/90 font-mono text-cyan-200"
+            >
+              <input
+                type="checkbox"
+                checked={openFaqIndex === idx}
+                onChange={() => {
+                  playSound("system-click");
+                  setOpenFaqIndex(openFaqIndex === idx ? null : idx);
+                }}
+              />
+              <div className="collapse-title text-xs sm:text-sm font-bold text-cyan-200">
+                {faq.q}
               </div>
-            );
-          })}
+              <div className="collapse-content font-mono text-xs text-cyan-300/80 leading-relaxed border-t border-cyan-500/20 bg-[#020512] pt-3">
+                <p>{faq.a}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

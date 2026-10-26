@@ -1391,10 +1391,10 @@ export default function Page() {
                 }}
                 aria-label="Trigger Arise Awakening"
                 title="Trigger Arise Awakening"
-                className="hidden sm:flex lg:hidden xl:flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/60 to-indigo-950/60 px-2.5 sm:px-3 text-xs font-black text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)] active:scale-95 transition-all shrink-0 cursor-pointer"
+                className="hidden sm:flex lg:hidden xl:flex btn btn-sm btn-secondary gap-1.5 text-xs font-black tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0"
               >
-                <Sparkles className="h-3.5 w-3.5 text-purple-400 animate-pulse" />
-                <span className="tracking-wider">ARISE</span>
+                <Sparkles className="h-3.5 w-3.5 text-purple-200 animate-pulse" />
+                <span>ARISE</span>
               </button>
 
             {/* Language Switcher */}
@@ -1412,7 +1412,7 @@ export default function Page() {
               }}
               aria-label="Switch Language"
               title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-              className="flex h-9 sm:h-10 items-center gap-1 rounded-xl border border-cyan-500/30 bg-cyan-950/40 px-2 sm:px-2.5 text-xs font-mono font-bold text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/40 shadow-[0_0_10px_rgba(6,182,212,0.2)] active:scale-95 transition-all shrink-0"
+              className="btn btn-sm btn-outline btn-primary gap-1 font-mono font-bold text-xs shrink-0"
             >
               <span className="text-sm">🌐</span>
               <span className="font-mono text-[11px] font-black">{lang === "bn" ? "EN" : "বাং"}</span>
@@ -1429,7 +1429,7 @@ export default function Page() {
               }}
               aria-label={soundOn ? "Mute System Audio" : "Unmute System Audio"}
               title={soundOn ? "Sound: ON" : "Sound: MUTED"}
-              className="hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0"
+              className="hidden sm:flex btn btn-sm btn-square btn-ghost text-zinc-300 hover:text-white shrink-0"
             >
               {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
             </button>
@@ -1450,10 +1450,10 @@ export default function Page() {
               }}
               aria-label="System Notifications"
               title="System Notifications"
-              className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 transition-colors shrink-0"
+              className="relative btn btn-sm btn-square btn-ghost text-cyan-400 shrink-0"
             >
               <Bell className="h-4 w-4" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse" />
             </button>
 
             {/* Menu Drawer button */}
@@ -2401,7 +2401,7 @@ export default function Page() {
           className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] inset-x-3 z-30 mx-auto max-w-lg leveling-card p-2.5 backdrop-blur-xl flex items-center justify-between gap-2 transition-all animate-in slide-in-from-bottom-4 shadow-[0_0_25px_rgba(6,182,212,0.3)]"
         >
           <div className="flex items-center gap-2 pl-1.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 font-bold text-xs font-mono">
+            <span className="badge badge-primary font-bold text-xs font-mono h-8 px-2 shadow-[0_0_10px_rgba(6,182,212,0.4)]">
               {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}%
             </span>
             <div className="text-[11px] leading-tight font-mono">
@@ -2415,7 +2415,7 @@ export default function Page() {
               <button
                 type="button"
                 onClick={startWorkout}
-                className="flex min-h-[42px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-600 to-indigo-600 px-4 text-xs font-mono font-bold text-white active:scale-95 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                className="btn btn-primary min-h-[42px] gap-1.5 text-xs font-mono font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
                 <span>{tr.startWorkoutBtn}</span>
@@ -2424,7 +2424,7 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setShowFinish(true)}
-                className="flex min-h-[42px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-4 text-xs font-mono font-black text-white active:scale-95 shadow-[0_0_20px_rgba(6,182,212,0.5)] animate-pulse"
+                className="btn btn-primary min-h-[42px] gap-1.5 text-xs font-mono font-black shadow-[0_0_20px_rgba(6,182,212,0.5)] animate-pulse"
               >
                 <CheckCircle2 className="h-4 w-4 stroke-[3]" />
                 <span>{tr.finishWorkoutBtn}</span>
@@ -2433,7 +2433,7 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setShowFinish(true)}
-                className="flex min-h-[42px] items-center gap-1 rounded-xl border border-cyan-500/40 bg-[#03081a] px-3 text-xs font-mono font-semibold text-cyan-300 hover:text-white active:scale-95"
+                className="btn btn-outline btn-primary min-h-[42px] gap-1 text-xs font-mono font-semibold"
               >
                 <span>{tr.finishWorkoutBtn}</span>
               </button>

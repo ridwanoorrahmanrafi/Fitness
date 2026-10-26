@@ -195,19 +195,19 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
           </button>
         </div>
 
-        {/* Engine Switcher (Preset vs Gemini AI) */}
+        {/* Engine Switcher (DaisyUI Tabs: Preset vs Gemini AI) */}
         <div className="border-b border-cyan-500/20 bg-[#03081a]/80 px-4 py-2.5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="tabs tabs-boxed bg-[#05112e] p-1 border border-cyan-500/30">
             <button
               type="button"
               onClick={() => setViewMode("preset")}
-              className={`flex items-center gap-1.5 system-btn-chamfer px-3 py-1.5 text-xs font-mono font-bold tracking-wide transition-all ${
+              className={`tab text-xs font-mono font-bold tracking-wide transition-all gap-1.5 ${
                 viewMode === "preset"
-                  ? "bg-cyan-500/25 text-cyan-300 border border-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                  : "border border-cyan-500/20 bg-[#03081a]/80 text-cyan-400/60 hover:text-cyan-200"
+                  ? "tab-active bg-primary text-black font-black"
+                  : "text-zinc-400 hover:text-white"
               }`}
             >
-              <Utensils className="h-3.5 w-3.5 text-cyan-400" />
+              <Utensils className="h-3.5 w-3.5" />
               <span>{isBn ? "প্রমাণিত হান্টার রেশন" : "Standard Hunter Rations"}</span>
             </button>
             <button
@@ -218,15 +218,15 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   generateAiDiet();
                 }
               }}
-              className={`flex items-center gap-1.5 system-btn-chamfer px-3 py-1.5 text-xs font-mono font-bold tracking-wide transition-all ${
+              className={`tab text-xs font-mono font-bold tracking-wide transition-all gap-1.5 ${
                 viewMode === "ai"
-                  ? "bg-gradient-to-r from-cyan-500/25 to-purple-500/25 text-cyan-300 border border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-                  : "border border-cyan-500/20 bg-[#03081a]/80 text-cyan-400/60 hover:text-cyan-200"
+                  ? "tab-active bg-secondary text-white font-black"
+                  : "text-zinc-400 hover:text-white"
               }`}
             >
-              <Bot className="h-3.5 w-3.5 text-cyan-400" />
+              <Bot className="h-3.5 w-3.5" />
               <span>{isBn ? "এআই হান্টার রেশন" : "AI Tactical Rations"}</span>
-              <span className="system-btn-chamfer bg-cyan-500/30 px-1.5 py-0.2 text-[9px] font-mono text-cyan-300 border border-cyan-400/40">
+              <span className="badge badge-xs badge-primary font-mono text-[9px] uppercase">
                 PRO
               </span>
             </button>
@@ -337,10 +337,10 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                         key={p.id}
                         type="button"
                         onClick={() => toggleAiPref(p.id)}
-                        className={`rounded-lg border px-2.5 py-1 text-xs transition-colors ${
+                        className={`btn btn-xs transition-colors ${
                           selected
-                            ? "border-emerald-500 bg-emerald-500/20 text-emerald-300 font-semibold"
-                            : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                            ? "btn-primary font-bold text-black"
+                            : "btn-outline btn-neutral text-zinc-400 hover:text-white"
                         }`}
                       >
                         {isBn ? p.labelBn : p.labelEn}
@@ -350,7 +350,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                 </div>
               </div>
 
-              {/* Budget & Allergy Inputs */}
+              {/* Budget & Allergy Inputs (DaisyUI Select & Input) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <div>
                   <label className="text-[11px] text-zinc-400 block mb-1">
@@ -359,7 +359,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   <select
                     value={aiBudget}
                     onChange={(e) => setAiBudget(e.target.value as any)}
-                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-200 focus:border-emerald-500 focus:outline-none"
+                    className="select select-bordered select-primary select-sm w-full bg-zinc-950 text-xs text-zinc-200 font-mono"
                   >
                     <option value="student">{isBn ? "সাশ্রয়ী / স্টুডেন্ট বাজেট (ডিম, ডাল, ছোলা)" : "Student / Budget-friendly"}</option>
                     <option value="standard">{isBn ? "স্ট্যান্ডার্ড বাঙালি (মাছ, মুরগি, ডিম)" : "Standard Household"}</option>
@@ -375,14 +375,14 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                     value={aiRestrictions}
                     onChange={(e) => setAiRestrictions(e.target.value)}
                     placeholder={isBn ? "যেমন: চিংড়ি নিষেধ, গরুর মাংস খাই না" : "e.g. no shrimp, no beef"}
-                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs text-zinc-200 focus:border-emerald-500 focus:outline-none placeholder:text-zinc-600"
+                    className="input input-bordered input-primary input-sm w-full bg-zinc-950 text-xs text-zinc-200 font-mono placeholder:text-zinc-600"
                   />
                 </div>
               </div>
 
               {aiNotice && (
-                <div className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-950/20 p-2 text-xs text-amber-300">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+                <div className="alert alert-warning text-xs p-2.5 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-warning" />
                   <span>{aiNotice}</span>
                 </div>
               )}

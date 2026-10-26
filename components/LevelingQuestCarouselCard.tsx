@@ -358,7 +358,7 @@ export function LevelingQuestCarouselCard({
                 <button
                   type="button"
                   onClick={onClaimDailyQuest}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-black text-xs shadow-[0_0_20px_rgba(16,185,129,0.6)] active:scale-95 transition-all"
+                  className="btn btn-success btn-sm font-black text-black shadow-[0_0_20px_rgba(16,185,129,0.6)]"
                 >
                   {isBn ? "পুরস্কার সংগ্রহ করুন (+500 XP)" : "Claim Rewards (+500 XP)"}
                 </button>
@@ -452,7 +452,7 @@ export function LevelingQuestCarouselCard({
                 <button
                   type="button"
                   onClick={onStartFocusWorkout}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-[0_0_20px_rgba(37,99,235,0.5)] active:scale-95 transition-all flex items-center gap-2"
+                  className="btn btn-primary btn-sm gap-2 font-bold shadow-[0_0_20px_rgba(37,99,235,0.5)]"
                 >
                   <Play className="h-4 w-4 fill-white" />
                   <span>{isBn ? "রেইড শুরু করুন" : "Start Dungeon Raid"}</span>
@@ -520,7 +520,7 @@ export function LevelingQuestCarouselCard({
                     setUrgentActive(true);
                   }
                 }}
-                className="w-full py-2.5 rounded-2xl bg-[#09152b] border border-cyan-400 text-cyan-300 font-bold text-xs hover:bg-cyan-950/60 shadow-[0_0_15px_rgba(0,140,255,0.3)] active:scale-95 transition-all"
+                className="btn btn-outline btn-primary btn-sm w-full"
               >
                 {urgentNotifications
                   ? (isBn ? "নোটিফিকেশন বন্ধ করুন" : "Disable notifications")
@@ -560,7 +560,7 @@ export function LevelingQuestCarouselCard({
                   vibrate(20);
                   alert(isBn ? "কাস্টম কোয়েস্ট তৈরি করতে হান্টার পাস বা আর্সেনাল ব্যবহার করুন।" : "Use the Hunter Arsenal to assemble a custom training protocol.");
                 }}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 text-white shadow-[0_0_25px_rgba(0,140,255,0.6)] hover:scale-105 active:scale-95 transition-all mb-6 cursor-pointer"
+                className="btn btn-circle btn-primary h-16 w-16 text-white shadow-[0_0_25px_rgba(0,140,255,0.6)] mb-6 cursor-pointer"
               >
                 <Plus className="h-8 w-8 stroke-[2.5]" />
               </button>

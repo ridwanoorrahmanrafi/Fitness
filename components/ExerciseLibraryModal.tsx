@@ -76,9 +76,9 @@ export function ExerciseLibraryModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="exercise-library-title"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-md sm:items-center p-0 sm:p-4 animate-in fade-in duration-200"
+      className="modal modal-open backdrop-blur-md z-50 p-0 sm:p-4"
     >
-      <div className="system-window relative flex max-h-[92vh] w-full max-w-3xl flex-col rounded-t-2xl sm:rounded-2xl border-1.5 border-cyan-500/60 bg-[#03081a]/95 text-cyan-100 shadow-[0_0_40px_rgba(6,182,212,0.35)] overflow-hidden font-sans">
+      <div className="modal-box relative flex max-h-[92vh] w-full max-w-3xl flex-col p-0 rounded-t-2xl sm:rounded-2xl border-1.5 border-cyan-500/60 bg-[#03081a]/95 text-cyan-100 shadow-[0_0_40px_rgba(6,182,212,0.35)] overflow-hidden font-sans">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-cyan-500/30 bg-[#03081a] px-5 py-4">
           <div className="flex items-center gap-3">
@@ -103,7 +103,7 @@ export function ExerciseLibraryModal({
           <button
             onClick={onClose}
             aria-label="Close library"
-            className="flex h-9 w-9 items-center justify-center system-btn-chamfer border border-cyan-500/30 bg-[#03081a] text-cyan-400 hover:text-white hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all"
+            className="btn btn-sm btn-circle btn-ghost text-cyan-400 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
@@ -112,13 +112,13 @@ export function ExerciseLibraryModal({
         {/* Search & Category Filter Bar */}
         <div className="border-b border-cyan-500/20 bg-[#03081a]/80 p-4 space-y-3">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-500/60 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-cyan-400 z-10 pointer-events-none" />
             <input
               type="text"
               placeholder={lang === "bn" ? "ব্যায়াম বা পেশির নাম দিয়ে খুঁজুন..." : "Filter hunter combat archives..."}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full system-btn-chamfer border border-cyan-500/35 bg-[#020512] py-2.5 pl-10 pr-4 text-sm font-mono text-cyan-100 placeholder-cyan-700/60 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.35)] focus:outline-none transition-all"
+              className="input input-bordered input-primary input-sm w-full bg-[#020512] pl-10 text-xs font-mono text-cyan-100 placeholder-zinc-500"
             />
           </div>
 
@@ -128,10 +128,10 @@ export function ExerciseLibraryModal({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 system-btn-chamfer font-mono font-bold tracking-wide shrink-0 transition-all ${
+                className={`btn btn-xs font-mono font-bold tracking-wide shrink-0 ${
                   selectedCategory === cat.id
-                    ? "bg-cyan-500/25 text-cyan-300 border border-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                    : "bg-[#03081a]/80 text-cyan-400/60 border border-cyan-500/20 hover:border-cyan-500/40 hover:text-cyan-200"
+                    ? "btn-primary shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                    : "btn-outline btn-neutral text-cyan-300"
                 }`}
               >
                 {cat.label}
@@ -183,7 +183,7 @@ export function ExerciseLibraryModal({
                       {ex.muscles.map((m) => MUSCLE_LABEL[m]).join(" · ")}
                     </p>
                     <div className="mt-1 flex items-center gap-1.5 text-[10px] font-mono text-cyan-500/70">
-                      <span className="system-btn-chamfer bg-cyan-950/60 border border-cyan-500/25 px-1.5 py-0.5 text-cyan-300">
+                      <span className="badge badge-outline badge-primary badge-xs text-cyan-300">
                         {ex.requires.length ? ex.requires.join(" + ").replace(/_/g, " ") : "bodyweight"}
                       </span>
                       <span>•</span>
@@ -203,7 +203,7 @@ export function ExerciseLibraryModal({
           </span>
           <button
             onClick={onClose}
-            className="system-btn-chamfer bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-mono font-bold uppercase text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:brightness-110 transition-all"
+            className="btn btn-sm btn-primary font-mono font-bold uppercase text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]"
           >
             {t.gotItBtn}
           </button>

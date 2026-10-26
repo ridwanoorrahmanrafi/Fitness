@@ -62,7 +62,7 @@ export default function AriseAwakeningOverlay({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl text-cyan-400 hover:text-white hover:bg-cyan-500/20 active:scale-90 transition-all border border-cyan-500/20"
+          className="btn btn-sm btn-circle btn-ghost absolute top-4 right-4 text-cyan-400 hover:text-white"
         >
           <X className="h-5 w-5" />
         </button>
@@ -126,7 +126,7 @@ export default function AriseAwakeningOverlay({
             playSound("system-click");
             onClose();
           }}
-          className="w-full py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-widest bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 hover:from-cyan-300 hover:to-purple-500 text-black shadow-[0_0_25px_rgba(6,182,212,0.8)] active:scale-95 transition-all cursor-pointer"
+          className="btn btn-primary w-full py-3.5 px-6 font-black text-sm uppercase tracking-widest text-black shadow-[0_0_25px_rgba(6,182,212,0.8)]"
         >
           {isBn ? "সিস্টেম সিঙ্ক্রোনাইজেশন নিশ্চিত করুন" : "CONFIRM SYSTEM SYNCHRONIZATION"}
         </button>

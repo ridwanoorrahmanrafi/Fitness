@@ -168,19 +168,19 @@ export function LevelingInventoryView({
 
   return (
     <div className="space-y-4 animate-in fade-in duration-300">
-      {/* Top Currency Bar & Shop Link */}
+      {/* Top Currency Bar & Shop Link (DaisyUI Badges & Button) */}
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-black/60 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold shadow-[0_0_10px_rgba(245,158,11,0.25)]">
-            <Coins className="h-3.5 w-3.5 text-amber-400" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="badge badge-warning gap-1.5 py-3 px-3 font-mono font-bold text-xs shadow-[0_0_10px_rgba(245,158,11,0.25)]">
+            <Coins className="h-3.5 w-3.5" />
             <span>{goldCount}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-black/60 border border-blue-500/40 text-blue-300 text-xs font-mono font-bold shadow-[0_0_10px_rgba(59,130,246,0.25)]">
-            <Key className="h-3.5 w-3.5 text-blue-400" />
+          <div className="badge badge-info gap-1.5 py-3 px-3 font-mono font-bold text-xs shadow-[0_0_10px_rgba(59,130,246,0.25)]">
+            <Key className="h-3.5 w-3.5" />
             <span>{keysCount}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-black/60 border border-purple-500/40 text-purple-300 text-xs font-mono font-bold shadow-[0_0_10px_rgba(168,85,247,0.25)]">
-            <Gem className="h-3.5 w-3.5 text-purple-400" />
+          <div className="badge badge-secondary gap-1.5 py-3 px-3 font-mono font-bold text-xs shadow-[0_0_10px_rgba(168,85,247,0.25)]">
+            <Gem className="h-3.5 w-3.5" />
             <span>{gemsCount}</span>
           </div>
         </div>
@@ -191,7 +191,7 @@ export function LevelingInventoryView({
             playSound("system-click");
             setShowShop(true);
           }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold shadow-[0_0_15px_rgba(37,99,235,0.4)] active:scale-95 transition-all"
+          className="btn btn-sm btn-primary gap-1.5 font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]"
         >
           <ShoppingBag className="h-3.5 w-3.5" />
           <span>{isBn ? "শপ" : "Shop"}</span>
@@ -207,17 +207,17 @@ export function LevelingInventoryView({
           </div>
         </div>
 
-        {/* Segmented Pills: Backpack vs Energy/Buffs */}
-        <div className="flex rounded-2xl bg-[#081226] p-1 border border-cyan-500/20 mb-5 max-w-xs mx-auto">
+        {/* Segmented Pills: Backpack vs Energy/Buffs (DaisyUI Tabs) */}
+        <div className="tabs tabs-boxed bg-[#081226] p-1 border border-cyan-500/20 mb-5 max-w-xs mx-auto">
           <button
             type="button"
             onClick={() => {
               playSound("system-click");
               setTab("items");
             }}
-            className={`flex-1 flex items-center justify-center py-2 rounded-xl transition-all ${
+            className={`tab flex-1 flex items-center justify-center py-2 transition-all ${
               tab === "items"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]"
+                ? "tab-active bg-primary text-black font-black"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -229,9 +229,9 @@ export function LevelingInventoryView({
               playSound("system-click");
               setTab("buffs");
             }}
-            className={`flex-1 flex items-center justify-center py-2 rounded-xl transition-all ${
+            className={`tab flex-1 flex items-center justify-center py-2 transition-all ${
               tab === "buffs"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]"
+                ? "tab-active bg-secondary text-white font-black"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -292,13 +292,14 @@ export function LevelingInventoryView({
       </div>
 
       {/* Selected Item Modal Detail */}
+      {/* Selected Item Modal Detail (DaisyUI Modal) */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
-          <div className="relative w-full max-w-sm rounded-3xl bg-[#091429] border border-cyan-400 p-5 shadow-[0_0_35px_rgba(0,140,255,0.4)] text-zinc-100">
+        <div className="modal modal-open backdrop-blur-md">
+          <div className="modal-box relative max-w-sm rounded-3xl bg-[#091429] border border-cyan-400 p-5 shadow-[0_0_35px_rgba(0,140,255,0.4)] text-zinc-100">
             <button
               type="button"
               onClick={() => setSelectedItem(null)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              className="btn btn-sm btn-circle btn-ghost absolute top-3 right-3 text-zinc-400 hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
@@ -307,7 +308,7 @@ export function LevelingInventoryView({
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-950/60 border border-cyan-400 text-3xl mb-3 shadow-[0_0_20px_rgba(0,140,255,0.4)]">
                 {selectedItem.icon}
               </div>
-              <span className="rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 text-[10px] font-black uppercase px-2.5 py-0.5 tracking-wider mb-1">
+              <span className="badge badge-primary badge-outline text-[10px] font-black uppercase px-2.5 py-0.5 tracking-wider mb-1">
                 {selectedItem.rarity} · {selectedItem.type}
               </span>
               <h3 className="text-base font-bold text-white">
@@ -326,10 +327,10 @@ export function LevelingInventoryView({
                     selectedItem.equipped = !selectedItem.equipped;
                     setSelectedItem(null);
                   }}
-                  className={`w-full py-2.5 rounded-xl font-bold text-xs shadow-md active:scale-95 transition-all ${
+                  className={`btn w-full text-xs font-bold shadow-md ${
                     selectedItem.equipped
-                      ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
-                      : "leveling-btn-primary"
+                      ? "btn-neutral text-zinc-300"
+                      : "btn-primary"
                   }`}
                 >
                   {selectedItem.equipped
@@ -342,16 +343,16 @@ export function LevelingInventoryView({
         </div>
       )}
 
-      {/* Leveling Shop Drawer (Matches WhatsApp Image 2026-10-20 at 11.28.40 PM.jpeg) */}
+      {/* Leveling Shop Drawer (DaisyUI Modal) */}
       {showShop && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-5 backdrop-blur-2xl overflow-y-auto animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg min-h-[580px] max-h-[92vh] flex flex-col rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
+        <div className="modal modal-open backdrop-blur-2xl">
+          <div className="modal-box relative max-w-lg min-h-[580px] max-h-[92vh] flex flex-col rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
             {/* Top Bar */}
             <div className="flex items-center justify-between pb-3">
               <button
                 type="button"
                 onClick={() => setShowShop(false)}
-                className="leveling-circle-btn"
+                className="btn btn-sm btn-circle btn-ghost text-zinc-400 hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -360,8 +361,8 @@ export function LevelingInventoryView({
                 {isBn ? "হান্টার শপ" : "Shop"}
               </h2>
 
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-black/60 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold">
-                <Coins className="h-3.5 w-3.5 text-amber-400" />
+              <div className="badge badge-warning gap-1.5 font-mono font-bold text-xs">
+                <Coins className="h-3.5 w-3.5" />
                 <span>{goldCount}</span>
               </div>
             </div>
@@ -372,18 +373,18 @@ export function LevelingInventoryView({
                 <h3 className="text-base font-bold text-cyan-400">
                   {isBn ? "বিশেষ অফার" : "Featured"}
                 </h3>
-                <span className="flex items-center gap-1 text-[11px] font-mono text-cyan-300 bg-cyan-950/60 border border-cyan-500/40 px-2 py-0.5 rounded-full">
+                <span className="badge badge-outline badge-primary gap-1 text-[11px] font-mono">
                   <Clock className="h-3 w-3" /> 4d 6h
                 </span>
               </div>
 
               {/* Featured Card: Eclipse Black Stone */}
-              <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-b from-[#1c1809]/80 to-[#0c0d15]/95 p-5 shadow-[0_0_25px_rgba(245,158,11,0.2)] text-center relative overflow-hidden">
+              <div className="card bg-base-300 border border-amber-500/40 p-5 shadow-[0_0_25px_rgba(245,158,11,0.2)] text-center relative overflow-hidden">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 text-[9px] font-bold">
+                  <span className="badge badge-warning badge-outline text-[9px] font-bold">
                     DAILY DEAL
                   </span>
-                  <span className="rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 text-[9px] font-bold">
+                  <span className="badge badge-warning text-[9px] font-bold">
                     LEGENDARY
                   </span>
                 </div>
@@ -413,7 +414,7 @@ export function LevelingInventoryView({
                   <span className="text-amber-400 font-black text-base font-mono">
                     🪙 5.1K
                   </span>
-                  <span className="rounded bg-red-500/20 text-red-300 border border-red-500/40 px-1.5 py-0.5 text-[10px] font-bold">
+                  <span className="badge badge-error text-[10px] font-bold">
                     -22%
                   </span>
                 </div>
@@ -424,7 +425,7 @@ export function LevelingInventoryView({
                     playSound("system-click");
                     alert(isBn ? "পর্যাপ্ত কয়েন নেই! কোয়েস্ট সম্পন্ন করে কয়েন অর্জন করুন।" : "Insufficient Coins! Complete quests to earn coins.");
                   }}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs shadow-md active:scale-95 transition-all"
+                  className="btn btn-primary w-full text-xs font-bold shadow-md"
                 >
                   {isBn ? "বিস্তারিত দেখুন" : "View details"}
                 </button>

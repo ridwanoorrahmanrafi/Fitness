@@ -132,7 +132,7 @@ export function GoalsProgressView({
                 void handleSync();
               }}
               disabled={syncing}
-              className="system-btn-chamfer flex min-h-[38px] items-center gap-1.5 bg-cyan-400/20 border border-cyan-400/60 px-3.5 text-xs font-black uppercase text-cyan-200 hover:bg-cyan-400/30 active:scale-95 transition-all disabled:opacity-50 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.3)]"
+              className="btn btn-sm btn-primary gap-1.5 uppercase font-mono shadow-[0_0_12px_rgba(6,182,212,0.4)]"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
               <span>{syncSuccess ? "SYNCED!" : syncing ? "SYNCING..." : "SYNC NOW"}</span>
@@ -144,9 +144,9 @@ export function GoalsProgressView({
               playSound("system-click");
               onOpenSupabaseConfig();
             }}
-            className="system-btn-chamfer flex min-h-[38px] items-center gap-1.5 border border-zinc-700 bg-black/60 px-3.5 text-xs font-black uppercase text-zinc-300 hover:text-white hover:border-cyan-400 active:scale-95 transition-all cursor-pointer"
+            className="btn btn-sm btn-outline btn-neutral text-zinc-300 hover:text-white hover:border-primary gap-1.5 uppercase font-mono"
           >
-            <Cloud className="h-3.5 w-3.5 text-cyan-400" />
+            <Cloud className="h-3.5 w-3.5 text-primary" />
             <span>{isBn ? "ডাটাবেস সেটিংস" : "DATABASE CONFIG"}</span>
           </button>
         </div>
@@ -189,41 +189,51 @@ export function GoalsProgressView({
             </div>
           </div>
 
-          {/* 3 Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border border-cyan-500/30 bg-black/70 p-3.5 shadow-inner">
-              <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1.5 mb-1 uppercase tracking-wider">
-                <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+          {/* 3 DaisyUI Stat Cards */}
+          <div className="stats stats-vertical sm:stats-horizontal shadow bg-base-300/80 border border-cyan-500/30 w-full">
+            <div className="stat p-3.5">
+              <div className="stat-figure text-cyan-400">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div className="stat-title text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                 {isBn ? "শক্তি সূচক (STRENGTH INDEX)" : "STRENGTH INDEX"}
-              </span>
-              <div className="text-2xl font-black text-white font-mono text-glow-cyan">{evaluation.strengthScore}%</div>
-              <span className="text-[10px] text-cyan-400 font-bold uppercase">
+              </div>
+              <div className="stat-value text-2xl font-black text-cyan-400 font-mono text-glow-cyan">
+                {evaluation.strengthScore}%
+              </div>
+              <div className="stat-desc text-[10px] text-cyan-400 font-bold uppercase mt-0.5">
                 {isBn ? "প্রগ্রেসিভ ওভারলোড সক্রিয়" : "Progressive Overload Active"}
-              </span>
+              </div>
             </div>
 
-            <div className="rounded-xl border border-cyan-500/30 bg-black/70 p-3.5 shadow-inner">
-              <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1.5 mb-1 uppercase tracking-wider">
-                <Calendar className="h-3.5 w-3.5 text-purple-400" />
+            <div className="stat p-3.5">
+              <div className="stat-figure text-purple-400">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div className="stat-title text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                 {isBn ? "ধারাবাহিকতা (CONSISTENCY)" : "7D CONSISTENCY"}
-              </span>
-              <div className="text-2xl font-black text-purple-300 font-mono text-glow-purple">{evaluation.consistencyScore}%</div>
-              <span className="text-[10px] text-zinc-400 font-bold">
+              </div>
+              <div className="stat-value text-2xl font-black text-purple-300 font-mono text-glow-purple">
+                {evaluation.consistencyScore}%
+              </div>
+              <div className="stat-desc text-[10px] text-zinc-400 font-bold mt-0.5">
                 {evaluation.sessions7d} {isBn ? "টি সেশন সম্পন্ন" : "raids completed"}
-              </span>
+              </div>
             </div>
 
-            <div className="rounded-xl border border-cyan-500/30 bg-black/70 p-3.5 shadow-inner">
-              <span className="text-[10px] font-bold text-zinc-400 flex items-center gap-1.5 mb-1 uppercase tracking-wider">
-                <Flame className="h-3.5 w-3.5 text-amber-400" />
+            <div className="stat p-3.5">
+              <div className="stat-figure text-amber-400">
+                <Flame className="h-5 w-5" />
+              </div>
+              <div className="stat-title text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                 {isBn ? "৭ দিনের মোট ভলিউম (TOTAL LOAD)" : "7D TOTAL LOAD"}
-              </span>
-              <div className="text-2xl font-black text-amber-400 font-mono text-glow-amber">
+              </div>
+              <div className="stat-value text-2xl font-black text-amber-400 font-mono text-glow-amber">
                 {evaluation.volume7dKg.toLocaleString()} <span className="text-xs font-normal text-zinc-500">kg</span>
               </div>
-              <span className="text-[10px] text-zinc-400 font-bold">
+              <div className="stat-desc text-[10px] text-zinc-400 font-bold mt-0.5">
                 {isBn ? "সফলভাবে ভার বহন" : "Mechanical load sustained"}
-              </span>
+              </div>
             </div>
           </div>
 
@@ -255,7 +265,7 @@ export function GoalsProgressView({
               playSound("system-click");
               setShowAddModal(true);
             }}
-            className="system-btn-chamfer flex items-center gap-1 border border-cyan-400/60 bg-cyan-400/20 px-3 py-1.5 text-xs font-black uppercase text-cyan-200 hover:bg-cyan-400/30 active:scale-95 transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.3)]"
+            className="btn btn-sm btn-primary gap-1.5 uppercase font-mono shadow-[0_0_12px_rgba(6,182,212,0.4)]"
           >
             <Plus className="h-3.5 w-3.5 stroke-[3]" />
             <span>{isBn ? "নতুন লক্ষ্য যোগ করুন" : "ADD NEW QUEST"}</span>
@@ -270,17 +280,17 @@ export function GoalsProgressView({
             return (
               <div
                 key={goal.id}
-                className="relative rounded-xl border border-cyan-500/30 bg-black/70 p-4 shadow-md space-y-3 transition-all hover:border-cyan-400/60"
+                className="card bg-base-300/90 border border-cyan-500/30 p-4 shadow-md space-y-3 transition-all hover:border-cyan-400/60"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="inline-block rounded bg-cyan-950 border border-cyan-500/40 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-cyan-300 mb-1.5">
+                    <span className="badge badge-outline badge-primary text-[9px] font-black uppercase tracking-widest mb-1.5">
                       {goal.category} QUEST
                     </span>
                     <h4 className="text-sm font-black text-white uppercase tracking-tight">{goal.title}</h4>
                     {goal.description && <p className="text-xs text-zinc-400 mt-0.5">{goal.description}</p>}
                   </div>
-                  <span className="text-xs font-mono font-black text-cyan-300 text-glow-cyan shrink-0">{percent}%</span>
+                  <span className="badge badge-primary font-mono font-black text-xs shrink-0">{percent}%</span>
                 </div>
 
                 {/* Progress bar */}
@@ -289,12 +299,11 @@ export function GoalsProgressView({
                     <span>CURRENT: {goal.currentValue.toLocaleString()} {goal.unit}</span>
                     <span>TARGET: {goal.targetValue.toLocaleString()} {goal.unit}</span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-950 border border-cyan-500/30">
-                    <div
-                      className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
+                  <progress
+                    className="progress progress-primary w-full h-2.5"
+                    value={percent}
+                    max={100}
+                  />
                 </div>
               </div>
             );
@@ -313,13 +322,13 @@ export function GoalsProgressView({
               {completedGoals.map((cg) => (
                 <div
                   key={cg.id}
-                  className="rounded-xl border border-emerald-500/40 bg-emerald-950/20 p-3 flex items-center justify-between gap-2 text-xs"
+                  className="card bg-base-200/90 border border-success/40 p-3 flex-row items-center justify-between gap-2 text-xs"
                 >
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                     <span className="font-bold text-zinc-200 line-through opacity-85 uppercase">{cg.title}</span>
                   </div>
-                  <span className="text-[9px] font-mono font-black text-emerald-300 shrink-0 bg-emerald-900/60 border border-emerald-400/40 px-2 py-0.5 rounded">
+                  <span className="badge badge-success badge-outline text-[9px] font-mono font-black shrink-0">
                     {isBn ? "সম্পন্ন (CONQUERED)" : "CONQUERED"}
                   </span>
                 </div>
@@ -329,22 +338,23 @@ export function GoalsProgressView({
         )}
       </section>
 
-      {/* Add Custom Goal Modal */}
+      {/* Add Custom Goal Modal (DaisyUI modal) */}
       {showAddModal && (
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 animate-in fade-in duration-200 font-mono"
+          className="modal modal-open backdrop-blur-xl font-mono"
         >
-          <div className="w-full max-w-md rounded-2xl border-2 border-cyan-400/80 bg-[#03081a]/95 p-6 shadow-[0_0_50px_rgba(6,182,212,0.4)] space-y-4 text-zinc-100 system-scanlines system-grid-bg">
+          <div className="modal-box max-w-md border-2 border-cyan-400/80 bg-[#03081a]/95 p-6 shadow-[0_0_50px_rgba(6,182,212,0.4)] space-y-4 text-zinc-100 system-scanlines system-grid-bg">
             <div className="flex items-center justify-between border-b-2 border-cyan-500/40 pb-3">
               <div>
                 <span className="text-[10px] text-cyan-400 uppercase font-black tracking-widest block">[ NEW MISSION ]</span>
                 <h3 className="text-base font-black text-white uppercase text-glow-cyan">REGISTER SYSTEM QUEST</h3>
               </div>
               <button
+                type="button"
                 onClick={() => setShowAddModal(false)}
-                className="system-btn-chamfer h-8 w-8 flex items-center justify-center border border-zinc-700 text-zinc-400 hover:text-white cursor-pointer"
+                className="btn btn-sm btn-circle btn-ghost text-zinc-400 hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -358,7 +368,7 @@ export function GoalsProgressView({
                   placeholder="e.g. Conquer 25 continuous push-ups"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-white focus:border-cyan-400 focus:outline-none"
+                  className="input input-bordered input-primary w-full bg-black/80 text-white font-mono"
                   required
                 />
               </div>
@@ -369,7 +379,7 @@ export function GoalsProgressView({
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
-                    className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-white focus:border-cyan-400 focus:outline-none"
+                    className="select select-bordered select-primary w-full bg-black/80 text-white font-mono"
                   >
                     <option value="strength">Strength</option>
                     <option value="volume">Volume</option>
@@ -385,7 +395,7 @@ export function GoalsProgressView({
                     min="1"
                     value={newTarget}
                     onChange={(e) => setNewTarget(Number(e.target.value))}
-                    className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-white focus:border-cyan-400 focus:outline-none font-mono"
+                    className="input input-bordered input-primary w-full bg-black/80 text-white font-mono"
                     required
                   />
                 </div>
@@ -398,7 +408,7 @@ export function GoalsProgressView({
                 <select
                   value={newUnit}
                   onChange={(e) => setNewUnit(e.target.value as any)}
-                  className="w-full rounded-xl border border-cyan-500/30 bg-black/80 p-2.5 text-white focus:border-cyan-400 focus:outline-none"
+                  className="select select-bordered select-primary w-full bg-black/80 text-white font-mono"
                 >
                   <option value="reps">{isBn ? "রেপস (Reps)" : "Reps"}</option>
                   <option value="kg">{isBn ? "কেজি ওজন (kg lifted)" : "kg lifted"}</option>
@@ -409,7 +419,7 @@ export function GoalsProgressView({
 
               <button
                 type="submit"
-                className="system-btn-chamfer w-full py-3 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 text-black font-black uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                className="btn btn-primary w-full font-black uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.6)]"
               >
                 {isBn ? "কোয়েস্ট নিশ্চিত করুন (CONFIRM)" : "REGISTER QUEST & CONFIRM"}
               </button>

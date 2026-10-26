@@ -389,21 +389,21 @@ export function HunterAuthModal({
 
         {/* Notices & Error Alerts */}
         {error && (
-          <div className="system-btn-chamfer border border-rose-500/60 bg-rose-950/70 p-3 flex items-start gap-2.5 text-xs text-rose-200 shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-in fade-in">
-            <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
+          <div className="alert alert-error shadow-lg p-3 text-xs flex items-start gap-2.5">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="leading-tight">{error}</div>
           </div>
         )}
 
         {notice && (
-          <div className="system-btn-chamfer border border-emerald-500/60 bg-emerald-950/70 p-3 flex items-start gap-2.5 text-xs text-emerald-200 shadow-[0_0_15px_rgba(52,211,153,0.3)] animate-in fade-in">
-            <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="alert alert-success shadow-lg p-3 text-xs flex items-start gap-2.5">
+            <Check className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="leading-tight">{notice}</div>
           </div>
         )}
 
-        {/* Unified Navigation Tabs */}
-        <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#03081a] border border-cyan-500/40 text-xs font-bold">
+        {/* Unified Navigation Tabs with DaisyUI */}
+        <div className="tabs tabs-boxed bg-[#03081a] border border-cyan-500/40 p-1 grid grid-cols-3 gap-1">
           <button
             type="button"
             onClick={() => {
@@ -411,9 +411,9 @@ export function HunterAuthModal({
               setTab("login");
               setError(null);
             }}
-            className={`py-2 px-1 text-center rounded-lg transition-all ${
+            className={`tab text-xs transition-all ${
               tab === "login"
-                ? "bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 shadow-[0_0_10px_rgba(6,182,212,0.3)] font-black"
+                ? "tab-active bg-cyan-500 text-black font-black shadow-md"
                 : "text-zinc-400 hover:text-cyan-300"
             }`}
           >
@@ -427,9 +427,9 @@ export function HunterAuthModal({
               setTab("register");
               setError(null);
             }}
-            className={`py-2 px-1 text-center rounded-lg transition-all ${
+            className={`tab text-xs transition-all ${
               tab === "register"
-                ? "bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 shadow-[0_0_10px_rgba(6,182,212,0.3)] font-black"
+                ? "tab-active bg-cyan-500 text-black font-black shadow-md"
                 : "text-zinc-400 hover:text-cyan-300"
             }`}
           >
@@ -443,9 +443,9 @@ export function HunterAuthModal({
               setTab("local");
               setError(null);
             }}
-            className={`py-2 px-1 text-center rounded-lg transition-all ${
+            className={`tab text-xs transition-all ${
               tab === "local"
-                ? "bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 shadow-[0_0_10px_rgba(6,182,212,0.3)] font-black"
+                ? "tab-active bg-cyan-500 text-black font-black shadow-md"
                 : "text-zinc-400 hover:text-cyan-300"
             }`}
           >
@@ -471,7 +471,7 @@ export function HunterAuthModal({
                 {isBn ? "হান্টার ইমেইল (EMAIL)" : "Hunter Email"}
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-cyan-500/70" />
+                <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-500/70 z-10" />
                 <input
                   type="email"
                   required
@@ -479,7 +479,7 @@ export function HunterAuthModal({
                   placeholder="hunter@arise.fit"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/40 bg-[#020512] pl-9 pr-3 text-sm text-cyan-100 placeholder-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.4)] focus:outline-none"
+                  className="input input-bordered input-primary w-full min-h-[44px] bg-[#020512] pl-10 pr-3 text-sm text-cyan-100 placeholder-cyan-800 focus:outline-none"
                 />
               </div>
             </div>
@@ -489,7 +489,7 @@ export function HunterAuthModal({
                 {isBn ? "গোপন পাসওয়ার্ড (PASSWORD)" : "Master Password"}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-cyan-500/70" />
+                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-500/70 z-10" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
@@ -497,12 +497,12 @@ export function HunterAuthModal({
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/40 bg-[#020512] pl-9 pr-10 text-sm text-cyan-100 placeholder-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.4)] focus:outline-none"
+                  className="input input-bordered input-primary w-full min-h-[44px] bg-[#020512] pl-10 pr-10 text-sm text-cyan-100 placeholder-cyan-800 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-cyan-500 hover:text-cyan-200"
+                  className="absolute right-3.5 top-3.5 text-cyan-500 hover:text-cyan-200 z-10"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -512,7 +512,7 @@ export function HunterAuthModal({
             <button
               type="submit"
               disabled={loading}
-              className="w-full min-h-[46px] system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              className="btn btn-primary w-full min-h-[46px] text-xs font-black uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.5)] flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               {loading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -544,13 +544,13 @@ export function HunterAuthModal({
                 {isBn ? "হান্টার কল-সাইন / নাম" : "Hunter Call-Sign / Name"}
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-cyan-500/70" />
+                <User className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-500/70 z-10" />
                 <input
                   type="text"
                   placeholder={isBn ? "যেমন: সুং জিন-উ / শ্যাডো হান্টার" : "e.g. Sung Jin-woo / Shadow Monarch"}
                   value={hunterName}
                   onChange={(e) => setHunterName(e.target.value)}
-                  className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/40 bg-[#020512] pl-9 pr-3 text-sm text-cyan-100 placeholder-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.4)] focus:outline-none"
+                  className="input input-bordered input-primary w-full min-h-[44px] bg-[#020512] pl-10 pr-3 text-sm text-cyan-100 placeholder-cyan-800 focus:outline-none"
                 />
               </div>
             </div>
@@ -560,7 +560,7 @@ export function HunterAuthModal({
                 {isBn ? "ইমেইল অ্যাড্রেস" : "Email Address"}
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-cyan-500/70" />
+                <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-500/70 z-10" />
                 <input
                   type="email"
                   required
@@ -568,7 +568,7 @@ export function HunterAuthModal({
                   placeholder="hunter@domain.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/40 bg-[#020512] pl-9 pr-3 text-sm text-cyan-100 placeholder-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.4)] focus:outline-none"
+                  className="input input-bordered input-primary w-full min-h-[44px] bg-[#020512] pl-10 pr-3 text-sm text-cyan-100 placeholder-cyan-800 focus:outline-none"
                 />
               </div>
             </div>
@@ -578,7 +578,7 @@ export function HunterAuthModal({
                 {isBn ? "পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" : "Master Password (Min 6 chars)"}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-cyan-500/70" />
+                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-cyan-500/70 z-10" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
@@ -587,12 +587,12 @@ export function HunterAuthModal({
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/40 bg-[#020512] pl-9 pr-10 text-sm text-cyan-100 placeholder-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(6,182,212,0.4)] focus:outline-none"
+                  className="input input-bordered input-primary w-full min-h-[44px] bg-[#020512] pl-10 pr-10 text-sm text-cyan-100 placeholder-cyan-800 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-cyan-500 hover:text-cyan-200"
+                  className="absolute right-3.5 top-3.5 text-cyan-500 hover:text-cyan-200 z-10"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -602,13 +602,13 @@ export function HunterAuthModal({
             <button
               type="submit"
               disabled={loading}
-              className="w-full min-h-[46px] system-btn-chamfer bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              className="btn btn-secondary w-full min-h-[46px] text-xs font-black uppercase tracking-wider text-white shadow-[0_0_20px_rgba(168,85,247,0.5)] flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               {loading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 text-purple-300 animate-pulse" />
+                  <Sparkles className="h-4 w-4 text-purple-200 animate-pulse" />
                   <span>{isBn ? "◆ হান্টার লাইসেন্স তৈরি করুন (ARISE) ◆" : "◆ REGISTER & AWAKEN PLAYER ◆"}</span>
                 </>
               )}

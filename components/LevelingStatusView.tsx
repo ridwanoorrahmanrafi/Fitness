@@ -140,7 +140,7 @@ export function LevelingStatusView({
                 <span className="text-zinc-400 uppercase tracking-wider text-[11px]">
                   RANK:
                 </span>
-                <span className="rounded-md border border-cyan-500/40 bg-cyan-950/70 px-2 py-0.5 text-xs font-black text-cyan-300">
+                <span className="badge badge-primary badge-outline text-xs font-black font-mono">
                   {stats.rank}
                 </span>
               </div>
@@ -166,35 +166,29 @@ export function LevelingStatusView({
           </div>
         </div>
 
-        {/* Middle Stats Block: Gold & Keys */}
-        <div className="rounded-2xl border border-cyan-500/20 bg-[#091326] p-3.5 mb-4">
-          <div className="grid grid-cols-2 divide-x divide-cyan-500/20 text-center">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                GOLD
-              </span>
-              <div className="flex items-center justify-center gap-1.5 mt-1">
-                <Coins className="h-4 w-4 text-amber-400" />
-                <span className="text-lg font-black text-white">
-                  {goldCount}
-                </span>
-              </div>
+        {/* Middle Stats Block: Gold & Keys (DaisyUI Stats) */}
+        <div className="stats stats-horizontal shadow bg-[#091326] border border-cyan-500/20 w-full mb-4">
+          <div className="stat place-items-center py-2.5">
+            <div className="stat-title text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+              GOLD
             </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                KEYS
-              </span>
-              <div className="flex items-center justify-center gap-1.5 mt-1">
-                <Key className="h-4 w-4 text-blue-400" />
-                <span className="text-lg font-black text-white">
-                  {keysCount}
-                </span>
-              </div>
+            <div className="stat-value text-lg font-black text-amber-400 flex items-center gap-1.5 mt-0.5">
+              <Coins className="h-4 w-4 text-amber-400" />
+              <span>{goldCount}</span>
+            </div>
+          </div>
+          <div className="stat place-items-center py-2.5">
+            <div className="stat-title text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+              KEYS
+            </div>
+            <div className="stat-value text-lg font-black text-blue-400 flex items-center gap-1.5 mt-0.5">
+              <Key className="h-4 w-4 text-blue-400" />
+              <span>{keysCount}</span>
             </div>
           </div>
         </div>
 
-        {/* XP Progress Bar */}
+        {/* XP Progress Bar (DaisyUI Progress) */}
         <div className="rounded-2xl border border-cyan-500/20 bg-[#091326] p-4 mb-5">
           <p className="text-center text-[11px] text-zinc-400 font-medium mb-3">
             {isBn
@@ -207,12 +201,11 @@ export function LevelingStatusView({
             <span className="text-white">LV {stats.level + 1}</span>
           </div>
 
-          <div className="h-2 w-full rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 shadow-[0_0_12px_rgba(0,140,255,0.7)] transition-all duration-300"
-              style={{ width: `${xpPercent}%` }}
-            />
-          </div>
+          <progress
+            className="progress progress-primary w-full h-2.5"
+            value={xpPercent}
+            max={100}
+          />
 
           <div className="text-right mt-1">
             <span className="text-[10px] font-mono text-zinc-500">
@@ -221,17 +214,17 @@ export function LevelingStatusView({
           </div>
         </div>
 
-        {/* Tab Controls: Attributes vs Shadows */}
-        <div className="flex rounded-2xl bg-[#081226] p-1 border border-cyan-500/20 mb-4">
+        {/* Tab Controls: Attributes vs Shadows (DaisyUI Tabs) */}
+        <div className="tabs tabs-boxed bg-[#081226] p-1 border border-cyan-500/20 mb-4">
           <button
             type="button"
             onClick={() => {
               playSound("system-click");
               setActiveTab("status");
             }}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`tab flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
               activeTab === "status"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]"
+                ? "tab-active bg-primary text-black font-black"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -243,9 +236,9 @@ export function LevelingStatusView({
               playSound("system-click");
               setActiveTab("shadows");
             }}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`tab flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
               activeTab === "shadows"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]"
+                ? "tab-active bg-secondary text-white font-black"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -260,7 +253,7 @@ export function LevelingStatusView({
               <span className="font-bold text-zinc-400">
                 {isBn ? "বণ্টনযোগ্য পয়েন্ট:" : "Unallocated Points:"}
               </span>
-              <span className="font-black text-cyan-400 text-glow-cyan">
+              <span className="badge badge-primary font-mono font-black text-xs">
                 {stats.unallocatedPoints} PTS
               </span>
             </div>
@@ -288,9 +281,9 @@ export function LevelingStatusView({
                     type="button"
                     onClick={() => handleAllocate(attr.key)}
                     disabled={stats.unallocatedPoints <= 0}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-all cursor-pointer"
+                    className="btn btn-xs btn-circle btn-primary text-black font-black disabled:opacity-30 disabled:cursor-not-allowed"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3.5 w-3.5 stroke-[3]" />
                   </button>
                 </div>
               </div>
@@ -314,7 +307,7 @@ export function LevelingStatusView({
                 <button
                   type="button"
                   onClick={onTriggerArise}
-                  className="mt-3 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-black shadow-[0_0_15px_rgba(168,85,247,0.4)] active:scale-95 transition-all"
+                  className="btn btn-sm btn-secondary mt-3 uppercase font-black tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.4)]"
                 >
                   ARISE (জাগরণ)
                 </button>

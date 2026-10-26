@@ -635,7 +635,7 @@ export function SoloLevelingWelcomeOnboarding({
                 value={hunterName}
                 onChange={(e) => setHunterName(e.target.value)}
                 placeholder="Sung Jin-woo"
-                className="w-full rounded-xl border border-cyan-500/30 bg-black/60 p-3 text-sm font-bold text-white focus:border-cyan-400 focus:outline-none"
+                className="input input-bordered input-primary w-full bg-black/60 text-sm font-bold text-white font-mono"
               />
             </div>
 
@@ -649,7 +649,7 @@ export function SoloLevelingWelcomeOnboarding({
                   type="number"
                   value={age}
                   onChange={(e) => setAge(Number(e.target.value))}
-                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none"
+                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none font-mono"
                 />
               </div>
 
@@ -661,7 +661,7 @@ export function SoloLevelingWelcomeOnboarding({
                   type="number"
                   value={heightCm}
                   onChange={(e) => setHeightCm(Number(e.target.value))}
-                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none"
+                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none font-mono"
                 />
               </div>
 
@@ -673,7 +673,7 @@ export function SoloLevelingWelcomeOnboarding({
                   type="number"
                   value={weightKg}
                   onChange={(e) => setWeightKg(Number(e.target.value))}
-                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none"
+                  className="w-full bg-transparent text-center text-lg font-black text-white focus:outline-none font-mono"
                 />
               </div>
             </div>
@@ -696,10 +696,10 @@ export function SoloLevelingWelcomeOnboarding({
                           prev.includes(eq.id) ? prev.filter((x) => x !== eq.id) : [...prev, eq.id]
                         );
                       }}
-                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                      className={`btn btn-xs ${
                         isSelected
-                          ? "bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-[0_0_10px_rgba(0,140,255,0.3)]"
-                          : "border-zinc-800 bg-black/40 text-zinc-400"
+                          ? "btn-primary text-black font-black"
+                          : "btn-outline btn-neutral text-zinc-400"
                       }`}
                     >
                       {eq.label}
@@ -714,7 +714,7 @@ export function SoloLevelingWelcomeOnboarding({
             <button
               type="button"
               onClick={handleFinish}
-              className="w-full py-4 rounded-2xl leveling-btn-primary text-sm font-black uppercase tracking-wider shadow-[0_0_35px_rgba(0,110,255,0.7)]"
+              className="btn btn-primary w-full py-4 text-sm font-black uppercase tracking-wider shadow-[0_0_35px_rgba(0,110,255,0.7)]"
             >
               {isBn ? "সিস্টেম জাগ্রত করুন (ARISE)" : "AWAKEN SYSTEM (ARISE)"}
             </button>

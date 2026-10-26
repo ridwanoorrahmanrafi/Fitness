@@ -61,10 +61,10 @@ export function WeeklyScheduleBar({
                 playSound("system-click");
                 onSetDays(preset.days);
               }}
-              className={`system-btn-chamfer px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer ${
+              className={`btn btn-xs uppercase tracking-wider font-mono ${
                 preset.active
-                  ? "border-cyan-400 bg-cyan-400 text-black shadow-[0_0_12px_rgba(6,182,212,0.7)]"
-                  : "border-cyan-500/30 bg-black/60 text-zinc-400 hover:text-cyan-300 hover:border-cyan-400/60"
+                  ? "btn-primary text-black font-black shadow-[0_0_12px_rgba(6,182,212,0.7)]"
+                  : "btn-outline btn-neutral text-zinc-400 hover:text-white"
               }`}
             >
               {preset.label}
@@ -134,10 +134,10 @@ export function WeeklyScheduleBar({
                 {todaySchedule.isWorkoutDay ? t.todayTarget : t.todayRest} : {todaySchedule.focusLabel}
               </span>
               <span
-                className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                className={`badge badge-sm font-black uppercase tracking-wider ${
                   todaySchedule.isWorkoutDay
-                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-400/50"
-                    : "bg-purple-950/60 text-purple-300 border border-purple-500/40"
+                    ? "badge-info badge-outline"
+                    : "badge-secondary badge-outline"
                 }`}
               >
                 {todaySchedule.isWorkoutDay ? "[ RAID DAY ]" : "[ REST & RECOVERY ]"}
@@ -158,7 +158,7 @@ export function WeeklyScheduleBar({
               playSound("system-click");
               onApplyTodayFocus(todaySchedule.focusId);
             }}
-            className="system-btn-chamfer flex min-h-[36px] items-center gap-1.5 bg-gradient-to-r from-cyan-400 to-blue-500 px-3 text-xs font-black uppercase text-black hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.6)]"
+            className="btn btn-sm btn-primary gap-1.5 font-black uppercase text-black shadow-[0_0_15px_rgba(6,182,212,0.6)]"
           >
             <Sparkles className="h-3.5 w-3.5 text-black" />
             <span>{t.applyFocusBtn}</span>

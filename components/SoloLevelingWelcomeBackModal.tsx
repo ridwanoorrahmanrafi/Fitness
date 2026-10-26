@@ -49,9 +49,9 @@ export function SoloLevelingWelcomeBackModal({
   const isBn = lang === "bn";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-5 backdrop-blur-xl overflow-y-auto font-mono text-zinc-100 system-scanlines">
+    <div className="modal modal-open backdrop-blur-xl font-mono text-zinc-100 system-scanlines">
       {/* Outer Holographic System Window */}
-      <div className="relative w-full max-w-lg rounded-2xl border-2 border-cyan-400 bg-gradient-to-b from-[#05112e]/98 via-[#07153a]/95 to-[#020510]/98 p-5 sm:p-6 shadow-[0_0_50px_rgba(6,182,212,0.4)] text-zinc-100 my-auto animate-in zoom-in-95 duration-200">
+      <div className="modal-box relative w-full max-w-lg rounded-2xl border-2 border-cyan-400 bg-gradient-to-b from-[#05112e]/98 via-[#07153a]/95 to-[#020510]/98 p-5 sm:p-6 shadow-[0_0_50px_rgba(6,182,212,0.4)] text-zinc-100 my-auto animate-in zoom-in-95 duration-200">
         {/* Corner Luminous Diamonds */}
         <div className="absolute top-2 left-2 text-cyan-400 text-xs select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
         <div className="absolute top-2 right-2 text-cyan-400 text-xs select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
@@ -86,10 +86,10 @@ export function SoloLevelingWelcomeBackModal({
                 playSound("system-click");
                 onLanguageChange(isBn ? "en" : "bn");
               }}
-              className="system-btn-chamfer flex h-8 items-center gap-1 border border-cyan-400/60 bg-[#03081a] px-2 text-xs font-bold text-cyan-300 hover:border-cyan-300 cursor-pointer"
+              className="btn btn-xs btn-outline btn-primary gap-1 font-mono font-black"
             >
-              <Radio className="h-3 w-3 text-cyan-400 animate-pulse" />
-              <span className="font-black">{isBn ? "EN" : "বাংলা"}</span>
+              <Radio className="h-3 w-3 animate-pulse" />
+              <span>{isBn ? "EN" : "বাংলা"}</span>
             </button>
             <button
               type="button"
@@ -97,7 +97,7 @@ export function SoloLevelingWelcomeBackModal({
                 playSound("system-click");
                 onClose();
               }}
-              className="system-btn-chamfer h-8 w-8 flex items-center justify-center border border-zinc-700 text-zinc-400 hover:text-white cursor-pointer"
+              className="btn btn-xs btn-circle btn-ghost text-zinc-400 hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
@@ -113,24 +113,24 @@ export function SoloLevelingWelcomeBackModal({
                 {stats.rank}-RANK • {stats.title}
               </span>
             </div>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-cyan-400 text-black shadow-sm uppercase">
+            <span className="badge badge-primary font-mono font-black text-[10px] uppercase">
               Lv.{stats.level}
             </span>
           </div>
 
-          {/* Gauges */}
-          <div className="grid grid-cols-3 gap-2 text-xs font-mono">
-            <div className="bg-red-950/40 border border-red-500/40 rounded-lg p-2 text-center">
-              <span className="text-[10px] text-red-400 font-bold block">HP</span>
-              <span className="font-bold text-white">{stats.hp.current}/{stats.hp.max}</span>
+          {/* Gauges (DaisyUI Stats) */}
+          <div className="stats stats-horizontal shadow bg-[#020512]/90 border border-cyan-500/20 w-full text-xs font-mono">
+            <div className="stat place-items-center py-2 px-1">
+              <div className="stat-title text-[10px] text-red-400 font-bold">HP</div>
+              <div className="stat-value text-sm font-black text-white">{stats.hp.current}/{stats.hp.max}</div>
             </div>
-            <div className="bg-blue-950/40 border border-blue-500/40 rounded-lg p-2 text-center">
-              <span className="text-[10px] text-cyan-400 font-bold block">MP</span>
-              <span className="font-bold text-white">{stats.mp.current}/{stats.mp.max}</span>
+            <div className="stat place-items-center py-2 px-1">
+              <div className="stat-title text-[10px] text-cyan-400 font-bold">MP</div>
+              <div className="stat-value text-sm font-black text-white">{stats.mp.current}/{stats.mp.max}</div>
             </div>
-            <div className="bg-amber-950/40 border border-amber-500/40 rounded-lg p-2 text-center">
-              <span className="text-[10px] text-amber-400 font-bold block">FATIGUE</span>
-              <span className="font-bold text-white">{stats.fatigue}%</span>
+            <div className="stat place-items-center py-2 px-1">
+              <div className="stat-title text-[10px] text-amber-400 font-bold">FATIGUE</div>
+              <div className="stat-value text-sm font-black text-white">{stats.fatigue}%</div>
             </div>
           </div>
         </div>
@@ -184,7 +184,7 @@ export function SoloLevelingWelcomeBackModal({
                 onOpenQuest();
                 onClose();
               }}
-              className="system-btn-chamfer px-2.5 py-1 text-[10px] font-bold border border-purple-400/50 bg-purple-900/60 text-purple-200 hover:text-white cursor-pointer shrink-0"
+              className="btn btn-xs btn-outline btn-secondary font-bold shrink-0"
             >
               {isBn ? "কোয়েস্ট দেখুন" : "View Quest"}
             </button>
@@ -202,7 +202,7 @@ export function SoloLevelingWelcomeBackModal({
                 onStartWorkout();
                 onClose();
               }}
-              className="system-btn-chamfer w-full py-3 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 text-black font-black uppercase text-xs tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.6)] hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="btn btn-primary w-full py-3 text-black font-black uppercase text-xs tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.6)] flex items-center justify-center gap-2"
             >
               <Swords className="h-4 w-4 stroke-[2.5]" />
               <span>{isBn ? "আজকের ডানজন রেইড শুরু করুন (ENGAGE RAID)" : "ENGAGE TODAY'S DUNGEON RAID"}</span>
@@ -215,7 +215,7 @@ export function SoloLevelingWelcomeBackModal({
                 playSound("system-click");
                 onClose();
               }}
-              className="system-btn-chamfer w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-black uppercase text-xs tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="btn btn-primary w-full py-3 text-black font-black uppercase text-xs tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.4)] flex items-center justify-center gap-2"
             >
               <span>{isBn ? "ড্যাশবোর্ডে প্রবেশ করুন (ENTER DASHBOARD)" : "ENTER SYSTEM DASHBOARD"}</span>
               <ArrowRight className="h-4 w-4" />
@@ -230,9 +230,9 @@ export function SoloLevelingWelcomeBackModal({
                 onOpenStatus();
                 onClose();
               }}
-              className="system-btn-chamfer flex-1 py-2 border border-cyan-500/40 bg-black/60 text-xs font-bold text-cyan-300 hover:text-white hover:border-cyan-300 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              className="btn btn-sm btn-outline btn-info flex-1 gap-1.5 text-xs font-bold"
             >
-              <Activity className="h-3.5 w-3.5 text-cyan-400" />
+              <Activity className="h-3.5 w-3.5" />
               <span>{isBn ? "স্ট্যাটাস উইন্ডো" : "Player Status"}</span>
             </button>
 
@@ -242,7 +242,7 @@ export function SoloLevelingWelcomeBackModal({
                 playSound("system-click");
                 onClose();
               }}
-              className="system-btn-chamfer px-4 py-2 border border-zinc-700 bg-black/60 text-xs font-bold text-zinc-400 hover:text-white transition-all cursor-pointer"
+              className="btn btn-sm btn-ghost text-xs font-bold text-zinc-400 hover:text-white"
             >
               {isBn ? "বন্ধ করুন" : "Dismiss"}
             </button>

@@ -106,7 +106,7 @@ export default function SoloLevelingStatusModal({
       ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-200">
+    <div className="modal modal-open backdrop-blur-xl z-50 p-2.5 sm:p-4">
       {/* Background Anime Ambience */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-25">
         <Image
@@ -119,7 +119,7 @@ export default function SoloLevelingStatusModal({
       </div>
 
       {/* Solo Leveling Chamfered Holographic Window */}
-      <div className="relative w-full max-w-2xl max-h-[94vh] flex flex-col bg-[#03081a]/95 border-2 border-cyan-400/80 shadow-[0_0_45px_rgba(6,182,212,0.45)] text-zinc-100 overflow-hidden rounded-2xl system-scanlines system-grid-bg">
+      <div className="modal-box relative w-full max-w-2xl max-h-[94vh] flex flex-col bg-[#03081a]/95 border-2 border-cyan-400/80 shadow-[0_0_45px_rgba(6,182,212,0.45)] text-zinc-100 overflow-hidden rounded-2xl system-scanlines system-grid-bg p-0">
         
         {/* Luminous Diamond Corner Pins */}
         <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
@@ -153,7 +153,7 @@ export default function SoloLevelingStatusModal({
                   vibrate([40, 60, 40]);
                   onTriggerArise();
                 }}
-                className="system-btn-chamfer px-3.5 py-1.5 text-xs font-black tracking-wider bg-gradient-to-r from-purple-600 to-indigo-600 text-white border border-purple-400/60 shadow-[0_0_18px_rgba(168,85,247,0.6)] active:scale-95 transition-all hover:brightness-125 cursor-pointer"
+                className="btn btn-sm btn-secondary text-white font-black tracking-wider shadow-[0_0_18px_rgba(168,85,247,0.6)]"
               >
                 ⚡ ARISE
               </button>
@@ -161,25 +161,25 @@ export default function SoloLevelingStatusModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-cyan-400 hover:text-white hover:bg-cyan-500/20 active:scale-90 transition-all border border-cyan-500/30"
+              className="btn btn-sm btn-circle btn-ghost text-cyan-400 hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        {/* System 3-Tab Navigator */}
-        <div className="grid grid-cols-3 border-b border-cyan-500/40 bg-black/60 font-mono text-xs font-black">
+        {/* System 3-Tab Navigator (DaisyUI Tabs) */}
+        <div className="tabs tabs-boxed bg-black/60 p-1 border-b border-cyan-500/40 rounded-none font-mono text-xs font-black grid grid-cols-3">
           <button
             type="button"
             onClick={() => {
               playSound("system-click");
               setActiveTab("status");
             }}
-            className={`py-2.5 flex items-center justify-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            className={`tab flex items-center justify-center gap-1.5 transition-all ${
               activeTab === "status"
-                ? "border-cyan-400 text-cyan-300 bg-cyan-500/15 text-glow-cyan shadow-[inset_0_-2px_12px_rgba(6,182,212,0.3)]"
-                : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                ? "tab-active bg-primary text-black font-black"
+                : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             <Activity className="h-4 w-4" />
@@ -191,10 +191,10 @@ export default function SoloLevelingStatusModal({
               playSound("system-click");
               setActiveTab("skills");
             }}
-            className={`py-2.5 flex items-center justify-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            className={`tab flex items-center justify-center gap-1.5 transition-all ${
               activeTab === "skills"
-                ? "border-cyan-400 text-cyan-300 bg-cyan-500/15 text-glow-cyan shadow-[inset_0_-2px_12px_rgba(6,182,212,0.3)]"
-                : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                ? "tab-active bg-primary text-black font-black"
+                : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             <Swords className="h-4 w-4" />
@@ -206,13 +206,13 @@ export default function SoloLevelingStatusModal({
               playSound("system-click");
               setActiveTab("shadows");
             }}
-            className={`py-2.5 flex items-center justify-center gap-1.5 border-b-2 transition-all cursor-pointer ${
+            className={`tab flex items-center justify-center gap-1.5 transition-all ${
               activeTab === "shadows"
-                ? "border-purple-400 text-purple-300 bg-purple-500/15 text-glow-purple shadow-[inset_0_-2px_12px_rgba(168,85,247,0.3)]"
-                : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                ? "tab-active bg-secondary text-white font-black"
+                : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            <Shield className="h-4 w-4 text-purple-400" />
+            <Shield className="h-4 w-4" />
             <span>{isBn ? "[ ৩. শ্যাডো আর্মি ]" : "[ 3. ARMY ]"}</span>
           </button>
         </div>
@@ -267,6 +267,7 @@ export default function SoloLevelingStatusModal({
                     </div>
 
                     {/* EXP Progress Bar */}
+                    {/* EXP Progress Bar (DaisyUI Progress) */}
                     <div className="pt-2">
                       <div className="flex justify-between text-[11px] text-zinc-400 mb-1">
                         <span className="text-cyan-400 font-bold">{isBn ? "এক্সপি অগ্রগতি (EXP)" : "EXP PROGRESS"}</span>
@@ -274,17 +275,16 @@ export default function SoloLevelingStatusModal({
                           {stats.exp} / {stats.expToNext} ({Math.round((stats.exp / stats.expToNext) * 100)}%)
                         </span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-zinc-950 border border-cyan-500/40 overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-500 shadow-[0_0_12px_rgba(6,182,212,0.9)]"
-                          style={{ width: `${Math.min(100, Math.max(5, (stats.exp / stats.expToNext) * 100))}%` }}
-                        />
-                      </div>
+                      <progress
+                        className="progress progress-primary w-full h-2"
+                        value={stats.exp}
+                        max={stats.expToNext}
+                      />
                     </div>
                   </div>
                 </div>
 
-                {/* HP / MP / Fatigue Segmented Gauges */}
+                {/* HP / MP / Fatigue Segmented Gauges (DaisyUI Progress) */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4 pt-3 border-t-2 border-cyan-500/30 text-xs font-mono">
                   {/* HP Gauge */}
                   <div className="p-2.5 rounded-lg bg-red-950/40 border border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.2)]">
@@ -292,12 +292,11 @@ export default function SoloLevelingStatusModal({
                       <span>HP ({isBn ? "স্বাস্থ্য" : "HEALTH"})</span>
                       <span>{stats.hp.current} / {stats.hp.max}</span>
                     </div>
-                    <div className="h-2 w-full rounded-sm bg-zinc-950 border border-red-900/60 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-red-600 via-rose-500 to-red-400 shadow-[0_0_10px_rgba(244,63,94,0.8)]"
-                        style={{ width: `${(stats.hp.current / stats.hp.max) * 100}%` }}
-                      />
-                    </div>
+                    <progress
+                      className="progress progress-error w-full h-2"
+                      value={stats.hp.current}
+                      max={stats.hp.max}
+                    />
                   </div>
 
                   {/* MP Gauge */}
@@ -306,12 +305,11 @@ export default function SoloLevelingStatusModal({
                       <span>MP ({isBn ? "শক্তি" : "MANA"})</span>
                       <span>{stats.mp.current} / {stats.mp.max}</span>
                     </div>
-                    <div className="h-2 w-full rounded-sm bg-zinc-950 border border-blue-900/60 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-600 via-cyan-500 to-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
-                        style={{ width: `${(stats.mp.current / stats.mp.max) * 100}%` }}
-                      />
-                    </div>
+                    <progress
+                      className="progress progress-info w-full h-2"
+                      value={stats.mp.current}
+                      max={stats.mp.max}
+                    />
                   </div>
 
                   {/* Fatigue Status */}
@@ -320,12 +318,11 @@ export default function SoloLevelingStatusModal({
                       <span>{isBn ? "ক্লান্তি (FATIGUE)" : "FATIGUE"}</span>
                       <span className="text-white font-bold">{stats.fatigue}%</span>
                     </div>
-                    <div className="h-2 w-full rounded-sm bg-zinc-950 border border-amber-900/60 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-amber-600 to-yellow-400 shadow-[0_0_10px_rgba(245,158,11,0.8)]"
-                        style={{ width: `${Math.min(100, stats.fatigue)}%` }}
-                      />
-                    </div>
+                    <progress
+                      className="progress progress-warning w-full h-2"
+                      value={stats.fatigue}
+                      max={100}
+                    />
                   </div>
                 </div>
               </div>
@@ -341,8 +338,8 @@ export default function SoloLevelingStatusModal({
                       {isBn ? "শারীরিক সক্ষমতা বাড়াতে অবশিষ্ট স্ট্যাট পয়েন্ট বরাদ্দ করুন।" : "Distribute available stat points to upgrade physical capabilities."}
                     </p>
                   </div>
-                  <div className="px-3 py-1 rounded-lg bg-cyan-950 border-2 border-cyan-400 text-cyan-300 font-mono font-black text-xs shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                    {isBn ? "অবশিষ্ট পয়েন্ট : " : "REMAINING AP : "}<span className="text-white text-sm">{stats.unallocatedPoints}</span>
+                  <div className="badge badge-primary font-mono font-black text-xs p-3">
+                    {isBn ? "অবশিষ্ট পয়েন্ট : " : "REMAINING AP : "}<span className="text-white text-sm ml-1">{stats.unallocatedPoints}</span>
                   </div>
                 </div>
 
@@ -365,13 +362,9 @@ export default function SoloLevelingStatusModal({
                           type="button"
                           disabled={stats.unallocatedPoints <= 0}
                           onClick={() => handleAllocate(attr.key)}
-                          className={`system-btn-chamfer h-8 w-8 flex items-center justify-center font-black transition-all ${
-                            stats.unallocatedPoints > 0
-                              ? "bg-cyan-400 hover:bg-cyan-300 text-black shadow-[0_0_15px_rgba(6,182,212,0.8)] active:scale-90 cursor-pointer"
-                              : "bg-zinc-800 text-zinc-600 border border-zinc-700/50 cursor-not-allowed opacity-40"
-                          }`}
+                          className="btn btn-xs btn-circle btn-primary text-black font-black disabled:opacity-30 disabled:cursor-not-allowed"
                         >
-                          <Plus className="h-4 w-4 stroke-[3]" />
+                          <Plus className="h-3.5 w-3.5 stroke-[3]" />
                         </button>
                       </div>
                     </div>
@@ -511,7 +504,7 @@ export default function SoloLevelingStatusModal({
               playSound("system-click");
               onClose();
             }}
-            className="system-btn-chamfer px-5 py-2 font-black bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/50 active:scale-95 transition-all cursor-pointer"
+            className="btn btn-sm btn-primary font-black uppercase tracking-wider"
           >
             {isBn ? "নিশ্চিত ও বন্ধ করুন (CONFIRM)" : "CONFIRM & CLOSE"}
           </button>

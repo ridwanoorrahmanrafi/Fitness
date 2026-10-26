@@ -261,12 +261,12 @@ export function ExerciseAnimationModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="animation-modal-title"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/85 backdrop-blur-md sm:items-center p-0 sm:p-4 transition-all duration-300 animate-in fade-in"
+      className="modal modal-open backdrop-blur-md z-50 p-0 sm:p-4"
     >
       <div
-        className={`system-window relative flex w-full flex-col rounded-t-2xl sm:rounded-2xl border-1.5 border-cyan-500/60 bg-[#03081a]/95 shadow-[0_0_40px_rgba(6,182,212,0.4)] text-cyan-100 overflow-hidden transition-all duration-300 font-sans ${
+        className={`modal-box relative flex w-full flex-col p-0 rounded-t-2xl sm:rounded-2xl border-1.5 border-cyan-500/60 bg-[#03081a]/95 shadow-[0_0_40px_rgba(6,182,212,0.4)] text-cyan-100 overflow-hidden transition-all duration-300 font-sans ${
           isFullscreen
-            ? "fixed inset-0 max-h-screen rounded-none z-50"
+            ? "fixed inset-0 max-h-screen rounded-none z-50 max-w-none w-screen h-screen"
             : "max-h-[94vh] max-w-2xl"
         }`}
       >
@@ -294,28 +294,28 @@ export function ExerciseAnimationModal({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
-            {/* View Mode Switcher Pills */}
-            <div className="hidden sm:flex items-center system-btn-chamfer border border-cyan-500/30 bg-[#020512] p-1 mr-1">
+            {/* View Mode Switcher Tabs */}
+            <div className="hidden sm:flex tabs tabs-boxed bg-[#020512] p-1 border border-cyan-500/30 mr-1">
               <button
                 onClick={() => setViewMode("gif")}
-                className={`flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-bold system-btn-chamfer transition-all ${
+                className={`tab tab-sm font-mono font-bold transition-all ${
                   viewMode === "gif"
-                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]"
+                    ? "tab-active !bg-primary !text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]"
                     : "text-cyan-400/60 hover:text-cyan-200"
                 }`}
               >
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-3.5 w-3.5 mr-1" />
                 <span>{lang === "bn" ? "হলোগ্রাম মোশন" : "Hologram Motion"}</span>
               </button>
               <button
                 onClick={() => setViewMode("biomechanics")}
-                className={`flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-bold system-btn-chamfer transition-all ${
+                className={`tab tab-sm font-mono font-bold transition-all ${
                   viewMode === "biomechanics"
-                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]"
+                    ? "tab-active !bg-primary !text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]"
                     : "text-cyan-400/60 hover:text-cyan-200"
                 }`}
               >
-                <Zap className="h-3.5 w-3.5" />
+                <Zap className="h-3.5 w-3.5 mr-1" />
                 <span>{lang === "bn" ? "ভেক্টর রিগ" : "Vector Rig"}</span>
               </button>
             </div>
@@ -324,7 +324,7 @@ export function ExerciseAnimationModal({
             <button
               onClick={() => setIsPlaying(!isPlaying)}
               aria-label={isPlaying ? "Pause animation" : "Play animation"}
-              className="flex h-9 w-9 items-center justify-center system-btn-chamfer border border-cyan-500/30 bg-[#03081a] text-cyan-300 hover:text-white hover:border-cyan-400 transition-colors"
+              className="btn btn-sm btn-square btn-ghost text-cyan-300 hover:text-white"
             >
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 fill-current" />}
             </button>
@@ -333,7 +333,7 @@ export function ExerciseAnimationModal({
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-              className="hidden sm:flex h-9 w-9 items-center justify-center system-btn-chamfer border border-cyan-500/30 bg-[#03081a] text-cyan-300 hover:text-white transition-colors"
+              className="hidden sm:flex btn btn-sm btn-square btn-ghost text-cyan-300 hover:text-white"
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
@@ -342,7 +342,7 @@ export function ExerciseAnimationModal({
             <button
               onClick={onClose}
               aria-label="Close animation guide"
-              className="flex h-9 w-9 items-center justify-center system-btn-chamfer border border-cyan-500/30 bg-[#03081a] text-cyan-400 hover:text-white hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-colors"
+              className="btn btn-sm btn-circle btn-ghost text-cyan-400 hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
@@ -714,7 +714,7 @@ export function ExerciseAnimationModal({
             href={`https://www.youtube.com/results?search_query=proper+form+${encodeURIComponent(exercise.name)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex min-h-[44px] items-center gap-2 system-btn-chamfer border border-cyan-500/30 bg-[#020512] px-4 font-mono text-xs font-bold text-cyan-300 hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(6,182,212,0.35)] transition-all"
+            className="btn btn-sm btn-outline btn-neutral min-h-[44px] gap-2 font-mono text-xs font-bold text-cyan-300"
           >
             <ExternalLink className="h-3.5 w-3.5 text-cyan-400" />
             <span>{t.formVideoBtn} (YouTube)</span>
@@ -722,7 +722,7 @@ export function ExerciseAnimationModal({
 
           <button
             onClick={onClose}
-            className="flex min-h-[44px] items-center justify-center system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-6 font-mono text-xs font-black uppercase text-white shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:brightness-110 active:scale-95 transition-all"
+            className="btn btn-primary min-h-[44px] px-6 font-mono text-xs font-black uppercase text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]"
           >
             {t.gotItBtn}
           </button>

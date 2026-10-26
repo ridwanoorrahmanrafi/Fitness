@@ -23,11 +23,17 @@ export default function SystemNotificationToast({
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-20 right-3 sm:right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+    <div className="toast toast-top toast-end top-20 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none p-3 sm:p-4">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="pointer-events-auto relative p-3.5 bg-[#03091e]/95 border-2 border-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.5)] rounded-xl text-white font-mono system-scanlines system-grid-bg animate-in slide-in-from-top-3 fade-in duration-300"
+          className={`pointer-events-auto alert relative p-3.5 bg-[#03091e]/95 border-2 shadow-[0_0_30px_rgba(6,182,212,0.5)] rounded-xl text-white font-mono system-scanlines system-grid-bg animate-in slide-in-from-top-3 fade-in duration-300 block ${
+            toast.type === "success"
+              ? "border-emerald-400"
+              : toast.type === "warning"
+              ? "border-amber-400"
+              : "border-cyan-400"
+          }`}
         >
           {/* Luminous Corner Diamonds */}
           <div className="absolute top-1 left-1 text-cyan-400 text-[10px] select-none">◆</div>
@@ -48,7 +54,7 @@ export default function SystemNotificationToast({
             <button
               type="button"
               onClick={() => onDismiss(toast.id)}
-              className="text-zinc-500 hover:text-white p-0.5 rounded transition-colors"
+              className="btn btn-xs btn-circle btn-ghost text-zinc-400 hover:text-white"
             >
               <X className="h-3.5 w-3.5" />
             </button>

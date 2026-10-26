@@ -98,18 +98,18 @@ export function LevelingStatisticsView({
           {isBn ? "দৈনিক কার্যকলাপ" : "Daily Activities"}
         </h2>
 
-        {/* Achievements Golden Badge */}
+        {/* Achievements Golden Badge (DaisyUI Button) */}
         <button
           type="button"
           onClick={() => {
             playSound("system-click");
             onOpenAchievements();
           }}
-          className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-gradient-to-r from-amber-950/40 to-yellow-950/30 px-3.5 py-1 text-xs font-bold text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)] hover:border-amber-400 active:scale-95 transition-all"
+          className="btn btn-sm btn-outline btn-warning gap-1.5 rounded-full mt-2.5 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
         >
-          <Trophy className="h-3.5 w-3.5 text-amber-400" />
+          <Trophy className="h-3.5 w-3.5" />
           <span>{isBn ? "অ্যাচিভমেন্টস" : "Achievements"}</span>
-          <ChevronRight className="h-3 w-3 text-amber-400/70" />
+          <ChevronRight className="h-3 w-3" />
         </button>
       </div>
 
@@ -122,17 +122,17 @@ export function LevelingStatisticsView({
           </div>
         </div>
 
-        {/* Segmented Control: Day / Week / Month / Calendar */}
-        <div className="flex items-center rounded-2xl bg-[#081226] p-1 border border-cyan-500/20 mb-5">
+        {/* Segmented Control: Day / Week / Month / Calendar (DaisyUI Tabs) */}
+        <div className="tabs tabs-boxed bg-[#081226] p-1 border border-cyan-500/20 mb-5">
           <button
             type="button"
             onClick={() => {
               playSound("system-click");
               setFilterPeriod("day");
             }}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`tab flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
               filterPeriod === "day"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]"
+                ? "tab-active bg-primary text-black font-black"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -144,9 +144,9 @@ export function LevelingStatisticsView({
               playSound("system-click");
               setFilterPeriod("week");
             }}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`tab flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
               filterPeriod === "week"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]"
+                ? "tab-active bg-primary text-black font-black"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -158,15 +158,15 @@ export function LevelingStatisticsView({
               playSound("system-click");
               setFilterPeriod("month");
             }}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+            className={`tab flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
               filterPeriod === "month"
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]"
+                ? "tab-active bg-primary text-black font-black"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
             {isBn ? "মাস" : "Month"}
           </button>
-          <div className="px-3 text-zinc-500">
+          <div className="px-3 text-zinc-500 flex items-center">
             <Calendar className="h-4 w-4" />
           </div>
         </div>
@@ -293,7 +293,7 @@ export function LevelingStatisticsView({
               type="button"
               onClick={handleMeasureBpm}
               disabled={measuringBpm}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-bold active:scale-95 transition-all"
+              className="btn btn-sm btn-outline btn-secondary gap-1.5 rounded-full"
             >
               <Heart className={`h-3.5 w-3.5 text-pink-400 ${measuringBpm ? "animate-ping" : ""}`} />
               <span>{measuringBpm ? (isBn ? "পরিমাপ হচ্ছে..." : "Measuring...") : (isBn ? "এখনই পরিমাপ করুন" : "Measure now")}</span>

@@ -3,13 +3,26 @@ import { KEYS } from "./storage";
 import { EXERCISES } from "./exercises";
 import { getExerciseMedia } from "./exerciseMedia";
 import type { PlayerStats } from "./systemStats";
-import type {
+import {
   HistoryEntry,
   Profile,
   UserGoal,
   ProgressEvaluation,
   SupabaseConfig,
 } from "./types";
+import {
+  syncProfileToMongo,
+  syncWorkoutToMongo,
+  syncGoalsToMongo,
+  syncEvaluationToMongo,
+  syncPlayerStatsToMongo,
+  pullUserCloudDataFromMongo,
+  pullPlayerStatsFromMongo,
+  pullUserProfileFromMongo,
+  seedExercisesToMongo,
+} from "./mongodb-sync";
+
+export * from "./mongodb-sync";
 
 export const DEFAULT_SUPABASE_URL = "https://vdaenqmujfpduvjmuxzm.supabase.co";
 export const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_lVG_0H9Y_5rDkCCUFsqsyA_higcGnwm";
@@ -125,11 +138,12 @@ export function getSupabaseClient(): SupabaseClient | null {
 }
 
 /**
- * Synchronize user profile and biometrics to Supabase.
+ * Synchronize user profile and biometrics to MongoDB (and Supabase if configured).
  */
 export async function syncProfileToSupabase(profile: Profile, userId: string): Promise<boolean> {
+  const mongoOk = await syncProfileToMongo(profile, userId);
   const supabase = getSupabaseClient();
-  if (!supabase) return false;
+  if (!supabase) return mongoOk;
 
   try {
     const { error } = await supabase.from("profiles").upsert(
@@ -157,24 +171,25 @@ export async function syncProfileToSupabase(profile: Profile, userId: string): P
 
     if (error) {
       console.warn("Supabase profile sync error:", error.message);
-      return false;
+      return mongoOk;
     }
     return true;
   } catch (err) {
     console.warn("Supabase profile sync exception:", err);
-    return false;
+    return mongoOk;
   }
 }
 
 /**
- * Synchronize a completed workout session to Supabase.
+ * Synchronize a completed workout session to MongoDB (and Supabase if configured).
  */
 export async function syncWorkoutToSupabase(
   entry: HistoryEntry,
   userId: string
 ): Promise<boolean> {
+  const mongoOk = await syncWorkoutToMongo(entry, userId);
   const supabase = getSupabaseClient();
-  if (!supabase) return false;
+  if (!supabase) return mongoOk;
 
   try {
     const { error } = await supabase.from("workout_sessions").upsert(
@@ -199,24 +214,25 @@ export async function syncWorkoutToSupabase(
 
     if (error) {
       console.warn("Supabase workout sync error:", error.message);
-      return false;
+      return mongoOk;
     }
     return true;
   } catch (err) {
     console.warn("Supabase workout sync exception:", err);
-    return false;
+    return mongoOk;
   }
 }
 
 /**
- * Synchronize goals to Supabase.
+ * Synchronize goals to MongoDB (and Supabase if configured).
  */
 export async function syncGoalsToSupabase(
   goals: UserGoal[],
   userId: string
 ): Promise<boolean> {
+  const mongoOk = await syncGoalsToMongo(goals, userId);
   const supabase = getSupabaseClient();
-  if (!supabase || goals.length === 0) return false;
+  if (!supabase || goals.length === 0) return mongoOk;
 
   try {
     const rows = goals.map((g) => ({
@@ -237,24 +253,25 @@ export async function syncGoalsToSupabase(
     const { error } = await supabase.from("user_goals").upsert(rows, { onConflict: "id" });
     if (error) {
       console.warn("Supabase goals sync error:", error.message);
-      return false;
+      return mongoOk;
     }
     return true;
   } catch (err) {
     console.warn("Supabase goals sync exception:", err);
-    return false;
+    return mongoOk;
   }
 }
 
 /**
- * Synchronize progress evaluation to Supabase.
+ * Synchronize progress evaluation to MongoDB (and Supabase if configured).
  */
 export async function syncEvaluationToSupabase(
   evaluation: ProgressEvaluation,
   userId: string
 ): Promise<boolean> {
+  const mongoOk = await syncEvaluationToMongo(evaluation, userId);
   const supabase = getSupabaseClient();
-  if (!supabase) return false;
+  if (!supabase) return mongoOk;
 
   try {
     const { error } = await supabase.from("progress_evaluations").upsert(
@@ -287,11 +304,14 @@ export async function syncEvaluationToSupabase(
 }
 
 /**
- * Seed all exercises from Arise Coach into the Supabase exercises table.
+ * Seed all exercises from Arise Coach into MongoDB (and Supabase if configured).
  */
 export async function seedExercisesToSupabase(): Promise<{ ok: boolean; count: number; error?: string }> {
+  const mongoRes = await seedExercisesToMongo();
+  if (mongoRes.ok) return mongoRes;
+
   const supabase = getSupabaseClient();
-  if (!supabase) return { ok: false, count: 0, error: "Supabase client not configured." };
+  if (!supabase) return { ok: false, count: 0, error: "Cloud database not configured." };
 
   try {
     const rows = EXERCISES.map((ex) => {
@@ -325,15 +345,20 @@ export async function seedExercisesToSupabase(): Promise<{ ok: boolean; count: n
 }
 
 /**
- * Pull cloud progress data (workouts, goals, evaluations) for a user.
+ * Pull cloud progress data (workouts, goals, evaluations) for a user from MongoDB / Supabase.
  */
 export async function pullUserCloudData(userId: string): Promise<{
   workouts: HistoryEntry[];
   goals: UserGoal[];
   evaluations: ProgressEvaluation[];
 }> {
+  const mongoData = await pullUserCloudDataFromMongo(userId);
+  if (mongoData.workouts.length > 0 || mongoData.goals.length > 0 || mongoData.evaluations.length > 0) {
+    return mongoData;
+  }
+
   const supabase = getSupabaseClient();
-  if (!supabase) return { workouts: [], goals: [], evaluations: [] };
+  if (!supabase) return mongoData;
 
   try {
     const [workoutsRes, goalsRes, evalRes] = await Promise.all([
@@ -402,16 +427,17 @@ export async function pullUserCloudData(userId: string): Promise<{
     return { workouts, goals, evaluations };
   } catch (err) {
     console.warn("Failed to pull cloud data from Supabase:", err);
-    return { workouts: [], goals: [], evaluations: [] };
+    return mongoData;
   }
 }
 
 /**
- * Synchronize Solo Leveling hunter stats, rank, attributes, and gauges to Supabase.
+ * Synchronize Solo Leveling hunter stats, rank, attributes, and gauges to MongoDB (and Supabase if configured).
  */
 export async function syncPlayerStatsToSupabase(stats: PlayerStats, userId: string): Promise<boolean> {
+  const mongoOk = await syncPlayerStatsToMongo(stats, userId);
   const supabase = getSupabaseClient();
-  if (!supabase) return false;
+  if (!supabase) return mongoOk;
 
   try {
     const { error } = await supabase.from("player_stats").upsert(
@@ -439,19 +465,22 @@ export async function syncPlayerStatsToSupabase(stats: PlayerStats, userId: stri
 
     if (error) {
       console.warn("Supabase player_stats sync error:", error.message);
-      return false;
+      return mongoOk;
     }
     return true;
   } catch (err) {
     console.warn("Supabase player_stats sync exception:", err);
-    return false;
+    return mongoOk;
   }
 }
 
 /**
- * Pull Solo Leveling hunter stats from Supabase cloud.
+ * Pull Solo Leveling hunter stats from MongoDB / Supabase cloud.
  */
 export async function pullPlayerStatsFromSupabase(userId: string): Promise<PlayerStats | null> {
+  const mongoStats = await pullPlayerStatsFromMongo(userId);
+  if (mongoStats) return mongoStats;
+
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 
@@ -488,9 +517,12 @@ export async function pullPlayerStatsFromSupabase(userId: string): Promise<Playe
 }
 
 /**
- * Pull user profile from Supabase cloud.
+ * Pull user profile from MongoDB / Supabase cloud.
  */
 export async function pullUserProfileFromSupabase(userId: string): Promise<{ profile: Profile; name: string } | null> {
+  const mongoProfile = await pullUserProfileFromMongo(userId);
+  if (mongoProfile) return mongoProfile;
+
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 

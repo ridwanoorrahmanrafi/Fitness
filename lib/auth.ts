@@ -1,21 +1,12 @@
 import { betterAuth } from "better-auth";
 import { dash } from "@better-auth/infra";
-import { Pool } from "pg";
+import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { mongoClient, mongoDb } from "./server/mongodb";
 
-const rawConnectionString =
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL ||
-  process.env.SUPABASE_DB_URL ||
-  "";
-
-// Strip ?sslmode=... so pg-connection-string does not override rejectUnauthorized: false
-const connectionString = rawConnectionString.replace(/[?&]sslmode=[^&]+/g, "");
-
-// Better Auth server instance
+// Better Auth server instance backed by MongoDB Atlas
 export const auth = betterAuth({
-  database: new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
+  database: mongodbAdapter(mongoDb, {
+    client: mongoClient,
   }),
   baseURL:
     process.env.BETTER_AUTH_URL ||

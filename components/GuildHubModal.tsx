@@ -92,8 +92,8 @@ export function GuildHubModal({ open, onClose, lang = "bn" }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-5 backdrop-blur-2xl overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg min-h-[580px] max-h-[92vh] flex flex-col rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
+    <div className="modal modal-open backdrop-blur-2xl z-50">
+      <div className="modal-box max-w-lg min-h-[580px] max-h-[92vh] flex flex-col rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
         {/* Top Header */}
         <div className="flex items-center justify-between pb-3">
           <button
@@ -102,7 +102,7 @@ export function GuildHubModal({ open, onClose, lang = "bn" }: Props) {
               playSound("system-click");
               onClose();
             }}
-            className="leveling-circle-btn"
+            className="btn btn-sm btn-circle btn-ghost text-zinc-400 hover:text-white"
             aria-label="Back"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -137,13 +137,13 @@ export function GuildHubModal({ open, onClose, lang = "bn" }: Props) {
 
         {/* Search Bar */}
         <div className="relative my-2">
-          <Search className="absolute left-3.5 top-3 h-4 w-4 text-cyan-400" />
+          <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-cyan-400 z-10 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={isBn ? "অনুসন্ধান..." : "Search..."}
-            className="w-full rounded-2xl border border-cyan-500/30 bg-[#091326] py-2.5 pl-10 pr-4 text-xs font-medium text-white placeholder-zinc-500 focus:border-cyan-400 focus:outline-none transition-all"
+            className="input input-bordered input-primary input-sm w-full bg-[#091326] pl-10 text-xs font-medium text-white placeholder-zinc-500"
           />
         </div>
 
@@ -152,14 +152,14 @@ export function GuildHubModal({ open, onClose, lang = "bn" }: Props) {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="rounded-xl border border-cyan-500/30 bg-[#091326] px-3 py-2 text-xs font-bold text-zinc-300 focus:outline-none"
+            className="select select-bordered select-primary select-sm bg-[#091326] text-xs font-bold text-zinc-300"
           >
             <option value="all">{isBn ? "সব ধরন" : "Types: All"}</option>
             <option value="casual">{isBn ? "ক্যাজুয়াল" : "Casual"}</option>
             <option value="hardcore">{isBn ? "হার্ডকোর" : "Hardcore"}</option>
           </select>
 
-          <div className="rounded-xl border border-cyan-500/30 bg-[#091326] px-3 py-2 text-xs font-bold text-zinc-300 flex items-center gap-1.5">
+          <div className="rounded-xl border border-cyan-500/30 bg-[#091326] px-3 py-1.5 text-xs font-bold text-zinc-300 flex items-center gap-1.5">
             <Globe className="h-3.5 w-3.5 text-cyan-400" />
             <span>{isBn ? "বাংলাদেশ / বৈশ্বিক" : "Global"}</span>
           </div>
@@ -189,7 +189,7 @@ export function GuildHubModal({ open, onClose, lang = "bn" }: Props) {
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="text-sm font-bold text-white">{guild.name}</h4>
-                        <span className="rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-black px-2 py-0.5">
+                        <span className="badge badge-warning badge-sm font-black text-[9px]">
                           {isBn ? "আমন্ত্রণ" : "Invite"}
                         </span>
                         <span className="text-zinc-500 text-xs">·</span>
@@ -220,17 +220,16 @@ export function GuildHubModal({ open, onClose, lang = "bn" }: Props) {
                       {(guild.xpCurrent / 1000).toFixed(1)}K / {(guild.xpMax / 1000).toFixed(1)}K XP
                     </span>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
+                  <progress
+                    className="progress progress-primary w-full h-1.5"
+                    value={pct}
+                    max="100"
+                  />
                 </div>
 
                 {/* Footer Country & Streak */}
                 <div className="mt-3 flex items-center justify-between pt-1">
-                  <span className="rounded-full bg-zinc-800/80 border border-zinc-700 px-2.5 py-0.5 text-[10px] text-zinc-300 font-semibold">
+                  <span className="badge badge-neutral badge-sm text-[10px] text-zinc-300 font-semibold">
                     {guild.country}
                   </span>
                   <div className="flex items-center gap-1 text-amber-400 text-xs font-bold">
