@@ -10,6 +10,7 @@ import { totals } from "@/lib/session";
 import { type Difficulty, MUSCLES, type Muscle, type Session } from "@/lib/types";
 import { Chip, Sheet } from "./Sheet";
 import type { Language } from "@/lib/i18n";
+import { playSound } from "@/lib/audio";
 
 export interface FinishResult {
   difficulty: Difficulty;
@@ -24,6 +25,7 @@ interface Props {
   session: Session;
   weightKg: number;
   lang?: Language;
+  onLanguageChange?: (lang: Language) => void;
   onSave: (r: FinishResult) => void;
   onClose: () => void;
 }
@@ -41,7 +43,7 @@ const MUSCLE_LABEL_BN: Record<Muscle, string> = {
   core: "কোর / পেট (Core)",
 };
 
-export function FinishSheet({ open, session, weightKg, lang = "bn", onSave, onClose }: Props) {
+export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageChange, onSave, onClose }: Props) {
   const isBn = lang === "bn";
   const t = useMemo(() => totals(session), [session]);
   const [difficulty, setDifficulty] = useState<Difficulty>("just_right");
@@ -90,8 +92,52 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onSave, onCl
       <div className="space-y-5 font-mono">
         {/* Holographic Dungeon Clear Banner */}
         <div className="relative rounded-xl p-4 bg-gradient-to-r from-cyan-950/80 via-black to-purple-950/80 border-2 border-cyan-400/70 shadow-[0_0_25px_rgba(6,182,212,0.35)] overflow-hidden">
-          <div className="absolute top-1 right-2 text-[10px] text-cyan-300 font-bold uppercase tracking-widest">
-            {isBn ? "স্ট্যাটাস : সফলভাবে সম্পন্ন" : "DUNGEON STATUS : CONQUERED"}
+          <div className="absolute top-1.5 right-2 flex items-center gap-2">
+            {onLanguageChange && (
+              <div
+                role="group"
+                aria-label="Language selection"
+                className="flex items-center rounded-lg border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "bn") {
+                      playSound("system-click");
+                      onLanguageChange("bn");
+                    }
+                  }}
+                  className={`rounded px-1.5 py-0.5 text-[9px] font-black transition-all cursor-pointer ${
+                    lang === "bn"
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "bn"}
+                >
+                  বাংলা
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "en") {
+                      playSound("system-click");
+                      onLanguageChange("en");
+                    }
+                  }}
+                  className={`rounded px-1.5 py-0.5 text-[9px] font-black transition-all cursor-pointer ${
+                    lang === "en"
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "en"}
+                >
+                  EN
+                </button>
+              </div>
+            )}
+            <span className="text-[10px] text-cyan-300 font-bold uppercase tracking-widest hidden sm:inline">
+              {isBn ? "স্ট্যাটাস : সফলভাবে সম্পন্ন" : "DUNGEON STATUS : CONQUERED"}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-400 to-purple-600 text-black shadow-lg shadow-cyan-400/50">

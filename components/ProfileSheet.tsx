@@ -2,6 +2,7 @@
 
 import { ShieldAlert, Scale, Zap, Info, Calendar, Utensils } from "lucide-react";
 import { useMemo, useState } from "react";
+import { playSound } from "@/lib/audio";
 import { DAYS_OF_WEEK } from "@/lib/schedule";
 import {
   ACTIVITY_LABELS,
@@ -184,26 +185,42 @@ export function ProfileSheet({
             <h3 className="text-sm font-semibold text-white">{t.bodyBiometricsTitle}</h3>
             <div className="flex items-center gap-1.5">
               {/* Language Switcher */}
-              <div className="flex gap-1 rounded-lg border border-cyan-500/30 bg-[#03081a] p-0.5 text-xs font-mono">
-                <button
-                  type="button"
-                  id="btn-profile-lang-en"
-                  onClick={() => handleLanguageSwitch("en")}
-                  className={`rounded px-2 py-1 font-bold transition-all ${
-                    currentLang === "en" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
-                  }`}
-                >
-                  EN
-                </button>
+              <div
+                className="flex gap-1 rounded-lg border border-cyan-500/30 bg-[#03081a] p-0.5 text-xs font-mono"
+                role="group"
+                aria-label="Language selection"
+              >
                 <button
                   type="button"
                   id="btn-profile-lang-bn"
-                  onClick={() => handleLanguageSwitch("bn")}
-                  className={`rounded px-2 py-1 font-bold transition-all ${
-                    currentLang === "bn" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
+                  onClick={() => {
+                    playSound("system-click");
+                    handleLanguageSwitch("bn");
+                  }}
+                  className={`rounded px-2.5 py-1 text-xs font-bold transition-all ${
+                    currentLang === "bn"
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
+                      : "text-zinc-400 hover:text-zinc-200"
                   }`}
+                  aria-pressed={currentLang === "bn"}
                 >
                   বাংলা
+                </button>
+                <button
+                  type="button"
+                  id="btn-profile-lang-en"
+                  onClick={() => {
+                    playSound("system-click");
+                    handleLanguageSwitch("en");
+                  }}
+                  className={`rounded px-2.5 py-1 text-xs font-bold transition-all ${
+                    currentLang === "en"
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
+                      : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                  aria-pressed={currentLang === "en"}
+                >
+                  EN
                 </button>
               </div>
 
@@ -304,37 +321,37 @@ export function ProfileSheet({
 
           {/* Interactive Visual BMI Gauge */}
           {stats && (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-3.5 space-y-3">
+            <div className="rounded-2xl border border-cyan-500/30 bg-[#03081a]/90 p-3.5 space-y-3 font-mono system-scanlines">
               <BmiGauge bmi={stats.bmi} category={stats.bmiCategory} />
 
-              <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-zinc-800/60">
-                <div className="rounded-xl bg-zinc-900/60 p-2">
-                  <div className="text-[10px] text-zinc-400">{t.restingBmr}</div>
+              <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-cyan-500/20">
+                <div className="rounded-xl border border-cyan-500/20 bg-black/60 p-2">
+                  <div className="text-[10px] text-zinc-400 uppercase">{t.restingBmr}</div>
                   <div className="text-base font-bold text-white">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
-                <div className="rounded-xl bg-zinc-900/60 p-2">
-                  <div className="text-[10px] text-zinc-400">{t.dailyTdee}</div>
-                  <div className="text-base font-bold text-emerald-400">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
+                <div className="rounded-xl border border-cyan-500/20 bg-black/60 p-2">
+                  <div className="text-[10px] text-cyan-300 uppercase">{t.dailyTdee}</div>
+                  <div className="text-base font-black text-cyan-400 text-glow-cyan">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
               </div>
 
               {nutrition && (
-                <div className="rounded-xl bg-zinc-900/80 p-2.5 border border-zinc-800 text-center">
+                <div className="rounded-xl bg-[#020512] p-2.5 border border-cyan-500/25 text-center">
                   <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-1.5 font-medium">
                     <span>{t.targetCalories(draft.goal)}</span>
                     <strong className="text-white font-mono">{nutrition.targetCalories} kcal/day</strong>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5 text-[11px]">
-                    <div className="bg-zinc-950 p-1.5 rounded-lg border border-zinc-800">
-                      <span className="text-emerald-400 font-semibold block">{t.proteinLabel}</span>
+                    <div className="bg-black/60 p-1.5 rounded-lg border border-cyan-500/20">
+                      <span className="text-cyan-400 font-bold block">{t.proteinLabel}</span>
                       <strong className="text-white font-mono">{nutrition.proteinGrams}g</strong>
                     </div>
-                    <div className="bg-zinc-950 p-1.5 rounded-lg border border-zinc-800">
-                      <span className="text-teal-400 font-semibold block">{t.carbsLabel}</span>
+                    <div className="bg-black/60 p-1.5 rounded-lg border border-cyan-500/20">
+                      <span className="text-blue-400 font-bold block">{t.carbsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.carbGrams}g</strong>
                     </div>
-                    <div className="bg-zinc-950 p-1.5 rounded-lg border border-zinc-800">
-                      <span className="text-amber-400 font-semibold block">{t.fatsLabel}</span>
+                    <div className="bg-black/60 p-1.5 rounded-lg border border-cyan-500/20">
+                      <span className="text-amber-400 font-bold block">{t.fatsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.fatGrams}g</strong>
                     </div>
                   </div>
@@ -346,8 +363,8 @@ export function ProfileSheet({
           {rangeError && <p className="text-xs text-amber-400">{rangeError}</p>}
         </section>
 
-        <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-white">{currentLang === "bn" ? "প্রশিক্ষণের প্যারামিটার" : "Training Parameters"}</h3>
+        <section className="space-y-3 font-mono">
+          <h3 className="text-sm font-black text-white uppercase text-glow-cyan">{currentLang === "bn" ? "[ প্রশিক্ষণের প্যারামিটার ]" : "[ TRAINING PARAMETERS ]"}</h3>
           <div>
             <span className={labelCls}>{t.levelLabel}</span>
             <Segmented<Level>
@@ -403,21 +420,21 @@ export function ProfileSheet({
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 3, 5])}
-                  className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
+                  className="btn btn-xs uppercase font-mono btn-outline btn-neutral text-cyan-300 hover:text-white"
                 >
                   {t.daysPpl}
                 </button>
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 2, 4, 5])}
-                  className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
+                  className="btn btn-xs uppercase font-mono btn-outline btn-neutral text-cyan-300 hover:text-white"
                 >
                   {t.daysFour}
                 </button>
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 2, 3, 4, 5])}
-                  className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-400 hover:text-white"
+                  className="btn btn-xs uppercase font-mono btn-outline btn-neutral text-cyan-300 hover:text-white"
                 >
                   {t.daysFive}
                 </button>
@@ -440,13 +457,13 @@ export function ProfileSheet({
                       }
                       set("workoutDays", Array.from(cur).sort((a, b) => a - b));
                     }}
-                    className={`flex flex-col items-center justify-center rounded-xl p-2 min-h-[50px] border text-center transition-colors ${
+                    className={`flex flex-col items-center justify-center rounded-xl p-2 min-h-[50px] border text-center transition-all cursor-pointer font-mono ${
                       active
-                        ? "border-emerald-500 bg-emerald-500/15 font-bold text-emerald-300"
-                        : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                        ? "border-cyan-400 bg-cyan-950/60 text-cyan-200 font-bold shadow-[0_0_12px_rgba(6,182,212,0.35)] scale-102"
+                        : "border-cyan-500/20 bg-black/60 text-zinc-400 hover:border-cyan-500/40 hover:text-cyan-200"
                     }`}
                   >
-                    <span className="text-[10px] uppercase font-semibold">{d.short}</span>
+                    <span className="text-[10px] uppercase font-bold">{d.short}</span>
                     <span className="text-[10px] opacity-75">{currentLang === "bn" ? d.bengaliName.slice(0, 3) : d.short}</span>
                   </button>
                 );
@@ -491,9 +508,9 @@ export function ProfileSheet({
           </p>
         </section>
 
-        <section className="space-y-3">
-          <h3 className="text-sm font-semibold text-white">{currentLang === "bn" ? "নিরাপত্তা ও পছন্দ" : "Preferences & Safety"}</h3>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 text-sm cursor-pointer">
+        <section className="space-y-3 font-mono">
+          <h3 className="text-sm font-black text-white uppercase text-glow-cyan">{currentLang === "bn" ? "[ নিরাপত্তা ও পছন্দ ]" : "[ PREFERENCES & SAFETY ]"}</h3>
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-cyan-500/30 bg-[#03081a]/80 px-3 text-sm cursor-pointer hover:border-cyan-400/60 transition-colors">
             <input
               type="checkbox"
               className="checkbox checkbox-primary h-5 w-5"

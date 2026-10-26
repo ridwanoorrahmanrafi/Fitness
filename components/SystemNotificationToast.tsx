@@ -23,7 +23,7 @@ export default function SystemNotificationToast({
   if (toasts.length === 0) return null;
 
   return (
-    <div className="toast toast-top toast-end top-20 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none p-3 sm:p-4">
+    <div className="toast toast-top toast-center sm:toast-end top-16 sm:top-20 z-50 flex flex-col gap-2.5 w-[calc(100vw-24px)] sm:max-w-sm pointer-events-none p-0 sm:p-4">
       {toasts.map((toast) => (
         <div
           key={toast.id}

@@ -139,16 +139,50 @@ export function LandingPage({
 
           {/* Action HUD Buttons */}
           <div className="flex items-center gap-2">
-            {/* Language Switcher */}
-            <button
+            {/* Language Switcher: Dual Segmented Bangla / English */}
+            <div
               id="landing-lang-toggle"
-              type="button"
-              onClick={onLanguageToggle}
-              className="btn btn-sm btn-outline btn-primary gap-1.5 font-mono text-xs font-bold text-cyan-300"
+              role="group"
+              aria-label="Language selection"
+              className="flex items-center rounded-xl border border-cyan-500/40 bg-[#03081a] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
             >
-              <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
-              <span className="font-black text-cyan-200">{lang === "bn" ? "EN" : "বাংলা"}</span>
-            </button>
+              <button
+                type="button"
+                id="landing-lang-bn"
+                onClick={() => {
+                  if (lang !== "bn") {
+                    playSound("system-click");
+                    onLanguageToggle();
+                  }
+                }}
+                className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
+                  lang === "bn"
+                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                    : "text-cyan-400/70 hover:text-cyan-200"
+                }`}
+                aria-pressed={lang === "bn"}
+              >
+                বাংলা
+              </button>
+              <button
+                type="button"
+                id="landing-lang-en"
+                onClick={() => {
+                  if (lang !== "en") {
+                    playSound("system-click");
+                    onLanguageToggle();
+                  }
+                }}
+                className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
+                  lang === "en"
+                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                    : "text-cyan-400/70 hover:text-cyan-200"
+                }`}
+                aria-pressed={lang === "en"}
+              >
+                EN
+              </button>
+            </div>
 
             {/* Hunter Auth / Profile Selector */}
             <button
@@ -353,7 +387,7 @@ export function LandingPage({
                     {t.sexLabel}
                   </label>
                   <select
-                    className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/35 bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
+                    className="select select-bordered select-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
                     value={calcGender}
                     onChange={(e) => setCalcGender(e.target.value as Gender)}
                   >
@@ -367,7 +401,7 @@ export function LandingPage({
                   </label>
                   <input
                     type="number"
-                    className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/35 bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
+                    className="input input-bordered input-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
                     value={calcAge}
                     onChange={(e) => setCalcAge(Number(e.target.value) || 20)}
                   />
@@ -381,7 +415,7 @@ export function LandingPage({
                   </label>
                   <input
                     type="number"
-                    className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/35 bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
+                    className="input input-bordered input-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
                     value={calcHeight}
                     onChange={(e) => setCalcHeight(Number(e.target.value) || 160)}
                   />
@@ -392,7 +426,7 @@ export function LandingPage({
                   </label>
                   <input
                     type="number"
-                    className="w-full min-h-[44px] system-btn-chamfer border border-cyan-500/35 bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
+                    className="input input-bordered input-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
                     value={calcWeight}
                     onChange={(e) => setCalcWeight(Number(e.target.value) || 60)}
                   />

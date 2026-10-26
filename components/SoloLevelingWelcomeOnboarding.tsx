@@ -185,17 +185,46 @@ export function SoloLevelingWelcomeOnboarding({
       </div>
 
       <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            playSound("system-click");
-            onLanguageChange(isBn ? "en" : "bn");
-          }}
-          className="rounded-full border border-cyan-500/40 bg-[#0c162d]/90 px-3 py-1.5 text-xs font-bold text-cyan-300 shadow-[0_0_12px_rgba(0,140,255,0.25)] flex items-center gap-1.5"
+        <div
+          role="group"
+          aria-label="Language selection"
+          className="flex items-center rounded-full border border-cyan-500/40 bg-[#0c162d]/90 p-0.5 text-xs shadow-[0_0_12px_rgba(0,140,255,0.25)]"
         >
-          <span>🌐</span>
-          <span>{isBn ? "EN" : "বাংলা"}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!isBn) {
+                playSound("system-click");
+                onLanguageChange("bn");
+              }
+            }}
+            className={`rounded-full px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+              isBn
+                ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)] font-black"
+                : "text-cyan-400/70 hover:text-cyan-200"
+            }`}
+            aria-pressed={isBn}
+          >
+            বাংলা
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (isBn) {
+                playSound("system-click");
+                onLanguageChange("en");
+              }
+            }}
+            className={`rounded-full px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+              !isBn
+                ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)] font-black"
+                : "text-cyan-400/70 hover:text-cyan-200"
+            }`}
+            aria-pressed={!isBn}
+          >
+            EN
+          </button>
+        </div>
 
         {onClose && (
           <button

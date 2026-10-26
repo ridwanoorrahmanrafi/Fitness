@@ -22,6 +22,7 @@ import {
 import { generateBangladeshiDiet, type BangladeshiDietPlan } from "@/lib/diet";
 import { TRANSLATIONS, type Language } from "@/lib/i18n";
 import type { Goal, GenerateDietResponse } from "@/lib/types";
+import { playSound } from "@/lib/audio";
 
 interface Props {
   open: boolean;
@@ -32,6 +33,7 @@ interface Props {
   tdee: number;
   initialGoal?: Goal | "recomp";
   lang?: Language;
+  onLanguageChange?: (lang: Language) => void;
   geminiKey?: string;
   accessCode?: string;
   onClose: () => void;
@@ -49,6 +51,7 @@ export function DietSheet({
   tdee,
   initialGoal = "recomp",
   lang = "bn",
+  onLanguageChange,
   accessCode = "",
   onClose,
 }: Props) {
@@ -186,13 +189,57 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
               <p className="font-mono text-[11px] text-cyan-400/80">{t.dietSheetSubtitle}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close diet chart"
-            className="flex h-9 w-9 items-center justify-center system-btn-chamfer border border-cyan-500/30 bg-[#03081a] text-cyan-400 hover:text-white hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onLanguageChange && (
+              <div
+                role="group"
+                aria-label="Language selection"
+                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "bn") {
+                      playSound("system-click");
+                      onLanguageChange("bn");
+                    }
+                  }}
+                  className={`rounded-lg px-2 py-1 text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "bn"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "bn"}
+                >
+                  বাংলা
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "en") {
+                      playSound("system-click");
+                      onLanguageChange("en");
+                    }
+                  }}
+                  className={`rounded-lg px-2 py-1 text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "en"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "en"}
+                >
+                  EN
+                </button>
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              aria-label="Close diet chart"
+              className="flex h-9 w-9 items-center justify-center system-btn-chamfer border border-cyan-500/30 bg-[#03081a] text-cyan-400 hover:text-white hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(6,182,212,0.4)] transition-all"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Engine Switcher (DaisyUI Tabs: Preset vs Gemini AI) */}
@@ -289,11 +336,11 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
           {/* AI Generator Controls (when viewMode is AI) */}
           {viewMode === "ai" && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-zinc-900/80 p-4 space-y-3">
+            <div className="rounded-2xl border border-cyan-500/35 bg-[#03081a]/95 p-4 space-y-3 font-mono system-scanlines">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bot className="h-4 w-4 text-emerald-400" />
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  <Bot className="h-4 w-4 text-cyan-400" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider text-glow-cyan">
                     {isBn ? "জেমিনাই এআই অপশন ও পছন্দসমূহ" : "Gemini AI Preferences & Routine"}
                   </span>
                 </div>
@@ -301,7 +348,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   type="button"
                   onClick={generateAiDiet}
                   disabled={aiLoading}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-bold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50 transition-colors"
+                  className="btn btn-xs btn-primary gap-1.5 font-mono font-bold text-black shadow-[0_0_12px_rgba(6,182,212,0.5)] active:scale-95 transition-all"
                 >
                   {aiLoading ? (
                     <>
@@ -319,7 +366,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
 
               {/* Preferences Chips */}
               <div className="space-y-1.5">
-                <label className="text-[11px] text-zinc-400 block font-medium">
+                <label className="text-[11px] text-cyan-300/80 block font-medium">
                   {isBn ? "আপনার ধরন ও পছন্দ নির্বাচন করুন:" : "Select your lifestyle preferences:"}
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -339,8 +386,8 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                         onClick={() => toggleAiPref(p.id)}
                         className={`btn btn-xs transition-colors ${
                           selected
-                            ? "btn-primary font-bold text-black"
-                            : "btn-outline btn-neutral text-zinc-400 hover:text-white"
+                            ? "btn-primary font-bold text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]"
+                            : "btn-outline btn-neutral text-cyan-300 hover:text-white"
                         }`}
                       >
                         {isBn ? p.labelBn : p.labelEn}
@@ -353,13 +400,13 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
               {/* Budget & Allergy Inputs (DaisyUI Select & Input) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <div>
-                  <label className="text-[11px] text-zinc-400 block mb-1">
+                  <label className="text-[11px] text-cyan-300/80 block mb-1">
                     {isBn ? "বাজেট লেভেল:" : "Budget Level:"}
                   </label>
                   <select
                     value={aiBudget}
                     onChange={(e) => setAiBudget(e.target.value as any)}
-                    className="select select-bordered select-primary select-sm w-full bg-zinc-950 text-xs text-zinc-200 font-mono"
+                    className="select select-bordered select-primary select-sm w-full bg-[#020512] text-xs text-cyan-100 font-mono"
                   >
                     <option value="student">{isBn ? "সাশ্রয়ী / স্টুডেন্ট বাজেট (ডিম, ডাল, ছোলা)" : "Student / Budget-friendly"}</option>
                     <option value="standard">{isBn ? "স্ট্যান্ডার্ড বাঙালি (মাছ, মুরগি, ডিম)" : "Standard Household"}</option>
@@ -367,7 +414,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   </select>
                 </div>
                 <div>
-                  <label className="text-[11px] text-zinc-400 block mb-1">
+                  <label className="text-[11px] text-cyan-300/80 block mb-1">
                     {isBn ? "কোনো খাবারে এলার্জি বা নিষেধ?" : "Restrictions / Allergies:"}
                   </label>
                   <input
@@ -375,7 +422,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                     value={aiRestrictions}
                     onChange={(e) => setAiRestrictions(e.target.value)}
                     placeholder={isBn ? "যেমন: চিংড়ি নিষেধ, গরুর মাংস খাই না" : "e.g. no shrimp, no beef"}
-                    className="input input-bordered input-primary input-sm w-full bg-zinc-950 text-xs text-zinc-200 font-mono placeholder:text-zinc-600"
+                    className="input input-bordered input-primary input-sm w-full bg-[#020512] text-xs text-cyan-100 font-mono placeholder:text-cyan-800"
                   />
                 </div>
               </div>
@@ -390,29 +437,29 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
           )}
 
           {/* Plan Summary Banner */}
-          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-emerald-950/20 p-4 shadow-lg">
+          <div className="rounded-2xl border border-cyan-500/40 bg-gradient-to-br from-[#040e29] via-[#020512] to-[#040e29] p-4 shadow-lg font-mono system-scanlines">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <span className="text-base font-bold text-white sm:text-lg">
+              <span className="text-base font-black text-white sm:text-lg text-glow-cyan uppercase">
                 {isBn ? activeDiet.bengaliTitle : activeDiet.title}
               </span>
-              <span className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800/80 px-2.5 py-1 text-xs text-zinc-300">
-                <Scale className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-black/60 px-2.5 py-1 text-xs text-cyan-300">
+                <Scale className="h-3.5 w-3.5 text-cyan-400" />
                 <span>{weightKg} kg</span>
                 <span className="text-zinc-500">|</span>
-                <span className="text-emerald-300">BMI {bmi}</span>
+                <span className="text-cyan-200 font-bold">BMI {bmi}</span>
               </span>
             </div>
-            <p className="text-xs text-zinc-300 leading-relaxed mb-4">{activeDiet.description}</p>
+            <p className="text-xs text-cyan-200/80 leading-relaxed mb-4">{activeDiet.description}</p>
 
             {activeDiet.consensus && (
-              <div className="mb-4 overflow-hidden rounded-xl border border-teal-500/30 bg-teal-950/20 p-3.5 backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-2 border-b border-teal-500/20 pb-2">
-                  <span className="flex items-center gap-1.5 text-xs font-bold text-teal-300">
-                    <Sparkles className="h-3.5 w-3.5 text-teal-400" />
+              <div className="mb-4 overflow-hidden rounded-xl border border-cyan-500/35 bg-cyan-950/20 p-3.5 backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-2 border-b border-cyan-500/20 pb-2">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
+                    <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
                     {activeDiet.consensus.verifiedBy}
                   </span>
                   {activeDiet.consensus.safetyScore && (
-                    <span className="rounded-full bg-teal-500/20 px-2 py-0.5 text-[10px] font-mono font-bold text-teal-200">
+                    <span className="rounded-full bg-cyan-500/20 px-2 py-0.5 text-[10px] font-mono font-bold text-cyan-200 border border-cyan-500/30">
                       {activeDiet.consensus.safetyScore}% Clinical Match
                     </span>
                   )}
@@ -424,7 +471,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                   <ul className="mt-2 space-y-1 text-[11px] text-zinc-400">
                     {activeDiet.consensus.notes.map((note, idx) => (
                       <li key={idx} className="flex items-start gap-1.5">
-                        <CheckCircle className="h-3 w-3 text-teal-400 mt-0.5 shrink-0" />
+                        <CheckCircle className="h-3 w-3 text-cyan-400 mt-0.5 shrink-0" />
                         <span>{note}</span>
                       </li>
                     ))}
@@ -433,8 +480,8 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
               </div>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-              <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
-                <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
+              <div className="rounded-xl border border-cyan-500/25 bg-black/60 p-2.5">
+                <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400 uppercase">
                   <Flame className="h-3 w-3 text-amber-400" /> {lang === "bn" ? "দৈনিক ক্যালোরি" : "Daily Calories"}
                 </div>
                 <div className="mt-1 text-lg font-bold font-mono text-white">
@@ -442,29 +489,29 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
-                <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
-                  <Sparkles className="h-3 w-3 text-emerald-400" /> {t.proteinLabel}
+              <div className="rounded-xl border border-cyan-500/25 bg-black/60 p-2.5">
+                <div className="flex items-center justify-center gap-1 text-[11px] text-cyan-300 uppercase">
+                  <Sparkles className="h-3 w-3 text-cyan-400" /> {t.proteinLabel}
                 </div>
-                <div className="mt-1 text-lg font-bold font-mono text-emerald-400">
+                <div className="mt-1 text-lg font-black font-mono text-cyan-400 text-glow-cyan">
                   {activeDiet.proteinGrams} <span className="text-[11px] font-normal text-zinc-500">{lang === "bn" ? "গ্রাম" : "g"}</span>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
-                <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
-                  <Apple className="h-3 w-3 text-teal-400" /> {t.carbsLabel}
+              <div className="rounded-xl border border-cyan-500/25 bg-black/60 p-2.5">
+                <div className="flex items-center justify-center gap-1 text-[11px] text-blue-300 uppercase">
+                  <Apple className="h-3 w-3 text-blue-400" /> {t.carbsLabel}
                 </div>
-                <div className="mt-1 text-lg font-bold font-mono text-teal-400">
+                <div className="mt-1 text-lg font-black font-mono text-blue-400">
                   {activeDiet.carbsGrams} <span className="text-[11px] font-normal text-zinc-500">{lang === "bn" ? "গ্রাম" : "g"}</span>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-2.5">
-                <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-400">
+              <div className="rounded-xl border border-cyan-500/25 bg-black/60 p-2.5">
+                <div className="flex items-center justify-center gap-1 text-[11px] text-cyan-300 uppercase">
                   <Droplets className="h-3 w-3 text-cyan-400" /> {t.waterLabel}
                 </div>
-                <div className="mt-1 text-lg font-bold font-mono text-cyan-300">
+                <div className="mt-1 text-lg font-black font-mono text-cyan-300">
                   {activeDiet.waterLiters} <span className="text-[11px] font-normal text-zinc-500">{lang === "bn" ? "লিটার" : "L"}</span>
                 </div>
               </div>
@@ -472,9 +519,9 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
           </div>
 
           {/* Meals Breakdown */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-              <Utensils className="h-3.5 w-3.5 text-emerald-400" /> {t.dailyMealsTitle}
+          <div className="space-y-3 font-mono">
+            <h3 className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-2 text-glow-cyan">
+              <Utensils className="h-3.5 w-3.5 text-cyan-400" /> {t.dailyMealsTitle}
             </h3>
 
             {activeDiet.meals.map((meal, mIdx) => {
@@ -485,22 +532,22 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
               return (
                 <div
                   key={meal.id}
-                  className="rounded-2xl border border-zinc-800/90 bg-zinc-900/70 overflow-hidden transition-all shadow-sm"
+                  className="rounded-2xl border border-cyan-500/30 bg-[#03081a]/90 overflow-hidden transition-all shadow-sm"
                 >
                   <div
                     onClick={() => setExpandedMeal(isExpanded && expandedMeal !== null ? "" : meal.id)}
-                    className="flex items-center justify-between p-3.5 cursor-pointer hover:bg-zinc-850 transition-colors"
+                    className="flex items-center justify-between p-3.5 cursor-pointer hover:bg-cyan-950/20 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-400">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-xs font-black text-cyan-400">
                         {mIdx + 1}
                       </span>
                       <div>
-                        <h4 className="text-sm font-bold text-white">{meal.title}</h4>
+                        <h4 className="text-sm font-bold text-white uppercase">{meal.title}</h4>
                         <div className="flex items-center gap-2 text-[11px] text-zinc-400">
                           <span>{meal.bengaliTitle}</span>
                           <span>•</span>
-                          <span className="text-emerald-400 font-medium font-mono">{mealCal} kcal</span>
+                          <span className="text-cyan-400 font-bold font-mono">{mealCal} kcal</span>
                           <span>•</span>
                           <span className="text-zinc-300 font-medium font-mono">
                             {mealProtein}g {isBn ? "প্রোটিন" : "protein"}
@@ -508,18 +555,18 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                         </div>
                       </div>
                     </div>
-                    <div className="text-zinc-500">
+                    <div className="text-cyan-400">
                       {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
                   </div>
 
                   {isExpanded && (
-                    <div className="border-t border-zinc-800/80 bg-zinc-950/60 p-3.5 space-y-2.5">
+                    <div className="border-t border-cyan-500/20 bg-black/50 p-3.5 space-y-2.5">
                       <div className="space-y-1.5">
                         {meal.items.map((item, iIdx) => (
                           <div
                             key={iIdx}
-                            className="flex items-center justify-between rounded-xl border border-zinc-800/60 bg-zinc-900/60 px-3 py-2 text-xs"
+                            className="flex items-center justify-between rounded-xl border border-cyan-500/20 bg-[#020512] px-3 py-2 text-xs"
                           >
                             <div className="min-w-0 pr-2">
                               <span className="font-semibold text-zinc-100 block">
@@ -528,7 +575,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                               <span className="text-[11px] text-zinc-400">{item.portion}</span>
                             </div>
                             <div className="shrink-0 text-right">
-                              <span className="font-bold font-mono text-emerald-400 block">{item.calories} kcal</span>
+                              <span className="font-bold font-mono text-cyan-400 block">{item.calories} kcal</span>
                               <span className="text-[10px] text-zinc-500 font-mono">P: {item.proteinG}g | C: {item.carbsG}g</span>
                             </div>
                           </div>
@@ -536,10 +583,10 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
                       </div>
 
                       {meal.tips && (
-                        <div className="flex items-start gap-2 rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-2.5 text-[11px] text-emerald-200">
-                          <Info className="h-3.5 w-3.5 shrink-0 text-emerald-400 mt-0.5" />
+                        <div className="flex items-start gap-2 rounded-xl border border-cyan-500/25 bg-cyan-950/25 p-2.5 text-[11px] text-cyan-200">
+                          <Info className="h-3.5 w-3.5 shrink-0 text-cyan-400 mt-0.5" />
                           <span>
-                            <strong>{isBn ? "টিপস: " : "Tip: "}</strong>
+                            <strong className="text-cyan-300">{isBn ? "টিপস: " : "Tip: "}</strong>
                             {meal.tips}
                           </span>
                         </div>
@@ -552,15 +599,15 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
           </div>
 
           {/* Bangladeshi Nutrition Guidelines */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-2.5">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-              <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />{" "}
+          <div className="rounded-2xl border border-cyan-500/30 bg-[#03081a]/90 p-4 space-y-2.5 font-mono">
+            <h4 className="text-xs font-black uppercase tracking-wider text-cyan-300 flex items-center gap-1.5 text-glow-cyan">
+              <CheckCircle className="h-3.5 w-3.5 text-cyan-400" />{" "}
               {isBn ? "বাঙালি খাদ্যাভ্যাসে জরুরি নিয়মাবলী" : "Bangladeshi Nutrition Guidelines"}
             </h4>
             <ul className="space-y-2 text-xs text-zinc-300">
               {activeDiet.guidelines.map((g, idx) => (
                 <li key={idx} className="flex items-start gap-2">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[10px] font-bold text-emerald-400 mt-0.5">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] font-black text-cyan-400 mt-0.5">
                     ✓
                   </span>
                   <span>{g}</span>

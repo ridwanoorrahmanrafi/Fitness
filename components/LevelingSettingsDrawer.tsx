@@ -105,7 +105,13 @@ export function LevelingSettingsDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-3 sm:p-5 backdrop-blur-2xl overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg min-h-[580px] max-h-[92vh] flex flex-col rounded-3xl bg-[#060c18] border border-cyan-500/40 p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
+      <div className="relative w-full max-w-lg min-h-0 sm:min-h-[480px] max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-[#060c18] border border-cyan-500/40 p-4 sm:p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
+        {/* Corner Rune Pins */}
+        <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute top-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+
         {/* Top Header Bar */}
         <div className="flex items-center justify-between pb-3">
           <button
@@ -346,16 +352,46 @@ export function LevelingSettingsDrawer({
                     </span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    playSound("system-click");
-                    onLanguageChange(lang === "bn" ? "en" : "bn");
-                  }}
-                  className="btn btn-xs btn-outline btn-primary"
+                <div
+                  role="group"
+                  aria-label="Language selection"
+                  className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)] shrink-0"
                 >
-                  {lang === "bn" ? "Switch to English" : "বাংলায় দেখুন"}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (lang !== "bn") {
+                        playSound("system-click");
+                        onLanguageChange("bn");
+                      }
+                    }}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                      lang === "bn"
+                        ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)] font-black"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                    aria-pressed={lang === "bn"}
+                  >
+                    বাংলা
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (lang !== "en") {
+                        playSound("system-click");
+                        onLanguageChange("en");
+                      }
+                    }}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                      lang === "en"
+                        ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)] font-black"
+                        : "text-zinc-400 hover:text-white"
+                    }`}
+                    aria-pressed={lang === "en"}
+                  >
+                    English
+                  </button>
+                </div>
               </div>
             </div>
           </div>

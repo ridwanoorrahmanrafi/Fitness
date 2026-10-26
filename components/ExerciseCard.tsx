@@ -147,14 +147,14 @@ export function ExerciseCard({
               {pe.sets} × {pe.reps}
             </span>
             <div className="mt-1 flex items-center justify-end gap-1 text-[11px] text-zinc-400">
-              <Clock className="h-3 w-3 text-emerald-400" /> {t.restSecLabel(pe.restSeconds)}
+              <Clock className="h-3 w-3 text-cyan-400" /> {t.restSecLabel(pe.restSeconds)}
             </div>
           </div>
         </div>
 
         {/* Cues Box */}
-        <div className="my-3 rounded-xl border border-zinc-800/80 bg-zinc-950/50 p-3 text-xs leading-relaxed text-zinc-300">
-          <strong className="text-emerald-400">{t.cuePrefix}</strong> {exercise.cues}
+        <div className="my-3 rounded-xl border border-cyan-500/30 bg-[#03081a]/90 p-3 text-xs leading-relaxed text-zinc-200 font-mono">
+          <strong className="text-cyan-400 text-glow-cyan">{t.cuePrefix}</strong> {exercise.cues}
           {pe.note && (
             <>
               <br />
@@ -172,7 +172,7 @@ export function ExerciseCard({
               data-testid={`btn-animation-${exercise.id}`}
               type="button"
               onClick={onOpenAnimation}
-              className="btn btn-sm btn-outline btn-success gap-1.5 text-xs font-bold shadow-sm active:scale-95"
+              className="btn btn-sm btn-outline btn-primary gap-1.5 text-xs font-bold shadow-sm active:scale-95 text-cyan-300 hover:text-black font-mono"
               title={`Watch animated demonstration and form guide for ${exercise.name}`}
             >
               <Play className="h-3.5 w-3.5 fill-current" />
@@ -184,7 +184,7 @@ export function ExerciseCard({
             <button
               onClick={() => onSwap(easier.id)}
               disabled={!canSwap}
-              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95"
+              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95 font-mono"
             >
               <TrendingDown className="h-3.5 w-3.5 text-amber-400" /> {t.easierBtn(easier.name)}
             </button>
@@ -193,9 +193,9 @@ export function ExerciseCard({
             <button
               onClick={() => onSwap(harder.id)}
               disabled={!canSwap}
-              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95"
+              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95 font-mono"
             >
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> {t.harderBtn(harder.name)}
+              <TrendingUp className="h-3.5 w-3.5 text-cyan-400" /> {t.harderBtn(harder.name)}
             </button>
           )}
           {alternatives.length > 0 && (
@@ -203,7 +203,7 @@ export function ExerciseCard({
               onClick={() => setSwapOpen((o) => !o)}
               aria-expanded={swapOpen}
               disabled={!canSwap}
-              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95"
+              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95 font-mono"
             >
               <ArrowLeftRight className="h-3.5 w-3.5 text-cyan-400" /> {t.swapBtn}
             </button>
@@ -214,17 +214,17 @@ export function ExerciseCard({
             href={`https://www.youtube.com/results?search_query=proper+form+${encodeURIComponent(exercise.name)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-sm btn-ghost border border-zinc-700/80 text-xs text-zinc-300 hover:text-white ml-auto gap-1.5"
+            className="btn btn-sm btn-ghost border border-zinc-700/80 text-xs text-zinc-300 hover:text-white ml-auto gap-1.5 font-mono"
             title={`Search proper biomechanical form for ${exercise.name}`}
           >
-            <ExternalLink className="h-3 w-3 text-emerald-400" />
+            <ExternalLink className="h-3 w-3 text-cyan-400" />
             <span className="hidden sm:inline">{t.formVideoBtn}</span>
           </a>
         </div>
-        {!canSwap && <p className="mb-2 text-[11px] text-zinc-500">{t.swapNotice}</p>}
+        {!canSwap && <p className="mb-2 text-[11px] text-zinc-500 font-mono">{t.swapNotice}</p>}
 
         {swapOpen && canSwap && (
-          <ul className="mb-3 space-y-1 rounded-xl border border-zinc-800 bg-zinc-950/70 p-2 shadow-inner">
+          <ul className="mb-3 space-y-1 rounded-xl border border-cyan-500/30 bg-[#020512] p-2 shadow-inner font-mono">
             {alternatives.slice(0, 6).map((alt) => (
               <li key={alt.id}>
                 <button
@@ -232,7 +232,7 @@ export function ExerciseCard({
                     setSwapOpen(false);
                     onSwap(alt.id);
                   }}
-                  className="flex min-h-[40px] w-full items-center justify-between rounded-lg px-3 text-left text-sm text-zinc-200 hover:bg-zinc-800 transition-colors"
+                  className="flex min-h-[40px] w-full items-center justify-between rounded-lg px-3 text-left text-sm text-zinc-200 hover:bg-cyan-950/30 hover:text-cyan-200 transition-colors"
                 >
                   <span className="font-medium">{alt.name}</span>
                   <span className="text-[11px] text-zinc-500">
@@ -245,10 +245,10 @@ export function ExerciseCard({
         )}
 
         {/* Sets Tracker Header */}
-        <div className="mb-2.5 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+        <div className="mb-2.5 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400 font-mono">
           <span>{t.setsProgress(doneCount, sets.length)}</span>
           {exercise.loaded && lastWeightDisplay ? (
-            <span className="normal-case text-emerald-400/90 font-mono">
+            <span className="normal-case text-cyan-400/90 font-mono">
               {t.lastWeightPrefix(lastWeightDisplay, weightUnit)}
             </span>
           ) : null}
@@ -269,11 +269,11 @@ export function ExerciseCard({
                 key={i}
                 className={`flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-xl border transition-all duration-200 ${
                   s.done
-                    ? "bg-emerald-950/20 border-emerald-500/30"
-                    : "bg-zinc-950/40 border-zinc-800/80 hover:border-zinc-700"
+                    ? "bg-cyan-950/30 border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.25)]"
+                    : "bg-[#020512]/60 border-cyan-500/20 hover:border-cyan-500/40"
                 }`}
               >
-                <span className="w-8 sm:w-12 shrink-0 text-center sm:text-left text-[11px] sm:text-xs font-bold text-zinc-300">
+                <span className="w-8 sm:w-12 shrink-0 text-center sm:text-left text-[11px] sm:text-xs font-bold text-zinc-300 font-mono">
                   <span className="sm:hidden">S{i + 1}</span>
                   <span className="hidden sm:inline">Set {i + 1}</span>
                 </span>
@@ -281,9 +281,9 @@ export function ExerciseCard({
                 {exercise.timed ? (
                   <button
                     onClick={() => onStartHold(holdSeconds(pe.reps), exercise.name)}
-                    className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 active:scale-95 transition-all"
+                    className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-cyan-500/30 bg-[#091326] text-xs font-semibold text-zinc-200 hover:border-cyan-400 hover:text-white active:scale-95 transition-all font-mono"
                   >
-                    <Timer className="h-4 w-4 text-emerald-400" /> Start {holdSeconds(pe.reps)}s hold
+                    <Timer className="h-4 w-4 text-cyan-400" /> Start {holdSeconds(pe.reps)}s hold
                   </button>
                 ) : (
                   <>

@@ -15,6 +15,7 @@ interface SoloLevelingStatusModalProps {
   onTriggerArise?: () => void;
   onOpenCalibration?: () => void;
   lang?: Language;
+  onLanguageChange?: (lang: Language) => void;
 }
 
 export default function SoloLevelingStatusModal({
@@ -25,6 +26,7 @@ export default function SoloLevelingStatusModal({
   onTriggerArise,
   onOpenCalibration,
   lang = "bn",
+  onLanguageChange,
 }: SoloLevelingStatusModalProps) {
   const isBn = lang === "bn";
   const [activeTab, setActiveTab] = useState<"status" | "skills" | "shadows">("status");
@@ -128,23 +130,23 @@ export default function SoloLevelingStatusModal({
         <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
 
         {/* Holographic Header Bar */}
-        <div className="relative flex items-center justify-between px-5 py-3 border-b-2 border-cyan-400/50 bg-gradient-to-r from-cyan-950/80 via-[#061435]/90 to-purple-950/70">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-3.5 w-3.5">
+        <div className="relative flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3 border-b-2 border-cyan-400/50 bg-gradient-to-r from-cyan-950/80 via-[#061435]/90 to-purple-950/70 gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="relative flex h-3.5 w-3.5 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-400 shadow-md shadow-cyan-400"></span>
             </span>
-            <div>
-              <div className="text-[10px] font-mono tracking-widest text-cyan-300/90 uppercase font-black">
+            <div className="min-w-0">
+              <div className="text-[9px] sm:text-[10px] font-mono tracking-widest text-cyan-300/90 uppercase font-black truncate">
                 {isBn ? "[ THE SYSTEM : হান্টার স্ট্যাটাস ]" : "[ THE SYSTEM : HUNTER STATUS ]"}
               </div>
-              <h2 className="text-lg sm:text-xl font-black tracking-widest text-white uppercase text-glow-cyan">
+              <h2 className="text-sm sm:text-xl font-black tracking-widest text-white uppercase text-glow-cyan truncate">
                 {isBn ? "STATUS : স্ট্যাটাস উইন্ডো" : "STATUS : HUNTER ATTRIBUTES"}
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {onTriggerArise && (
               <button
                 type="button"
@@ -153,10 +155,52 @@ export default function SoloLevelingStatusModal({
                   vibrate([40, 60, 40]);
                   onTriggerArise();
                 }}
-                className="btn btn-sm btn-secondary text-white font-black tracking-wider shadow-[0_0_18px_rgba(168,85,247,0.6)]"
+                className="btn btn-xs sm:btn-sm btn-secondary text-white font-black tracking-wider shadow-[0_0_18px_rgba(168,85,247,0.6)]"
               >
                 ⚡ ARISE
               </button>
+            )}
+            {onLanguageChange && (
+              <div
+                role="group"
+                aria-label="Language selection"
+                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "bn") {
+                      playSound("system-click");
+                      onLanguageChange("bn");
+                    }
+                  }}
+                  className={`rounded-lg px-2 py-0.5 text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "bn"
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "bn"}
+                >
+                  বাংলা
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "en") {
+                      playSound("system-click");
+                      onLanguageChange("en");
+                    }
+                  }}
+                  className={`rounded-lg px-2 py-0.5 text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "en"
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "en"}
+                >
+                  EN
+                </button>
+              </div>
             )}
             <button
               type="button"

@@ -312,6 +312,51 @@ export function HunterAuthModal({
       dismissable
     >
       <div className="space-y-4 font-mono text-cyan-100">
+        {/* Language Selection Row */}
+        {onLanguageChange && (
+          <div className="flex items-center justify-between pb-1">
+            <span className="text-[11px] font-mono text-cyan-400/80 uppercase tracking-wider">
+              {isBn ? "[ সিস্টেম ভাষা ]" : "[ SYSTEM LANGUAGE ]"}
+            </span>
+            <div
+              className="inline-flex items-center rounded-lg border border-cyan-500/30 bg-[#061022] p-0.5 shadow-[0_0_10px_rgba(6,182,212,0.15)]"
+              role="group"
+              aria-label="Language selection"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  playSound("system-click");
+                  onLanguageChange("bn");
+                }}
+                className={`px-2.5 py-0.5 text-xs font-bold rounded transition-all ${
+                  isBn
+                    ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+                aria-pressed={isBn}
+              >
+                বাংলা
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playSound("system-click");
+                  onLanguageChange("en");
+                }}
+                className={`px-2.5 py-0.5 text-xs font-bold rounded transition-all ${
+                  !isBn
+                    ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+                aria-pressed={!isBn}
+              >
+                EN
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Active Account Status Bar */}
         <div className="system-btn-chamfer border-2 border-cyan-400/60 bg-gradient-to-r from-[#040c24] via-[#05112e] to-[#020510] p-4 shadow-[0_0_25px_rgba(6,182,212,0.25)] relative overflow-hidden">
           <div className="flex items-center justify-between gap-3">

@@ -15,10 +15,12 @@ import { EXERCISES, MUSCLE_LABEL } from "@/lib/exercises";
 import type { Exercise, Muscle } from "@/lib/types";
 import { TRANSLATIONS, type Language } from "@/lib/i18n";
 import { getExerciseMedia } from "@/lib/exerciseMedia";
+import { playSound } from "@/lib/audio";
 
 interface Props {
   open: boolean;
   lang?: Language;
+  onLanguageChange?: (lang: Language) => void;
   onSelectExercise: (exercise: Exercise) => void;
   onClose: () => void;
 }
@@ -36,6 +38,7 @@ const MUSCLE_FILTERS: { id: string; label: string; muscles: Muscle[] }[] = [
 export function ExerciseLibraryModal({
   open,
   lang = "bn",
+  onLanguageChange,
   onSelectExercise,
   onClose,
 }: Props) {
@@ -79,6 +82,12 @@ export function ExerciseLibraryModal({
       className="modal modal-open backdrop-blur-md z-50 p-0 sm:p-4"
     >
       <div className="modal-box relative flex max-h-[92vh] w-full max-w-3xl flex-col p-0 rounded-t-2xl sm:rounded-2xl border-1.5 border-cyan-500/60 bg-[#03081a]/95 text-cyan-100 shadow-[0_0_40px_rgba(6,182,212,0.35)] overflow-hidden font-sans">
+        {/* Corner Rune Pins */}
+        <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
+        <div className="absolute top-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
+        <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
+        <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-cyan-500/30 bg-[#03081a] px-5 py-4">
           <div className="flex items-center gap-3">
@@ -100,13 +109,57 @@ export function ExerciseLibraryModal({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            aria-label="Close library"
-            className="btn btn-sm btn-circle btn-ghost text-cyan-400 hover:text-white"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onLanguageChange && (
+              <div
+                role="group"
+                aria-label="Language selection"
+                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "bn") {
+                      playSound("system-click");
+                      onLanguageChange("bn");
+                    }
+                  }}
+                  className={`rounded-lg px-2 py-1 text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "bn"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "bn"}
+                >
+                  বাংলা
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (lang !== "en") {
+                      playSound("system-click");
+                      onLanguageChange("en");
+                    }
+                  }}
+                  className={`rounded-lg px-2 py-1 text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "en"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "en"}
+                >
+                  EN
+                </button>
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              aria-label="Close library"
+              className="btn btn-sm btn-circle btn-ghost text-cyan-400 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Search & Category Filter Bar */}

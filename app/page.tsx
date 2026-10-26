@@ -238,6 +238,33 @@ export default function Page() {
     return () => window.removeEventListener("hashchange", handleHash);
   }, []);
 
+  // Reactive viewport & device layout observer (supports auto-adjust for mobile, tablet, compact laptop, widescreen)
+  useEffect(() => {
+    const handleViewportResize = () => {
+      const width = window.innerWidth;
+      try {
+        const storedPref = localStorage.getItem("arise_sidebar_collapsed");
+        if (storedPref !== null) {
+          setSidebarCollapsed(storedPref === "true");
+          return;
+        }
+      } catch {}
+
+      // Responsive defaults based on device category:
+      // On compact laptops & tablet landscape (1024px <= width < 1280px): collapse sidebar to prioritize content
+      // On wide screens (width >= 1280px): expand sidebar
+      if (width >= 1024 && width < 1280) {
+        setSidebarCollapsed(true);
+      } else if (width >= 1280) {
+        setSidebarCollapsed(false);
+      }
+    };
+
+    handleViewportResize();
+    window.addEventListener("resize", handleViewportResize);
+    return () => window.removeEventListener("resize", handleViewportResize);
+  }, []);
+
   const timer = useCountdown(soundOn);
   const ready = profileReady && sessionReady && historyReady;
   const needsSetup = ready && !profile;
@@ -824,6 +851,7 @@ export default function Page() {
         <HunterAuthModal
           open={showAuthModal}
           lang={lang}
+          onLanguageChange={setLang}
           activeAccount={activeUser}
           accounts={accounts}
           onSelectAccount={(acc) => {
@@ -855,6 +883,7 @@ export default function Page() {
           tdee={stats.tdee}
           initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
           lang={lang}
+          onLanguageChange={setLang}
           accessCode={accessCode}
           onClose={() => setShowDietSheet(false)}
         />
@@ -881,13 +910,17 @@ export default function Page() {
       <aside
         id="desktop-navigation-sidebar"
         aria-label="Desktop Navigation Sidebar"
-        className={`hidden lg:flex flex-col justify-between shrink-0 sticky top-0 h-screen border-r border-cyan-500/30 bg-[#030713]/95 backdrop-blur-xl z-30 transition-all duration-300 ${
+        className={`hidden lg:flex flex-col justify-between shrink-0 sticky top-0 h-screen border-r border-cyan-500/30 bg-[#030713]/95 backdrop-blur-xl z-30 transition-all duration-300 overflow-y-auto ${
           sidebarCollapsed ? "w-20 p-3" : "w-64 p-4"
         }`}
       >
         {/* Top: Brand Crest & Collapse Toggle */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2 border-b border-cyan-500/20 pb-3">
+          <div
+            className={`border-b border-cyan-500/20 pb-3 flex ${
+              sidebarCollapsed ? "flex-col items-center gap-2.5" : "items-center justify-between gap-2"
+            }`}
+          >
             <button
               type="button"
               id="sidebar-crest-btn"
@@ -897,7 +930,9 @@ export default function Page() {
                 setActiveTab("status");
               }}
               title="Open Solo Leveling System Status"
-              className="flex items-center gap-2.5 text-left group overflow-hidden"
+              className={`flex items-center text-left group cursor-pointer focus:outline-none ${
+                sidebarCollapsed ? "justify-center" : "gap-2.5 overflow-hidden"
+              }`}
             >
               <div className="relative h-10 w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
                 <Image
@@ -927,7 +962,13 @@ export default function Page() {
               id="btn-sidebar-collapse"
               onClick={() => {
                 playSound("system-click");
-                setSidebarCollapsed((prev) => !prev);
+                setSidebarCollapsed((prev) => {
+                  const next = !prev;
+                  try {
+                    localStorage.setItem("arise_sidebar_collapsed", String(next));
+                  } catch {}
+                  return next;
+                });
               }}
               aria-label={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
               title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
@@ -938,7 +979,7 @@ export default function Page() {
           </div>
 
           {/* Navigation Tabs List */}
-          <nav aria-label="Sidebar Primary Navigation" className="space-y-1.5">
+          <nav aria-label="Sidebar Primary Navigation" className={`space-y-1.5 ${sidebarCollapsed ? "flex flex-col items-center" : ""}`}>
             {!sidebarCollapsed && (
               <div className="px-2 text-[9px] font-mono font-bold uppercase tracking-widest text-cyan-400/70">
                 [ {lang === "bn" ? "প্রধান মেনু" : "CORE MODULES"} ]
@@ -955,8 +996,8 @@ export default function Page() {
                 setActiveTab("home");
               }}
               title={lang === "bn" ? "কোয়েস্ট ও ডানজন" : "Daily Quests & Dungeons"}
-              className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              className={`flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
               } ${
                 activeTab === "home"
                   ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
@@ -979,8 +1020,8 @@ export default function Page() {
                 setActiveTab("stats");
               }}
               title={lang === "bn" ? "পরিসংখ্যান ও রেকর্ড" : "Statistics & Logs"}
-              className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              className={`flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
               } ${
                 activeTab === "stats"
                   ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
@@ -1003,8 +1044,8 @@ export default function Page() {
                 setActiveTab("inventory");
               }}
               title={lang === "bn" ? "ইনভেন্টরি ও গিয়ার" : "Inventory & Arsenal"}
-              className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              className={`flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
               } ${
                 activeTab === "inventory"
                   ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
@@ -1027,8 +1068,8 @@ export default function Page() {
                 setActiveTab("status");
               }}
               title={lang === "bn" ? "খেলোয়াড়ের স্ট্যাটাস" : "Hunter Status & Stats"}
-              className={`relative flex items-center gap-3 w-full rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-bold"
+              className={`relative flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
               } ${
                 activeTab === "status"
                   ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
@@ -1040,7 +1081,10 @@ export default function Page() {
                 <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ স্ট্যাটাস ]" : "[ STATUS ]"}</span>
               )}
               {playerStats.unallocatedPoints > 0 && (
-                <span className={`h-2 w-2 rounded-full bg-amber-400 animate-ping shadow-[0_0_8px_rgba(251,191,36,0.9)] ${sidebarCollapsed ? "absolute top-2 right-2" : "ml-auto"}`} />
+                <span className={sidebarCollapsed ? "absolute top-1.5 right-1.5 flex h-2 w-2" : "ml-auto relative flex h-2 w-2"}>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+                </span>
               )}
             </button>
 
@@ -1065,8 +1109,8 @@ export default function Page() {
                 setShowAriseModal(true);
               }}
               title="Trigger Arise Awakening"
-              className={`flex items-center gap-3 w-full rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/50 via-indigo-950/60 to-purple-950/50 text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.25)] active:scale-95 transition-all cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 text-xs font-mono font-black"
+              className={`flex items-center gap-3 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/50 via-indigo-950/60 to-purple-950/50 text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.25)] active:scale-95 transition-all cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-black"
               }`}
             >
               <Sparkles className="h-4 w-4 text-purple-400 animate-pulse shrink-0" />
@@ -1084,8 +1128,8 @@ export default function Page() {
                 setShowLibraryModal(true);
               }}
               title="Open Exercise Arsenal"
-              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-white hover:bg-white/5 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-white hover:bg-white/5 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
               }`}
             >
               <Dumbbell className="h-4 w-4 text-cyan-400 shrink-0" />
@@ -1103,8 +1147,8 @@ export default function Page() {
                 setShowDietSheet(true);
               }}
               title="Open Nutrition Rations"
-              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-emerald-300 hover:bg-emerald-950/20 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-emerald-300 hover:bg-emerald-950/20 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
               }`}
             >
               <Utensils className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -1122,8 +1166,8 @@ export default function Page() {
                 setShowGuildHubModal(true);
               }}
               title="Open Hunter Guilds"
-              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-purple-300 hover:bg-purple-950/20 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-purple-300 hover:bg-purple-950/20 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
               }`}
             >
               <Users className="h-4 w-4 text-purple-400 shrink-0" />
@@ -1141,8 +1185,8 @@ export default function Page() {
                 setShowAchievementsModal(true);
               }}
               title="Hall of Feats & Achievements"
-              className={`flex items-center gap-3 w-full rounded-xl text-zinc-300 hover:text-amber-300 hover:bg-amber-950/20 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "justify-center p-2.5" : "px-3 py-2 text-xs font-semibold"
+              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-amber-300 hover:bg-amber-950/20 border border-transparent transition-colors cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
               }`}
             >
               <Trophy className="h-4 w-4 text-amber-400 shrink-0" />
@@ -1173,25 +1217,79 @@ export default function Page() {
           )}
 
           {/* Utility row: Language, Sound, Menu Drawer */}
-          <div className={`flex items-center gap-1.5 ${sidebarCollapsed ? "flex-col justify-center" : "justify-between"}`}>
-            <button
-              type="button"
-              id="sidebar-lang-switcher"
-              onClick={() => {
-                playSound("system-click");
-                const nextLang = lang === "bn" ? "en" : "bn";
-                setLang(nextLang);
-                addSystemToast(
-                  nextLang === "bn" ? "[ ভাষা পরিবর্তন : বাংলা ]" : "[ LANGUAGE : ENGLISH ]",
-                  nextLang === "bn" ? "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।" : "System interface set to English."
-                );
-              }}
-              aria-label="Switch Language"
-              title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-950/40 text-xs font-mono font-bold text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/40 transition-colors shrink-0 cursor-pointer"
-            >
-              <span className="text-[11px] font-black">{lang === "bn" ? "বাং" : "EN"}</span>
-            </button>
+          <div className={`flex items-center gap-2 ${sidebarCollapsed ? "flex-col justify-center" : "justify-between"}`}>
+            {sidebarCollapsed ? (
+              <button
+                type="button"
+                id="sidebar-lang-switcher"
+                onClick={() => {
+                  playSound("system-click");
+                  const nextLang = lang === "bn" ? "en" : "bn";
+                  setLang(nextLang);
+                  addSystemToast(
+                    nextLang === "bn" ? "[ ভাষা পরিবর্তন : বাংলা ]" : "[ LANGUAGE : ENGLISH ]",
+                    nextLang === "bn" ? "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।" : "System interface set to English."
+                  );
+                }}
+                aria-label="Switch Language"
+                title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
+                className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-950/40 font-mono font-bold text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/40 transition-colors shrink-0 cursor-pointer"
+              >
+                <span className="text-[11px] font-black">{lang === "bn" ? "বাং" : "EN"}</span>
+              </button>
+            ) : (
+              <div
+                id="sidebar-lang-switcher"
+                role="group"
+                aria-label="Language selection"
+                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)] shrink-0"
+              >
+                <button
+                  type="button"
+                  id="sidebar-lang-bn"
+                  onClick={() => {
+                    if (lang !== "bn") {
+                      playSound("system-click");
+                      setLang("bn");
+                      addSystemToast(
+                        "[ ভাষা পরিবর্তন : বাংলা ]",
+                        "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।"
+                      );
+                    }
+                  }}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
+                    lang === "bn"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "bn"}
+                >
+                  বাংলা
+                </button>
+                <button
+                  type="button"
+                  id="sidebar-lang-en"
+                  onClick={() => {
+                    if (lang !== "en") {
+                      playSound("system-click");
+                      setLang("en");
+                      addSystemToast(
+                        "[ LANGUAGE : ENGLISH ]",
+                        "System interface set to English."
+                      );
+                    }
+                  }}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
+                    lang === "en"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "en"}
+                >
+                  EN
+                </button>
+              </div>
+            )}
 
             <button
               type="button"
@@ -1203,7 +1301,9 @@ export default function Page() {
               }}
               aria-label={soundOn ? "Mute Audio" : "Unmute Audio"}
               title={soundOn ? "Sound: ON" : "Sound: MUTED"}
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0 cursor-pointer"
+              className={`flex items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0 cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto" : "h-9 w-9"
+              }`}
             >
               {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
             </button>
@@ -1217,7 +1317,9 @@ export default function Page() {
               }}
               aria-label="System Settings & Hub"
               title="System Settings & Hub"
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_10px_rgba(6,182,212,0.25)] transition-colors shrink-0 cursor-pointer"
+              className={`flex items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_10px_rgba(6,182,212,0.25)] transition-colors shrink-0 cursor-pointer ${
+                sidebarCollapsed ? "h-10 w-10 mx-auto" : "h-9 w-9"
+              }`}
             >
               <Menu className="h-4 w-4" />
             </button>
@@ -1228,11 +1330,11 @@ export default function Page() {
       {/* ======================================================== */}
       {/* 2. Main Content Viewport & Header                        */}
       {/* ======================================================== */}
-      <div className="flex-1 min-w-0 flex flex-col pb-40 lg:pb-16">
-        <header className="sticky top-0 z-20 border-b border-cyan-500/30 bg-[#040817]/90 px-4 py-3 backdrop-blur-md shadow-[0_4px_25px_rgba(6,182,212,0.15)]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+      <div className="flex-1 min-w-0 flex flex-col pb-28 sm:pb-32 md:pb-12 lg:pb-16">
+        <header className="sticky top-0 z-20 border-b border-cyan-500/30 bg-[#040817]/90 px-3 sm:px-4 py-2.5 sm:py-3 backdrop-blur-md shadow-[0_4px_25px_rgba(6,182,212,0.15)]">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-3">
             {/* Left: Mobile Brand Logo & Solo Leveling System Title (< lg) */}
-            <div className="flex lg:hidden items-center gap-2.5 sm:gap-3 shrink-0">
+            <div className="flex lg:hidden items-center gap-2 sm:gap-3 shrink-0">
               <button
                 type="button"
                 id="btn-header-crest"
@@ -1242,9 +1344,9 @@ export default function Page() {
                   setActiveTab("status");
                 }}
                 title="Open Solo Leveling System Status Window"
-                className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer text-left focus:outline-none shrink-0 whitespace-nowrap"
+                className="flex items-center gap-1.5 sm:gap-2.5 group cursor-pointer text-left focus:outline-none shrink-0 whitespace-nowrap"
               >
-                <div className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
+                <div className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
                   <Image
                     src="/images/solo-leveling/system-crest-icon.jpg"
                     alt="Solo Leveling System Crest"
@@ -1253,13 +1355,13 @@ export default function Page() {
                   />
                 </div>
                 <div className="shrink-0">
-                  <h1 className="flex items-center gap-1.5 text-sm sm:text-base font-black tracking-wide text-white whitespace-nowrap">
+                  <h1 className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-base font-black tracking-wide text-white whitespace-nowrap">
                     ARISE
-                    <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)] shrink-0 whitespace-nowrap">
+                    <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1 py-0.2 sm:px-1.5 sm:py-0.5 text-[8px] sm:text-[10px] font-mono uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)] shrink-0 whitespace-nowrap">
                       [ SYSTEM ]
                     </span>
                   </h1>
-                  <p className="text-[10px] sm:text-[11px] font-mono text-cyan-400/80 flex items-center gap-1 whitespace-nowrap">
+                  <p className="text-[9px] sm:text-[11px] font-mono text-cyan-400/80 flex items-center gap-1 whitespace-nowrap">
                     <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"} : Lv.{playerStats.level}</span>
                     <span className="text-zinc-600">·</span>
                     <span className="text-purple-300 font-bold">{playerStats.rank}-RANK</span>
@@ -1360,7 +1462,7 @@ export default function Page() {
                   vibrate(15);
                   setActiveTab("status");
                 }}
-                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
+                className={`relative flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
                   activeTab === "status"
                     ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
                     : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
@@ -1369,13 +1471,16 @@ export default function Page() {
                 <UserIcon className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
                 <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"}</span>
                 {playerStats.unallocatedPoints > 0 && (
-                  <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+                  <span className="relative flex h-2 w-2 ml-0.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+                  </span>
                 )}
               </button>
             </nav>
 
             {/* Right: Quick Action Controls */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* Desktop Awakening Trigger */}
               <button
                 id="btn-desktop-arise"
@@ -1391,111 +1496,143 @@ export default function Page() {
                 }}
                 aria-label="Trigger Arise Awakening"
                 title="Trigger Arise Awakening"
-                className="hidden sm:flex lg:hidden xl:flex btn btn-sm btn-secondary gap-1.5 text-xs font-black tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0"
+                className="hidden sm:flex lg:hidden xl:flex btn btn-xs sm:btn-sm btn-secondary gap-1.5 text-xs font-black tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0"
               >
                 <Sparkles className="h-3.5 w-3.5 text-purple-200 animate-pulse" />
                 <span>ARISE</span>
               </button>
 
-            {/* Language Switcher */}
-            <button
-              id="btn-lang-switcher"
-              type="button"
-              onClick={() => {
-                playSound("system-click");
-                const nextLang = lang === "bn" ? "en" : "bn";
-                setLang(nextLang);
-                addSystemToast(
-                  nextLang === "bn" ? "[ ভাষা পরিবর্তন : বাংলা ]" : "[ LANGUAGE : ENGLISH ]",
-                  nextLang === "bn" ? "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।" : "System interface set to English."
-                );
-              }}
-              aria-label="Switch Language"
-              title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-              className="btn btn-sm btn-outline btn-primary gap-1 font-mono font-bold text-xs shrink-0"
-            >
-              <span className="text-sm">🌐</span>
-              <span className="font-mono text-[11px] font-black">{lang === "bn" ? "EN" : "বাং"}</span>
-            </button>
-
-            {/* Audio Toggle */}
-            <button
-              id="btn-sound-toggle"
-              type="button"
-              onClick={() => {
-                const next = !soundOn;
-                setSoundOn(next);
-                if (next) playSound("system-click");
-              }}
-              aria-label={soundOn ? "Mute System Audio" : "Unmute System Audio"}
-              title={soundOn ? "Sound: ON" : "Sound: MUTED"}
-              className="hidden sm:flex btn btn-sm btn-square btn-ghost text-zinc-300 hover:text-white shrink-0"
-            >
-              {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
-            </button>
-
-            {/* Bell System Notification */}
-            <button
-              type="button"
-              id="btn-leveling-bell"
-              onClick={() => {
-                playSound("system-alert");
-                vibrate(25);
-                addSystemToast(
-                  lang === "bn" ? "[ সিস্টেম স্ট্যাটাস : সক্রিয় ]" : "[ SYSTEM STATUS : ACTIVE ]",
-                  lang === "bn"
-                    ? `খেলোয়াড় ${playerStats.name}: কোনো বকেয়া পেনাল্টি নেই। দৈনিক অগ্রগতি সর্বোত্তম।`
-                    : `Player ${playerStats.name}: No pending penalties. Progression optimal.`
-                );
-              }}
-              aria-label="System Notifications"
-              title="System Notifications"
-              className="relative btn btn-sm btn-square btn-ghost text-cyan-400 shrink-0"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse" />
-            </button>
-
-            {/* Menu Drawer button */}
-            <button
-              type="button"
-              id="btn-leveling-menu"
-              onClick={() => {
-                playSound("system-click");
-                setShowSettingsDrawer(true);
-              }}
-              aria-label="Settings and System Menu"
-              title="System Settings & Hub"
-              className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all cursor-pointer shrink-0"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Active workout progress indicator */}
-        {activeTab === "home" && session && t && (
-          <div className="mx-auto mt-2 max-w-7xl">
-            <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-cyan-300/80">
-              <span className="flex items-center gap-1 font-mono">
-                <Activity className="h-3.5 w-3.5 text-cyan-400 animate-pulse" /> {tr.sessionProgress}
-                {elapsedMin !== null && <span className="text-zinc-500">· {elapsedMin} {tr.minIn}</span>}
-              </span>
-              <span className="font-mono font-bold text-cyan-300">
-                {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}% ({t.setsDone}/{t.setsTotal} {tr.sets})
-              </span>
-            </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-slate-900 border border-cyan-500/30">
+              {/* Language Switcher: Dual Segmented Bangla / English */}
               <div
-                className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 transition-[width] duration-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
-                style={{ width: `${t.setsTotal ? (t.setsDone / t.setsTotal) * 100 : 0}%` }}
-              />
+                id="btn-lang-switcher"
+                role="group"
+                aria-label="Language selection"
+                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)] shrink-0"
+              >
+                <button
+                  type="button"
+                  id="btn-switch-lang-bn"
+                  onClick={() => {
+                    if (lang !== "bn") {
+                      playSound("system-click");
+                      setLang("bn");
+                      addSystemToast(
+                        "[ ভাষা পরিবর্তন : বাংলা ]",
+                        "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।"
+                      );
+                    }
+                  }}
+                  className={`rounded-lg px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "bn"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "bn"}
+                >
+                  বাংলা
+                </button>
+                <button
+                  type="button"
+                  id="btn-switch-lang-en"
+                  onClick={() => {
+                    if (lang !== "en") {
+                      playSound("system-click");
+                      setLang("en");
+                      addSystemToast(
+                        "[ LANGUAGE : ENGLISH ]",
+                        "System interface set to English."
+                      );
+                    }
+                  }}
+                  className={`rounded-lg px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-black transition-all cursor-pointer ${
+                    lang === "en"
+                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
+                      : "text-cyan-400/70 hover:text-cyan-200"
+                  }`}
+                  aria-pressed={lang === "en"}
+                >
+                  EN
+                </button>
+              </div>
+
+              {/* Audio Toggle */}
+              <button
+                id="btn-sound-toggle"
+                type="button"
+                onClick={() => {
+                  const next = !soundOn;
+                  setSoundOn(next);
+                  if (next) playSound("system-click");
+                }}
+                aria-label={soundOn ? "Mute System Audio" : "Unmute System Audio"}
+                title={soundOn ? "Sound: ON" : "Sound: MUTED"}
+                className="hidden sm:flex btn btn-xs sm:btn-sm btn-square btn-ghost text-zinc-300 hover:text-white shrink-0"
+              >
+                {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
+              </button>
+
+              {/* Bell System Notification */}
+              <button
+                type="button"
+                id="btn-leveling-bell"
+                onClick={() => {
+                  playSound("system-alert");
+                  vibrate(25);
+                  addSystemToast(
+                    lang === "bn" ? "[ সিস্টেম স্ট্যাটাস : সক্রিয় ]" : "[ SYSTEM STATUS : ACTIVE ]",
+                    lang === "bn"
+                      ? `খেলোয়াড় ${playerStats.name}: কোনো বকেয়া পেনাল্টি নেই। দৈনিক অগ্রগতি সর্বোত্তম।`
+                      : `Player ${playerStats.name}: No pending penalties. Progression optimal.`
+                  );
+                }}
+                aria-label="System Notifications"
+                title="System Notifications"
+                className="relative btn btn-xs sm:btn-sm btn-square btn-ghost text-cyan-400 shrink-0"
+              >
+                <Bell className="h-4 w-4" />
+                <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse" />
+              </button>
+
+              {/* Menu Drawer button */}
+              <button
+                type="button"
+                id="btn-leveling-menu"
+                onClick={() => {
+                  playSound("system-click");
+                  setShowSettingsDrawer(true);
+                }}
+                aria-label="Settings and System Menu"
+                title="System Settings & Hub"
+                className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all cursor-pointer shrink-0"
+              >
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+              </button>
             </div>
           </div>
-        )}
-      </header>
 
-      <main className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8 pt-6">
+          {/* Active workout progress indicator */}
+          {activeTab === "home" && session && t && (
+            <div className="mx-auto mt-2 max-w-7xl">
+              <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-cyan-300/80">
+                <span className="flex items-center gap-1 font-mono">
+                  <Activity className="h-3.5 w-3.5 text-cyan-400 animate-pulse" /> {tr.sessionProgress}
+                  {elapsedMin !== null && <span className="text-zinc-500">· {elapsedMin} {tr.minIn}</span>}
+                </span>
+                <span className="font-mono font-bold text-cyan-300">
+                  {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}% ({t.setsDone}/{t.setsTotal} {tr.sets})
+                </span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-900 border border-cyan-500/30">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 transition-[width] duration-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
+                  style={{ width: `${t.setsTotal ? (t.setsDone / t.setsTotal) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </header>
+
+        <main className="mx-auto max-w-7xl space-y-6 px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6">
         {error && (
           <div role="alert" className="rounded-2xl border border-red-900/60 bg-red-950/40 p-4">
             <div className="flex items-start gap-3">
@@ -2226,7 +2363,7 @@ export default function Page() {
       />
 
       {showFinish && session && (
-        <FinishSheet open session={session} weightKg={activeProfile.weightKg} lang={lang} onSave={finish} onClose={() => setShowFinish(false)} />
+        <FinishSheet open session={session} weightKg={activeProfile.weightKg} lang={lang} onLanguageChange={setLang} onSave={finish} onClose={() => setShowFinish(false)} />
       )}
 
       <DietSheet
@@ -2238,6 +2375,7 @@ export default function Page() {
         tdee={stats.tdee}
         initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
         lang={lang}
+        onLanguageChange={setLang}
         accessCode={accessCode}
         onClose={() => setShowDietSheet(false)}
       />
@@ -2245,6 +2383,7 @@ export default function Page() {
       <HunterAuthModal
         open={showAuthModal}
         lang={lang}
+        onLanguageChange={setLang}
         activeAccount={activeUser}
         accounts={accounts}
         onSelectAccount={(acc) => {
@@ -2272,6 +2411,7 @@ export default function Page() {
         easier={selectedAnimationEx?.easier ? getExercise(selectedAnimationEx.easier) : undefined}
         harder={selectedAnimationEx?.harder ? getExercise(selectedAnimationEx.harder) : undefined}
         lang={lang}
+        onLanguageChange={setLang}
         onClose={() => setSelectedAnimationEx(null)}
         onSwap={
           session && selectedAnimationEx
@@ -2287,6 +2427,7 @@ export default function Page() {
       <ExerciseLibraryModal
         open={showLibraryModal}
         lang={lang}
+        onLanguageChange={setLang}
         onSelectExercise={(ex) => {
           setSelectedAnimationEx(ex);
         }}
@@ -2302,6 +2443,7 @@ export default function Page() {
         stats={playerStats}
         onUpdateStats={setPlayerStats}
         lang={lang}
+        onLanguageChange={setLang}
         onOpenCalibration={() => {
           setShowStatusModal(false);
           setShowWelcomeOnboarding(true);
@@ -2336,6 +2478,7 @@ export default function Page() {
         open={showAchievementsModal}
         onClose={() => setShowAchievementsModal(false)}
         lang={lang}
+        onLanguageChange={setLang}
         questsCompletedCount={playerStats.totalWorkoutsCleared || 0}
         totalRepsCount={playerStats.totalSetsCompleted || 0}
         totalTimeHours={Math.round((history.reduce((acc, h) => acc + (h.minutes || 0), 0) / 60) * 10) / 10}
@@ -2362,6 +2505,7 @@ export default function Page() {
         open={showGuildHubModal}
         onClose={() => setShowGuildHubModal(false)}
         lang={lang}
+        onLanguageChange={setLang}
       />
 
       {/* Leveling Settings Drawer */}
@@ -2447,7 +2591,7 @@ export default function Page() {
         aria-label="Main Navigation Dock"
         className="md:hidden fixed bottom-3 sm:bottom-4 inset-x-0 z-40 flex justify-center pointer-events-none px-4 pb-[max(0.25rem,env(safe-area-inset-bottom))]"
       >
-        <div className="leveling-dock pointer-events-auto flex items-center justify-between gap-1 px-3 py-2 w-full max-w-xs sm:max-w-sm">
+        <div className="leveling-dock pointer-events-auto flex items-center justify-between gap-1 px-3 py-2 w-full max-w-xs sm:max-w-sm backdrop-blur-xl bg-[#030712]/90 border border-cyan-500/40 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.8),0_0_20px_rgba(6,182,212,0.25)]">
           {/* 1. Home / Quests & Dungeon */}
           <button
             type="button"
@@ -2459,9 +2603,9 @@ export default function Page() {
             }}
             aria-label="Quests & Workout"
             title={lang === "bn" ? "কোয়েস্ট ও ডানজন" : "Quests & Workout"}
-            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+            className={`flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
               activeTab === "home"
-                ? "leveling-dock-active text-cyan-200"
+                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
                 : "text-zinc-400 hover:text-cyan-200"
             }`}
           >
@@ -2479,9 +2623,9 @@ export default function Page() {
             }}
             aria-label="Statistics & Activities"
             title={lang === "bn" ? "পরিসংখ্যান ও রেকর্ড" : "Statistics & Activities"}
-            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+            className={`flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
               activeTab === "stats"
-                ? "leveling-dock-active text-cyan-200"
+                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
                 : "text-zinc-400 hover:text-cyan-200"
             }`}
           >
@@ -2499,9 +2643,9 @@ export default function Page() {
             }}
             aria-label="Inventory & Shop"
             title={lang === "bn" ? "ইনভেন্টরি ও শপ" : "Inventory & Shop"}
-            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+            className={`flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
               activeTab === "inventory"
-                ? "leveling-dock-active text-cyan-200"
+                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
                 : "text-zinc-400 hover:text-cyan-200"
             }`}
           >
@@ -2519,13 +2663,19 @@ export default function Page() {
             }}
             aria-label="Player Status"
             title={lang === "bn" ? "খেলোয়াড়ের স্ট্যাটাস" : "Player Status"}
-            className={`flex flex-col items-center justify-center h-12 w-12 rounded-full transition-all duration-300 active:scale-90 ${
+            className={`relative flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
               activeTab === "status"
-                ? "leveling-dock-active text-cyan-200"
+                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
                 : "text-zinc-400 hover:text-cyan-200"
             }`}
           >
             <UserIcon className="h-5 w-5" />
+            {playerStats.unallocatedPoints > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
+              </span>
+            )}
           </button>
         </div>
       </nav>

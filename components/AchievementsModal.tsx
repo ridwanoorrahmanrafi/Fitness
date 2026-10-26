@@ -125,6 +125,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   lang?: Language;
+  onLanguageChange?: (lang: Language) => void;
   questsCompletedCount?: number;
   totalRepsCount?: number;
   totalTimeHours?: number;
@@ -135,6 +136,7 @@ export function AchievementsModal({
   open,
   onClose,
   lang = "bn",
+  onLanguageChange,
   questsCompletedCount = 0,
   totalRepsCount = 0,
   totalTimeHours = 0,
@@ -210,8 +212,14 @@ export function AchievementsModal({
   };
 
   return (
-    <div className="modal modal-open backdrop-blur-2xl z-50">
-      <div className="modal-box max-w-lg min-h-[580px] max-h-[92vh] flex flex-col rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
+    <div className="modal modal-open backdrop-blur-2xl z-50 p-2 sm:p-4">
+      <div className="modal-box relative max-w-lg min-h-0 sm:min-h-[480px] max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-4 sm:p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
+        {/* Corner Rune Pins */}
+        <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute top-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+
         {/* Top Bar */}
         <div className="flex items-center justify-between pb-3">
           <button
@@ -230,8 +238,56 @@ export function AchievementsModal({
             {isBn ? "অ্যাচিভমেন্টস" : "Achievements"}
           </h2>
 
-          <div className="btn btn-sm btn-circle btn-ghost text-zinc-400">
-            <SlidersHorizontal className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            {onLanguageChange && (
+              <div
+                className="inline-flex items-center rounded-lg border border-cyan-500/30 bg-[#061022] p-0.5 shadow-[0_0_10px_rgba(6,182,212,0.15)]"
+                role="group"
+                aria-label="Language selection"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    playSound("system-click");
+                    onLanguageChange("bn");
+                  }}
+                  className={`px-2 py-0.5 text-[10px] font-bold rounded transition-all ${
+                    isBn
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
+                      : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                  aria-pressed={isBn}
+                >
+                  বাংলা
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    playSound("system-click");
+                    onLanguageChange("en");
+                  }}
+                  className={`px-2 py-0.5 text-[10px] font-bold rounded transition-all ${
+                    !isBn
+                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
+                      : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                  aria-pressed={!isBn}
+                >
+                  EN
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                playSound("system-click");
+                onClose();
+              }}
+              className="btn btn-sm btn-circle btn-ghost text-zinc-400 hover:text-white"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
         </div>
 
@@ -419,18 +475,18 @@ export function AchievementsModal({
               completedList.map((ach) => (
                 <div
                   key={ach.id}
-                  className="rounded-2xl border border-emerald-500/30 bg-[#081820]/80 p-4 shadow-sm"
+                  className="rounded-2xl border border-cyan-500/30 bg-[#03081a]/90 system-scanlines p-4 shadow-[0_0_15px_rgba(6,182,212,0.1)]"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-500/30">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/30 shadow-[0_0_8px_rgba(6,182,212,0.3)]">
                         <CheckCircle2 className="h-5 w-5" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-white">
+                        <h4 className="text-sm font-bold text-white font-mono">
                           {isBn ? ach.titleBn : ach.title}
                         </h4>
-                        <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                        <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider font-mono">
                           {isBn ? "সম্পন্ন ও পুরস্কার সংগৃহীত" : "Completed & Claimed"}
                         </span>
                       </div>

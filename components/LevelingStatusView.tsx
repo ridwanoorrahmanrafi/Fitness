@@ -107,6 +107,12 @@ export function LevelingStatusView({
 
       {/* Main Container Card */}
       <div className="leveling-card p-5 relative">
+        {/* Corner Rune Pins */}
+        <div className="absolute top-2 left-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute top-2 right-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-2 left-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-2 right-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+
         {/* Header Box: [ STATUS ] */}
         <div className="flex flex-col items-center justify-center mb-6">
           <div className="leveling-header-box">

@@ -194,25 +194,25 @@ export default function DailyQuestCard({
               key={item.key}
               className={`p-3 rounded-xl border-2 transition-all ${
                 isDone
-                  ? "bg-emerald-950/30 border-emerald-500/50 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                  ? "bg-cyan-950/40 border-cyan-400 text-cyan-100 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
                   : "bg-black/60 border-cyan-500/30 text-zinc-200 hover:border-cyan-400/60"
               }`}
             >
               <div className="flex items-center justify-between text-xs mb-1.5">
                 <span className="font-bold tracking-tight truncate pr-1 flex items-center gap-1.5">
-                  <span className={`inline-block h-3.5 w-3.5 rounded border text-[10px] leading-none text-center font-black ${isDone ? "bg-emerald-400 border-emerald-400 text-black" : "border-cyan-400 text-transparent"}`}>
+                  <span className={`inline-block h-3.5 w-3.5 rounded border text-[10px] leading-none text-center font-black ${isDone ? "bg-cyan-400 border-cyan-400 text-black" : "border-cyan-400 text-transparent"}`}>
                     ✓
                   </span>
                   {item.label}
                 </span>
-                <span className={`font-black ${isDone ? "text-emerald-400" : "text-cyan-300 text-glow-cyan"}`}>
+                <span className={`font-black ${isDone ? "text-cyan-300 text-glow-cyan" : "text-cyan-400/80"}`}>
                   [{item.current} / {item.target} {item.unit}]
                 </span>
               </div>
 
               {/* DaisyUI Progress Bar */}
               <progress
-                className={`progress w-full h-2 ${isDone ? "progress-success" : "progress-primary"}`}
+                className="progress progress-primary w-full h-2"
                 value={item.current}
                 max={item.target}
               />

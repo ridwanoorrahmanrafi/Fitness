@@ -80,17 +80,46 @@ export function SoloLevelingWelcomeBackModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                playSound("system-click");
-                onLanguageChange(isBn ? "en" : "bn");
-              }}
-              className="btn btn-xs btn-outline btn-primary gap-1 font-mono font-black"
+            <div
+              role="group"
+              aria-label="Language selection"
+              className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
             >
-              <Radio className="h-3 w-3 animate-pulse" />
-              <span>{isBn ? "EN" : "বাংলা"}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isBn) {
+                    playSound("system-click");
+                    onLanguageChange("bn");
+                  }
+                }}
+                className={`rounded-lg px-2 py-0.5 text-[11px] font-black transition-all cursor-pointer ${
+                  isBn
+                    ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+                    : "text-cyan-400/70 hover:text-cyan-200"
+                }`}
+                aria-pressed={isBn}
+              >
+                বাংলা
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isBn) {
+                    playSound("system-click");
+                    onLanguageChange("en");
+                  }
+                }}
+                className={`rounded-lg px-2 py-0.5 text-[11px] font-black transition-all cursor-pointer ${
+                  !isBn
+                    ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
+                    : "text-cyan-400/70 hover:text-cyan-200"
+                }`}
+                aria-pressed={!isBn}
+              >
+                EN
+              </button>
+            </div>
             <button
               type="button"
               onClick={() => {

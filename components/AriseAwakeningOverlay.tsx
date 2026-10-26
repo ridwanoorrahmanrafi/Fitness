@@ -54,7 +54,7 @@ export default function AriseAwakeningOverlay({
       </div>
 
       {/* Main Holographic Container */}
-      <div className="relative w-full max-w-lg rounded-3xl bg-[#030611]/90 border-2 border-cyan-400 shadow-[0_0_60px_rgba(6,182,212,0.45)] p-6 sm:p-8 text-center text-white overflow-hidden">
+      <div className="relative w-full max-w-lg max-h-[94vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-[#030611]/90 border-2 border-cyan-400 shadow-[0_0_60px_rgba(6,182,212,0.45)] p-5 sm:p-8 text-center text-white">
         {/* Animated Shadow Rune Aura */}
         <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-gradient-to-b from-cyan-500/20 via-purple-600/30 to-transparent blur-3xl pointer-events-none" />
 

@@ -90,6 +90,8 @@ export function GoalsProgressView({
       <div className="relative rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-r from-cyan-950/80 via-black to-purple-950/70 p-4 shadow-[0_0_25px_rgba(6,182,212,0.25)] flex flex-wrap items-center justify-between gap-3 system-scanlines system-grid-bg">
         <div className="absolute top-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
         <div className="absolute top-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
+        <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
+        <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
 
         <div className="flex items-center gap-3">
           <span
@@ -157,6 +159,8 @@ export function GoalsProgressView({
         <section className="relative overflow-hidden rounded-2xl border-2 border-cyan-400/70 bg-gradient-to-b from-[#05112e]/95 via-[#07153a]/90 to-[#030818]/95 p-5 shadow-[0_0_35px_rgba(6,182,212,0.3)] space-y-4 system-scanlines system-grid-bg">
           <div className="absolute top-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
           <div className="absolute top-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
+          <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
+          <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-cyan-500/30 pb-4">
             <div>

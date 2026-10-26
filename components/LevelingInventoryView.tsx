@@ -199,7 +199,13 @@ export function LevelingInventoryView({
       </div>
 
       {/* Main Inventory Card */}
-      <div className="leveling-card p-5">
+      <div className="leveling-card p-5 relative">
+        {/* Corner Rune Pins */}
+        <div className="absolute top-2 left-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute top-2 right-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-2 left-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+        <div className="absolute bottom-2 right-2 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
+
         {/* Header Box */}
         <div className="flex flex-col items-center justify-center mb-5">
           <div className="leveling-header-box">
@@ -345,8 +351,8 @@ export function LevelingInventoryView({
 
       {/* Leveling Shop Drawer (DaisyUI Modal) */}
       {showShop && (
-        <div className="modal modal-open backdrop-blur-2xl">
-          <div className="modal-box relative max-w-lg min-h-[580px] max-h-[92vh] flex flex-col rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
+        <div className="modal modal-open backdrop-blur-2xl p-2 sm:p-4">
+          <div className="modal-box relative max-w-lg min-h-0 sm:min-h-[480px] max-h-[92vh] flex flex-col rounded-2xl sm:rounded-3xl bg-[#070e1c] border border-cyan-500/40 p-4 sm:p-5 shadow-[0_0_40px_rgba(0,140,255,0.25)] text-zinc-100 overflow-hidden my-auto">
             {/* Top Bar */}
             <div className="flex items-center justify-between pb-3">
               <button
