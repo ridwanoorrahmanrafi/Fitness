@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   Play,
   Pause,
-  RotateCcw,
-  Sparkles,
   CheckCircle2,
   AlertOctagon,
   Timer,
@@ -14,13 +12,10 @@ import {
   TrendingDown,
   TrendingUp,
   Activity,
-  Dumbbell,
   ExternalLink,
   Eye,
   Maximize2,
   Minimize2,
-  Gauge,
-  Flame,
   Wind,
 } from "lucide-react";
 import { MUSCLE_LABEL } from "@/lib/exercises";
@@ -267,65 +262,56 @@ export function ExerciseAnimationModal({
       className="modal modal-open backdrop-blur-md z-50 p-0 sm:p-4"
     >
       <div
-        className={`modal-box relative flex w-full flex-col p-0 rounded-t-2xl sm:rounded-2xl border-1.5 border-cyan-500/60 bg-[#03081a]/95 shadow-[0_0_40px_rgba(6,182,212,0.4)] text-cyan-100 overflow-hidden transition-all duration-300 font-sans ${
+        className={`modal-box relative flex w-full flex-col p-0 rounded-2xl border border-slate-800 bg-[#0d121f] text-slate-100 shadow-2xl overflow-hidden transition-all duration-300 font-sans ${
           isFullscreen
             ? "fixed inset-0 max-h-screen rounded-none z-50 max-w-none w-screen h-screen"
             : "max-h-[94vh] max-w-2xl"
         }`}
       >
-        {/* Luminous Corner Runes */}
-        <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
-        <div className="absolute top-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
-        <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
-        <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] z-20">◆</div>
-
-        {/* Ambient Top Glow Line */}
-        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 opacity-90 shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
-
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-cyan-500/30 bg-[#03081a] px-4 sm:px-6 py-3.5 backdrop-blur-md">
+        <div className="flex items-center justify-between border-b border-slate-800 bg-[#111726] px-4 sm:px-6 py-3.5 backdrop-blur-md">
           <div className="min-w-0 pr-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center system-btn-chamfer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_10px_rgba(6,182,212,0.4)]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <Activity className="h-4 w-4" />
               </span>
-              <h2 id="animation-modal-title" className="text-base sm:text-lg font-black text-white truncate font-mono uppercase text-glow-cyan">
+              <h2 id="animation-modal-title" className="text-base sm:text-lg font-bold text-white truncate tracking-tight">
                 {exercise.name}
               </h2>
             </div>
-            <div className="flex items-center gap-2 mt-1 font-mono">
-              <span className="text-xs text-cyan-400 font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-emerald-400 font-semibold uppercase tracking-wider">
                 {exercise.muscles.map((m) => MUSCLE_LABEL[m]).join(" · ")}
               </span>
-              <span className="text-cyan-700">•</span>
-              <span className="text-xs text-cyan-500/80 uppercase tracking-wide">{exercise.pattern.replace("_", " ")}</span>
+              <span className="text-slate-600">•</span>
+              <span className="text-xs text-slate-400 uppercase tracking-wide">{exercise.pattern.replace("_", " ")}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
             {/* View Mode Switcher Tabs */}
-            <div className="hidden sm:flex tabs tabs-boxed bg-[#020512] p-1 border border-cyan-500/30 mr-1">
+            <div className="hidden sm:flex tabs tabs-boxed bg-zinc-900/90 p-1 border border-zinc-800 mr-1">
               <button
                 onClick={() => setViewMode("gif")}
-                className={`tab tab-sm font-mono font-bold transition-all ${
+                className={`tab tab-sm font-semibold transition-all ${
                   viewMode === "gif"
-                    ? "tab-active !bg-primary !text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]"
-                    : "text-cyan-400/60 hover:text-cyan-200"
+                    ? "tab-active !bg-emerald-500 !text-black font-bold"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <Eye className="h-3.5 w-3.5 mr-1" />
-                <span>{lang === "bn" ? "হলোগ্রাম মোশন" : "Hologram Motion"}</span>
+                <span>{lang === "bn" ? "অ্যানিমেশন" : "Animation"}</span>
               </button>
               <button
                 onClick={() => setViewMode("biomechanics")}
-                className={`tab tab-sm font-mono font-bold transition-all ${
+                className={`tab tab-sm font-semibold transition-all ${
                   viewMode === "biomechanics"
-                    ? "tab-active !bg-primary !text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]"
-                    : "text-cyan-400/60 hover:text-cyan-200"
+                    ? "tab-active !bg-emerald-500 !text-black font-bold"
+                    : "text-zinc-400 hover:text-white"
                 }`}
               >
                 <Zap className="h-3.5 w-3.5 mr-1" />
-                <span>{lang === "bn" ? "ভেক্টর রিগ" : "Vector Rig"}</span>
+                <span>{lang === "bn" ? "বায়োমেকানিক্স" : "Biomechanics"}</span>
               </button>
             </div>
 
@@ -333,7 +319,7 @@ export function ExerciseAnimationModal({
             <button
               onClick={() => setIsPlaying(!isPlaying)}
               aria-label={isPlaying ? "Pause animation" : "Play animation"}
-              className="btn btn-sm btn-square btn-ghost text-cyan-300 hover:text-white"
+              className="btn btn-sm btn-square btn-ghost text-zinc-400 hover:text-white"
             >
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 fill-current" />}
             </button>
@@ -342,7 +328,7 @@ export function ExerciseAnimationModal({
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-              className="hidden sm:flex btn btn-sm btn-square btn-ghost text-cyan-300 hover:text-white"
+              className="hidden sm:flex btn btn-sm btn-square btn-ghost text-zinc-400 hover:text-white"
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
@@ -351,20 +337,20 @@ export function ExerciseAnimationModal({
               <div
                 role="group"
                 aria-label="Language selection"
-                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+                className="flex items-center rounded-xl border border-zinc-700 bg-zinc-900/90 p-0.5 text-xs shadow-sm"
               >
                 <button
                   type="button"
                   onClick={() => {
                     if (lang !== "bn") {
-                      playSound("system-click");
+                      playSound("click");
                       onLanguageChange("bn");
                     }
                   }}
-                  className={`rounded-lg px-2 py-0.5 text-[11px] font-black transition-all cursor-pointer ${
+                  className={`rounded-lg px-2 py-0.5 text-[11px] font-semibold transition-all cursor-pointer ${
                     lang === "bn"
-                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
+                      ? "bg-emerald-500 text-black font-bold shadow-sm"
+                      : "text-zinc-400 hover:text-white"
                   }`}
                   aria-pressed={lang === "bn"}
                 >
@@ -374,14 +360,14 @@ export function ExerciseAnimationModal({
                   type="button"
                   onClick={() => {
                     if (lang !== "en") {
-                      playSound("system-click");
+                      playSound("click");
                       onLanguageChange("en");
                     }
                   }}
-                  className={`rounded-lg px-2 py-0.5 text-[11px] font-black transition-all cursor-pointer ${
+                  className={`rounded-lg px-2 py-0.5 text-[11px] font-semibold transition-all cursor-pointer ${
                     lang === "en"
-                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
+                      ? "bg-emerald-500 text-black font-bold shadow-sm"
+                      : "text-zinc-400 hover:text-white"
                   }`}
                   aria-pressed={lang === "en"}
                 >
@@ -394,7 +380,7 @@ export function ExerciseAnimationModal({
             <button
               onClick={onClose}
               aria-label="Close animation guide"
-              className="btn btn-sm btn-circle btn-ghost text-cyan-400 hover:text-white"
+              className="btn btn-sm btn-circle btn-ghost text-zinc-400 hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
@@ -402,64 +388,64 @@ export function ExerciseAnimationModal({
         </div>
 
         {/* Mobile View Toggle */}
-        <div className="flex sm:hidden border-b border-cyan-500/20 bg-[#03081a]/90 p-1.5 px-4 gap-2 font-mono">
+        <div className="flex sm:hidden border-b border-slate-800 bg-[#111726]/90 p-1.5 px-4 gap-2 font-sans">
           <button
             onClick={() => setViewMode("gif")}
-            className={`flex-1 py-1.5 text-xs font-semibold system-btn-chamfer text-center transition-all ${
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg text-center transition-all ${
               viewMode === "gif"
-                ? "bg-cyan-500 text-black font-bold shadow-[0_0_10px_rgba(6,182,212,0.6)]"
-                : "text-cyan-400/70 bg-[#020512] border border-cyan-500/30"
+                ? "bg-emerald-500 text-black font-bold"
+                : "text-slate-400 bg-slate-900 border border-slate-800"
             }`}
           >
-            {lang === "bn" ? "📹 হলোগ্রাম মোশন" : "📹 Hologram Motion"}
+            {lang === "bn" ? "📹 অ্যানিমেশন" : "📹 Animation"}
           </button>
           <button
             onClick={() => setViewMode("biomechanics")}
-            className={`flex-1 py-1.5 text-xs font-semibold system-btn-chamfer text-center transition-all ${
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg text-center transition-all ${
               viewMode === "biomechanics"
-                ? "bg-cyan-500 text-black font-bold shadow-[0_0_10px_rgba(6,182,212,0.6)]"
-                : "text-cyan-400/70 bg-[#020512] border border-cyan-500/30"
+                ? "bg-emerald-500 text-black font-bold"
+                : "text-slate-400 bg-slate-900 border border-slate-800"
             }`}
           >
-            {lang === "bn" ? "🧬 ভেক্টর রিগ" : "🧬 Vector Rig"}
+            {lang === "bn" ? "🧬 বায়োমেকানিক্স" : "🧬 Biomechanics"}
           </button>
         </div>
 
         {/* Scrollable Modal Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {/* Main Visualizer Frame */}
-          <div className="relative overflow-hidden rounded-2xl border border-cyan-500/40 bg-gradient-to-b from-[#040e29] via-[#020512] to-[#020512] p-4 shadow-2xl flex flex-col items-center justify-center min-h-[290px] system-scanlines">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-[#111726]/80 p-4 shadow-xl flex flex-col items-center justify-center min-h-[290px]">
             {/* Subtle Grid Backdrop */}
             <div
-              className="absolute inset-0 opacity-15 pointer-events-none"
+              className="absolute inset-0 opacity-10 pointer-events-none"
               style={{
-                backgroundImage: "radial-gradient(#06b6d4 1.2px, transparent 1.2px)",
+                backgroundImage: "radial-gradient(#10b981 1.2px, transparent 1.2px)",
                 backgroundSize: "20px 20px",
               }}
             />
 
             {/* Ambient Backlight Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-56 w-56 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
 
             {/* Top Bar inside Viewport: Speed Selector & Status */}
             <div className="relative z-10 w-full flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
-                <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
-                <span className="text-[11px] font-mono font-medium text-cyan-300 uppercase tracking-wider">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-sm" />
+                <span className="text-[11px] font-medium text-emerald-400 uppercase tracking-wider">
                   {isPlaying ? "Live Looping" : "Paused"}
                 </span>
               </div>
 
               {/* Speed Buttons */}
-              <div className="flex items-center gap-1 bg-[#020512] border border-cyan-500/30 rounded-lg p-0.5">
+              <div className="flex items-center gap-1 bg-zinc-950/80 border border-zinc-800 rounded-lg p-0.5">
                 {([0.5, 1, 1.5] as const).map((spd) => (
                   <button
                     key={spd}
                     onClick={() => setPlaybackSpeed(spd)}
-                    className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold transition-all ${
+                    className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
                       playbackSpeed === spd
-                        ? "bg-cyan-500 text-black font-bold shadow-[0_0_8px_rgba(6,182,212,0.6)]"
-                        : "text-zinc-400 hover:text-cyan-200"
+                        ? "bg-emerald-500 text-black font-bold shadow-sm"
+                        : "text-zinc-400 hover:text-white"
                     }`}
                   >
                     {spd}x
@@ -468,9 +454,9 @@ export function ExerciseAnimationModal({
               </div>
             </div>
 
-            {/* VIEW MODE 1: REAL HIGH-DEFINITION MOTION GIF */}
+            {/* VIEW MODE 1: MOTION GIF */}
             {viewMode === "gif" && (
-              <div className="relative z-10 w-full max-w-[380px] h-[220px] sm:h-[240px] flex items-center justify-center rounded-xl overflow-hidden bg-black/80 border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+              <div className="relative z-10 w-full max-w-[380px] h-[220px] sm:h-[240px] flex items-center justify-center rounded-xl overflow-hidden bg-black/90 border border-zinc-800 shadow-lg">
                 <img
                   key={`${exercise.id}-${imgKey}`}
                   src={gifSrc}
@@ -488,7 +474,8 @@ export function ExerciseAnimationModal({
 
                 {!isPlaying && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500 text-black shadow-lg cursor-pointer hover:scale-105 transition-transform"
+                    <div
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-black shadow-lg cursor-pointer hover:scale-105 transition-transform"
                       onClick={() => setIsPlaying(true)}
                     >
                       <Play className="h-6 w-6 fill-current ml-0.5" />
@@ -498,28 +485,28 @@ export function ExerciseAnimationModal({
               </div>
             )}
 
-            {/* VIEW MODE 2: BIOMECHANICAL VECTOR RIG WITH ACTIVE SKELETON & GLOW */}
+            {/* VIEW MODE 2: BIOMECHANICAL VECTOR RIG WITH ACTIVE SKELETON */}
             {viewMode === "biomechanics" && (
               <div className="relative z-10 w-full max-w-[340px] h-[220px] sm:h-[240px] flex items-center justify-center">
                 <svg viewBox="0 0 240 180" className="w-full h-full drop-shadow-xl">
                   <defs>
                     <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#06b6d4" />
-                      <stop offset="100%" stopColor="#0284c7" />
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#059669" />
                     </linearGradient>
                     <linearGradient id="boneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#ffffff" />
                       <stop offset="100%" stopColor="#94a3b8" />
                     </linearGradient>
                     <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#38bdf8" />
-                      <stop offset="100%" stopColor="#818cf8" />
+                      <stop offset="0%" stopColor="#34d399" />
+                      <stop offset="100%" stopColor="#10b981" />
                     </linearGradient>
                   </defs>
 
-                  {/* Ground Plane Grid */}
-                  <line x1="20" y1="165" x2="220" y2="165" stroke="#0369a1" strokeWidth="2.5" strokeDasharray="4 4" />
-                  <rect x="20" y="166" width="200" height="2" fill="#0c4a6e" />
+                  {/* Ground Plane */}
+                  <line x1="20" y1="165" x2="220" y2="165" stroke="#334155" strokeWidth="2.5" strokeDasharray="4 4" />
+                  <rect x="20" y="166" width="200" height="2" fill="#1e293b" />
 
                   {/* SQUAT PATTERN */}
                   {pattern === "squat" && (
@@ -535,12 +522,12 @@ export function ExerciseAnimationModal({
                       <line x1="114" y1="100" x2="98" y2="132" stroke="url(#boneGrad)" strokeWidth="8" strokeLinecap="round" />
                       <line x1="98" y1="132" x2="102" y2="165" stroke="url(#boneGrad)" strokeWidth="8" strokeLinecap="round" />
                       <ellipse cx="106" cy="165" rx="10" ry="4" fill="#64748b" />
-                      {/* Right Leg (Active Quad Glow) */}
+                      {/* Right Leg */}
                       <line x1="126" y1="100" x2="142" y2="132" stroke="url(#bodyGrad)" strokeWidth="9" strokeLinecap="round" />
                       <line x1="142" y1="132" x2="138" y2="165" stroke="url(#bodyGrad)" strokeWidth="8" strokeLinecap="round" />
-                      <ellipse cx="142" cy="165" rx="10" ry="4" fill="#06b6d4" />
+                      <ellipse cx="142" cy="165" rx="10" ry="4" fill="#10b981" />
                       {/* Flexion Angle Marker */}
-                      <circle cx="142" cy="132" r="5" fill="#38bdf8" />
+                      <circle cx="142" cy="132" r="5" fill="#34d399" />
                     </g>
                   )}
 
@@ -552,27 +539,27 @@ export function ExerciseAnimationModal({
                       <line x1="110" y1="130" x2="170" y2="100" stroke="url(#bodyGrad)" strokeWidth="12" strokeLinecap="round" />
                       <circle cx="186" cy="92" r="11" fill="url(#bodyGrad)" />
                       {/* Pectoral Activation Highlight */}
-                      <circle cx="160" cy="110" r="8" fill="#06b6d4" opacity="0.7" />
+                      <circle cx="160" cy="110" r="8" fill="#10b981" opacity="0.7" />
                       {/* Arm Articulation */}
                       <line x1="165" y1="105" x2="155" y2="135" stroke="#f4f4f5" strokeWidth="8" strokeLinecap="round" />
                       <line x1="155" y1="135" x2="155" y2="165" stroke="#f4f4f5" strokeWidth="8" strokeLinecap="round" />
-                      <circle cx="155" cy="135" r="5" fill="#38bdf8" />
-                      <circle cx="155" cy="165" r="5" fill="#06b6d4" />
+                      <circle cx="155" cy="135" r="5" fill="#34d399" />
+                      <circle cx="155" cy="165" r="5" fill="#10b981" />
                     </g>
                   )}
 
                   {/* PULL PATTERN */}
                   {(pattern === "pull_v" || pattern === "pull_h") && (
                     <g className={isPlaying ? "animate-pullup" : ""}>
-                      <line x1="40" y1="20" x2="200" y2="20" stroke="#0284c7" strokeWidth="7" strokeLinecap="round" />
-                      <circle cx="95" cy="20" r="5" fill="#06b6d4" />
-                      <circle cx="145" cy="20" r="5" fill="#06b6d4" />
+                      <line x1="40" y1="20" x2="200" y2="20" stroke="#334155" strokeWidth="7" strokeLinecap="round" />
+                      <circle cx="95" cy="20" r="5" fill="#10b981" />
+                      <circle cx="145" cy="20" r="5" fill="#10b981" />
                       <line x1="95" y1="20" x2="105" y2="55" stroke="#f4f4f5" strokeWidth="7" strokeLinecap="round" />
                       <line x1="145" y1="20" x2="135" y2="55" stroke="#f4f4f5" strokeWidth="7" strokeLinecap="round" />
                       <circle cx="120" cy="45" r="11" fill="url(#bodyGrad)" />
                       {/* Latissimus Dorsi Muscle Flare */}
-                      <path d="M 112 65 Q 98 85 110 110" stroke="#38bdf8" strokeWidth="6" fill="none" opacity="0.8" />
-                      <path d="M 128 65 Q 142 85 130 110" stroke="#38bdf8" strokeWidth="6" fill="none" opacity="0.8" />
+                      <path d="M 112 65 Q 98 85 110 110" stroke="#34d399" strokeWidth="6" fill="none" opacity="0.8" />
+                      <path d="M 128 65 Q 142 85 130 110" stroke="#34d399" strokeWidth="6" fill="none" opacity="0.8" />
                       <line x1="120" y1="56" x2="120" y2="110" stroke="url(#bodyGrad)" strokeWidth="12" strokeLinecap="round" />
                       <line x1="120" y1="110" x2="115" y2="155" stroke="url(#boneGrad)" strokeWidth="8" strokeLinecap="round" />
                       <line x1="115" y1="155" x2="125" y2="170" stroke="url(#boneGrad)" strokeWidth="7" strokeLinecap="round" />
@@ -589,8 +576,8 @@ export function ExerciseAnimationModal({
                       {/* Front Leg (90° bend) */}
                       <line x1="120" y1="102" x2="155" y2="132" stroke="url(#bodyGrad)" strokeWidth="8" strokeLinecap="round" />
                       <line x1="155" y1="132" x2="155" y2="165" stroke="url(#bodyGrad)" strokeWidth="8" strokeLinecap="round" />
-                      <circle cx="155" cy="132" r="5" fill="#38bdf8" />
-                      <ellipse cx="160" cy="165" rx="8" ry="4" fill="#06b6d4" />
+                      <circle cx="155" cy="132" r="5" fill="#34d399" />
+                      <ellipse cx="160" cy="165" rx="8" ry="4" fill="#10b981" />
                       {/* Back Leg */}
                       <line x1="120" y1="102" x2="88" y2="135" stroke="url(#boneGrad)" strokeWidth="8" strokeLinecap="round" />
                       <line x1="88" y1="135" x2="75" y2="165" stroke="url(#boneGrad)" strokeWidth="8" strokeLinecap="round" />
@@ -604,7 +591,7 @@ export function ExerciseAnimationModal({
                       <circle cx="120" cy="42" r="11" fill="url(#bodyGrad)" />
                       <line x1="120" y1="54" x2="120" y2="105" stroke="url(#bodyGrad)" strokeWidth="11" strokeLinecap="round" />
                       <line x1="120" y1="64" x2="140" y2="95" stroke="#f4f4f5" strokeWidth="7" strokeLinecap="round" />
-                      <circle cx="140" cy="98" r="7" fill="#06b6d4" />
+                      <circle cx="140" cy="98" r="7" fill="#10b981" />
                       <line x1="116" y1="105" x2="105" y2="165" stroke="url(#boneGrad)" strokeWidth="8" strokeLinecap="round" />
                       <line x1="124" y1="105" x2="135" y2="165" stroke="url(#boneGrad)" strokeWidth="8" strokeLinecap="round" />
                     </g>
@@ -614,11 +601,11 @@ export function ExerciseAnimationModal({
             )}
 
             {/* Cadence & Tempo Bar */}
-            <div className="relative z-10 w-full mt-3 rounded-xl border border-cyan-500/30 bg-[#03081a]/90 p-3 flex flex-wrap items-center justify-between gap-2 shadow-inner font-mono">
+            <div className="relative z-10 w-full mt-3 rounded-xl border border-zinc-800 bg-zinc-900/80 p-3 flex flex-wrap items-center justify-between gap-2 shadow-inner">
               <div className="flex items-center gap-2">
-                <Timer className="h-4 w-4 text-cyan-400" />
+                <Timer className="h-4 w-4 text-emerald-400" />
                 <span className="text-xs font-bold text-white uppercase">{t.tempoLabel}</span>
-                <span className="text-[11px] font-mono text-cyan-400 font-bold">
+                <span className="text-[11px] font-mono text-emerald-400 font-bold">
                   ({tempoSec}s)
                 </span>
               </div>
@@ -627,7 +614,7 @@ export function ExerciseAnimationModal({
                 <span
                   className={`rounded-md px-2.5 py-1 text-xs font-mono font-bold transition-all duration-300 ${
                     tempoPhase === "eccentric"
-                      ? "bg-amber-500/25 text-amber-300 border border-amber-500/50 scale-105 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm"
                       : "text-zinc-500"
                   }`}
                 >
@@ -637,7 +624,7 @@ export function ExerciseAnimationModal({
                 <span
                   className={`rounded-md px-2.5 py-1 text-xs font-mono font-bold transition-all duration-300 ${
                     tempoPhase === "pause"
-                      ? "bg-cyan-500/25 text-cyan-300 border border-cyan-500/50 scale-105 shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
                       : "text-zinc-500"
                   }`}
                 >
@@ -647,7 +634,7 @@ export function ExerciseAnimationModal({
                 <span
                   className={`rounded-md px-2.5 py-1 text-xs font-mono font-bold transition-all duration-300 ${
                     tempoPhase === "concentric"
-                      ? "bg-blue-500/25 text-blue-300 border border-blue-500/50 scale-105 shadow-[0_0_8px_rgba(59,130,246,0.4)]"
+                      ? "bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm"
                       : "text-zinc-500"
                   }`}
                 >
@@ -657,33 +644,33 @@ export function ExerciseAnimationModal({
             </div>
 
             {/* Breathing Guidance Pill */}
-            <div className="relative z-10 w-full mt-2 rounded-xl border border-cyan-500/30 bg-cyan-950/30 px-3.5 py-2 flex items-center gap-2.5 text-xs text-cyan-200 font-mono">
-              <Wind className="h-4 w-4 text-cyan-400 shrink-0" />
+            <div className="relative z-10 w-full mt-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-3.5 py-2 flex items-center gap-2.5 text-xs text-zinc-300">
+              <Wind className="h-4 w-4 text-emerald-400 shrink-0" />
               <span className="font-medium">{media.keyBreathingCue}</span>
             </div>
           </div>
 
           {/* Biomechanical Execution Guide */}
-          <div className="rounded-2xl border border-cyan-500/30 bg-[#03081a]/85 p-4 space-y-3 font-mono">
-            <h3 className="text-xs font-black uppercase tracking-wider text-cyan-400 flex items-center gap-2 text-glow-cyan">
-              <Zap className="h-3.5 w-3.5" /> {t.stepByStepTitle}
+          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+              <Zap className="h-3.5 w-3.5 text-emerald-400" /> {t.stepByStepTitle}
             </h3>
 
             <div className="space-y-2.5 text-xs leading-relaxed text-zinc-300">
-              <div className="rounded-xl border border-cyan-500/20 bg-black/50 p-3 transition-colors hover:border-cyan-400/50">
-                <strong className="text-cyan-300 block mb-0.5 font-bold">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition-colors hover:border-zinc-700">
+                <strong className="text-emerald-400 block mb-0.5 font-bold">
                   {lang === "bn" ? "১. সেটআপ ও অবস্থান (Setup & Stance):" : "1. Setup & Stance:"}
                 </strong>
                 {guide.setup}
               </div>
-              <div className="rounded-xl border border-cyan-500/20 bg-black/50 p-3 transition-colors hover:border-cyan-400/50">
-                <strong className="text-cyan-300 block mb-0.5 font-bold">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition-colors hover:border-zinc-700">
+                <strong className="text-emerald-400 block mb-0.5 font-bold">
                   {lang === "bn" ? "২. নামার কৌশল (Controlled Descent):" : "2. Controlled Descent (Eccentric):"}
                 </strong>
                 {guide.descent}
               </div>
-              <div className="rounded-xl border border-cyan-500/20 bg-black/50 p-3 transition-colors hover:border-cyan-400/50">
-                <strong className="text-cyan-300 block mb-0.5 font-bold">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 transition-colors hover:border-zinc-700">
+                <strong className="text-emerald-400 block mb-0.5 font-bold">
                   {lang === "bn" ? "৩. ওঠার ড্রাইভ ও কন্ট্রাকশন (The Concentric Drive):" : "3. Concentric Drive & Lockout:"}
                 </strong>
                 {guide.drive}
@@ -692,16 +679,16 @@ export function ExerciseAnimationModal({
           </div>
 
           {/* Form Checklist: Do's and Don'ts */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* DO's */}
-            <div className="rounded-2xl border border-cyan-500/40 bg-cyan-950/20 p-3.5 space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-cyan-300 flex items-center gap-1.5 text-glow-cyan">
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 space-y-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" /> {t.dosTitle}
               </h4>
               <ul className="space-y-1.5 text-xs text-zinc-300">
                 {guide.dos.map((d, i) => (
                   <li key={i} className="flex items-start gap-1.5">
-                    <span className="text-cyan-400 font-bold shrink-0">✓</span>
+                    <span className="text-emerald-400 font-bold shrink-0">✓</span>
                     <span>{d}</span>
                   </li>
                 ))}
@@ -709,8 +696,8 @@ export function ExerciseAnimationModal({
             </div>
 
             {/* DONT's */}
-            <div className="rounded-2xl border border-rose-500/40 bg-rose-950/20 p-3.5 space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-3.5 space-y-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                 <AlertOctagon className="h-3.5 w-3.5" /> {t.dontsTitle}
               </h4>
               <ul className="space-y-1.5 text-xs text-zinc-300">
@@ -726,8 +713,8 @@ export function ExerciseAnimationModal({
 
           {/* Progression & Regression Quick-Swap Links */}
           {(easier || harder) && (
-            <div className="rounded-2xl border border-cyan-500/30 bg-[#03081a]/80 p-3 flex flex-wrap items-center justify-between gap-2 font-mono">
-              <span className="text-xs font-medium text-cyan-300/80">
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-3 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-medium text-zinc-400">
                 {lang === "bn" ? "ভ্যারিয়েন্ট পরিবর্তন করুন:" : "Swap Variation:"}
               </span>
               <div className="flex items-center gap-2">
@@ -737,7 +724,7 @@ export function ExerciseAnimationModal({
                       onSwap(easier.id);
                       onClose();
                     }}
-                    className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-[#020512] px-3 py-1.5 text-xs text-zinc-200 hover:border-cyan-400 transition-colors"
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 py-1.5 text-xs text-zinc-200 hover:border-zinc-500 transition-colors"
                   >
                     <TrendingDown className="h-3.5 w-3.5 text-amber-400" />
                     <span>{t.easierBtn(easier.name)}</span>
@@ -749,9 +736,9 @@ export function ExerciseAnimationModal({
                       onSwap(harder.id);
                       onClose();
                     }}
-                    className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-[#020512] px-3 py-1.5 text-xs text-zinc-200 hover:border-cyan-400 transition-colors"
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 py-1.5 text-xs text-zinc-200 hover:border-zinc-500 transition-colors"
                   >
-                    <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
                     <span>{t.harderBtn(harder.name)}</span>
                   </button>
                 )}
@@ -761,20 +748,20 @@ export function ExerciseAnimationModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="border-t border-cyan-500/30 bg-[#03081a] px-5 py-3.5 flex items-center justify-between gap-3">
+        <div className="border-t border-slate-800 bg-[#111726] px-5 py-3.5 flex items-center justify-between gap-3">
           <a
             href={`https://www.youtube.com/results?search_query=proper+form+${encodeURIComponent(exercise.name)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-sm btn-outline btn-neutral min-h-[44px] gap-2 font-mono text-xs font-bold text-cyan-300"
+            className="btn btn-sm btn-outline border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white min-h-[44px] gap-2 text-xs font-semibold"
           >
-            <ExternalLink className="h-3.5 w-3.5 text-cyan-400" />
+            <ExternalLink className="h-3.5 w-3.5 text-red-400" />
             <span>{t.formVideoBtn} (YouTube)</span>
           </a>
 
           <button
             onClick={onClose}
-            className="btn btn-primary min-h-[44px] px-6 font-mono text-xs font-black uppercase text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+            className="btn min-h-[44px] px-6 text-xs font-bold uppercase bg-emerald-500 hover:bg-emerald-400 text-black border-none shadow-md transition-all active:scale-[0.98]"
           >
             {t.gotItBtn}
           </button>

@@ -1,4 +1,4 @@
-import { Download, Trash2, Upload, Swords, ShieldCheck, Trophy, Sparkles } from "lucide-react";
+import { Download, Trash2, Upload, Dumbbell, Calendar, Flame, CheckCircle2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { getExercise } from "@/lib/exercises";
 import { focusLabel } from "@/lib/builder";
@@ -25,58 +25,66 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
   const totalVolume = history.reduce((s, h) => s + h.volumeKg, 0);
 
   const diffLabel = isBn
-    ? { too_easy: "সহজ (EASY)", just_right: "উপযুক্ত (BALANCED)", too_hard: "কঠিন (BRUTAL)" }
-    : { too_easy: "EASY", just_right: "BALANCED", too_hard: "BRUTAL" };
+    ? { too_easy: "সহজ", just_right: "উপযুক্ত", too_hard: "চ্যালেঞ্জিং" }
+    : { too_easy: "Easy", just_right: "Balanced", too_hard: "Hard" };
 
   return (
-    <div className="space-y-5 font-mono text-zinc-100">
+    <div className="space-y-5 text-zinc-100">
       {/* Header Banner */}
-      <div className="rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-r from-cyan-950/80 via-black to-purple-950/70 p-4 shadow-[0_0_25px_rgba(6,182,212,0.25)] system-scanlines system-grid-bg">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="badge badge-primary font-black uppercase text-[10px]">
-            {isBn ? "হান্টার আর্কাইভ" : "HUNTER ARCHIVES"}
+      <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-sm">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
+            <Dumbbell className="h-3.5 w-3.5" />
           </span>
-          <span className="text-xs text-cyan-300 font-bold uppercase tracking-wider">
-            {isBn ? "[ অতীতের ওয়ার্কআউট লগ : RAID LOGS ]" : "[ DUNGEON RAID LOGS : COMBAT RECORDS ]"}
+          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+            {isBn ? "ওয়ার্কআউট ইতিহাস" : "Workout Records"}
           </span>
         </div>
-        <h3 className="text-lg font-black text-white uppercase tracking-wide text-glow-cyan">
-          {isBn ? "সম্পন্ন ওয়ার্কআউট ও মোট উত্তোলিত ওজন" : "CONQUERED RAIDS & COMBAT VOLUME"}
+        <h3 className="text-xl font-bold text-white tracking-tight">
+          {isBn ? "সম্পন্ন সেশন ও উত্তোলিত ভলিউম" : "Completed Sessions & Volume"}
         </h3>
+        <p className="mt-1 text-xs text-zinc-400">
+          {isBn
+            ? "আপনার অতীতের সব ব্যায়াম, সেট এবং মোট উত্তোলিত ওজনের ধারাবাহিক রেকর্ড।"
+            : "Detailed tracking of your sets, reps, and progressive overload volume."}
+        </p>
       </div>
 
-      {/* 3 Metric Pills */}
-      <div className="stats stats-horizontal shadow w-full bg-[#081226] border border-cyan-500/30">
-        <div className="stat p-3 text-center">
-          <div className="stat-title text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
-            {isBn ? "৭ দিনের সেশন" : "7D RAIDS"}
+      {/* 3 Metric Cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 text-center shadow-sm">
+          <div className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+            {isBn ? "গত ৭ দিন" : "Last 7 Days"}
           </div>
-          <div className="stat-value text-xl font-black text-white text-glow-cyan">{week}</div>
+          <div className="mt-1 text-2xl font-bold text-white">{week}</div>
+          <div className="text-[10px] text-zinc-500">{isBn ? "সেশন" : "sessions"}</div>
         </div>
-        <div className="stat p-3 text-center border-x border-cyan-500/20">
-          <div className="stat-title text-[10px] text-purple-400 font-bold uppercase tracking-wider">
-            {isBn ? "মোট সেশন" : "TOTAL CLEARS"}
+        <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 text-center shadow-sm">
+          <div className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+            {isBn ? "মোট সেশন" : "Total Workouts"}
           </div>
-          <div className="stat-value text-xl font-black text-purple-300 text-glow-purple">{history.length}</div>
+          <div className="mt-1 text-2xl font-bold text-emerald-400">{history.length}</div>
+          <div className="text-[10px] text-zinc-500">{isBn ? "সম্পন্ন" : "completed"}</div>
         </div>
-        <div className="stat p-3 text-center">
-          <div className="stat-title text-[10px] text-amber-400/90 font-bold uppercase tracking-wider">
-            {isBn ? "উত্তোলিত কেজি" : "KG LIFTED"}
+        <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 text-center shadow-sm">
+          <div className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
+            {isBn ? "মোট ভলিউম" : "Volume Lifted"}
           </div>
-          <div className="stat-value text-xl font-black text-amber-400 text-glow-amber">{totalVolume.toLocaleString()}</div>
+          <div className="mt-1 text-2xl font-bold text-sky-400">{totalVolume.toLocaleString()}</div>
+          <div className="text-[10px] text-zinc-500">kg</div>
         </div>
       </div>
 
       {history.length === 0 ? (
-        <div className="rounded-xl border-2 border-dashed border-cyan-500/30 bg-black/40 p-6 text-center text-xs text-zinc-400 space-y-2">
-          <Swords className="h-8 w-8 text-cyan-400 mx-auto opacity-50" />
-          <p className="font-bold text-white uppercase">
-            {isBn ? "[ এখনও কোনো ওয়ার্কআউট সম্পন্ন হয়নি ]" : "[ NO COMBAT LOGS RECORDED YET ]"}
+        <div className="rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/40 p-8 text-center text-zinc-400 space-y-2">
+          <Calendar className="h-8 w-8 text-zinc-500 mx-auto" />
+          <p className="font-semibold text-white">
+            {isBn ? "এখনও কোনো ওয়ার্কআউট সম্পন্ন হয়নি" : "No Workout Records Yet"}
           </p>
-          <p className="text-[11px]">
+          <p className="text-xs text-zinc-400 max-w-sm mx-auto">
             {isBn
-              ? "সিস্টেম আর্কাইভে আপনার যুদ্ধের রেকর্ড সংরক্ষণ করতে আপনার প্রথম সেশন শুরু ও শেষ করুন।"
-              : "Complete your first workout mission to permanently register combat logs into the System archives."}
+              ? "আপনার প্রথম ওয়ার্কআউট শুরু করে শেষ করুন। এখানে আপনার সব সেশন এবং অগ্রগতি রেকর্ড করা হবে।"
+              : "Complete and log your first workout session to start building your training history and volume logs."}
           </p>
         </div>
       ) : (
@@ -86,39 +94,41 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
             return (
               <li
                 key={h.id}
-                className={`rounded-xl border transition-all ${
-                  expanded
-                    ? "border-cyan-400 bg-[#040f2d]/95 shadow-[0_0_20px_rgba(6,182,212,0.3)]"
-                    : "border-cyan-500/30 bg-black/70 hover:border-cyan-400/60"
-                }`}
+                className={`rounded-xl border transition-all ${expanded
+                    ? "border-emerald-500/50 bg-[#111726] shadow-md"
+                    : "border-zinc-800/80 bg-[#111726]/80 hover:border-zinc-700"
+                  }`}
               >
                 <button
+                  type="button"
                   onClick={() => {
-                    playSound("system-click");
+                    playSound("click");
                     setOpen(expanded ? null : h.id);
                   }}
                   aria-expanded={expanded}
-                  className="flex min-h-[56px] w-full items-center justify-between gap-3 p-3.5 text-left cursor-pointer"
+                  className="flex min-h-[56px] w-full items-center justify-between gap-3 p-4 text-left cursor-pointer"
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-black text-white uppercase tracking-wide flex items-center gap-2">
-                      <span className="text-cyan-400">◆</span>
+                    <div className="truncate text-sm font-bold text-white flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
                       <span>{h.title}</span>
                     </div>
-                    <div className="text-[10px] text-zinc-400 mt-0.5">
+                    <div className="text-xs text-zinc-400 mt-0.5">
                       {new Date(h.finishedAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} ·{" "}
-                      <span className="text-cyan-300 font-bold uppercase">{focusLabel(h.focus)}</span> · {h.minutes} {isBn ? "মি." : "min"}
+                      <span className="font-medium text-emerald-400/90">{focusLabel(h.focus)}</span> · {h.minutes} {isBn ? "মি." : "min"}
                     </div>
                   </div>
-                  <div className="shrink-0 text-right text-[11px]">
-                    <div className="font-black text-cyan-300 text-glow-cyan">
-                      {h.setsDone} / {h.setsTotal} {isBn ? "সেট" : "SETS"}
+                  <div className="shrink-0 text-right text-xs">
+                    <div className="font-bold text-zinc-100">
+                      {h.setsDone} / {h.setsTotal} {isBn ? "সেট" : "sets"}
                     </div>
-                    <div className="text-[10px] text-zinc-400 font-bold">{diffLabel[h.difficulty]}</div>
+                    <div className="text-[11px] text-zinc-400 mt-0.5">
+                      <span className="rounded bg-zinc-800 px-1.5 py-0.5 font-medium">{diffLabel[h.difficulty]}</span>
+                    </div>
                   </div>
                 </button>
                 {expanded && (
-                  <div className="space-y-2 border-t border-cyan-500/30 p-3.5 text-xs text-zinc-300 bg-black/50">
+                  <div className="space-y-2 border-t border-zinc-800 p-4 text-xs text-zinc-300 bg-zinc-900/50">
                     {h.exercises.map((ex, i) => {
                       const done = ex.sets.filter((s) => s.done);
                       const best = done.reduce<{ w: number; r: number } | null>((b, s) => {
@@ -127,23 +137,23 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
                         return !b || w > b.w || (w === b.w && r > b.r) ? { w, r } : b;
                       }, null);
                       return (
-                        <div key={i} className="flex items-center justify-between border-b border-zinc-800/60 py-1">
-                          <span className="text-white font-bold">{getExercise(ex.exerciseId)?.name ?? ex.exerciseId}</span>
-                          <span className="font-mono text-cyan-400">
-                            {done.length} {isBn ? "সেট" : "sets"} {best?.w ? `· সর্বোচ্চ ${best.w}kg x ${best.r}` : ""}
+                        <div key={i} className="flex items-center justify-between border-b border-zinc-800/60 py-1.5">
+                          <span className="text-white font-medium">{getExercise(ex.exerciseId)?.name ?? ex.exerciseId}</span>
+                          <span className="text-zinc-400 font-mono text-[11px]">
+                            {done.length} {isBn ? "সেট" : "sets"} {best?.w ? `· সর্বোচ্চ ${best.w}kg × ${best.r}` : ""}
                           </span>
                         </div>
                       );
                     })}
                     {h.notes && (
-                      <p className="pt-1 text-zinc-300">
-                        <strong className="text-cyan-400">{isBn ? "নোট:" : "NOTE:"}</strong> {h.notes}
+                      <p className="pt-1.5 text-zinc-300">
+                        <strong className="text-emerald-400">{isBn ? "নোট:" : "Note:"}</strong> {h.notes}
                       </p>
                     )}
-                    <p className="pt-1 text-[10px] text-zinc-500 flex justify-between">
-                      <span>{h.source === "ai" ? "[ DUAL-AI DIRECTIVE ]" : "[ OFFLINE CORE ]"}</span>
-                      <span className="text-amber-400/90 font-bold">~{h.kcalEstimate} kcal {isBn ? "ব্যয়িত" : "expended"}</span>
-                    </p>
+                    <div className="pt-2 text-[11px] text-zinc-400 flex items-center justify-between border-t border-zinc-800/60">
+                      <span className="text-zinc-500">{h.source === "ai" ? "AI Adaptive Plan" : "Offline Plan"}</span>
+                      <span className="text-amber-400/90 font-semibold">~{h.kcalEstimate} kcal burned</span>
+                    </div>
                   </div>
                 )}
               </li>
@@ -153,45 +163,48 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
       )}
 
       {/* Cloud & Local Backup Card */}
-      <div className="space-y-2.5 rounded-xl border border-cyan-500/30 bg-black/60 p-4">
+      <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 space-y-3">
         <p className="text-xs text-zinc-400">
           {isBn
-            ? "আপনার বায়োমেট্রিক ও ওয়ার্কআউট ডাটা ব্রাউজারে অফলাইনে সংরক্ষিত থাকে এবং সুপাবেস ক্লাউডে সিঙ্ক হয়।"
-            : "Hunter biometric data persists offline in browser storage and syncs to Supabase cloud database when connected."}
+            ? "আপনার বায়োমেট্রিক ও ওয়ার্কআউট ডাটা ব্রাউজারে অফলাইনে সংরক্ষিত থাকে এবং ব্যাকআপ হিসেবে এক্সপোর্ট বা ইমপোর্ট করা যায়।"
+            : "Workout history is stored securely on your device. Export a backup anytime to preserve or transfer your data."}
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           <button
+            type="button"
             onClick={() => {
-              playSound("system-click");
+              playSound("click");
               onExport();
             }}
-            className="btn btn-sm btn-primary gap-1.5 uppercase font-mono text-xs"
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition-all"
           >
-            <Download className="h-4 w-4" /> {isBn ? "[ ব্যাকআপ এক্সপোর্ট ]" : "[ EXPORT BACKUP ]"}
+            <Download className="h-3.5 w-3.5" /> {isBn ? "ব্যাকআপ এক্সপোর্ট" : "Export Backup"}
           </button>
           <button
+            type="button"
             onClick={() => {
-              playSound("system-click");
+              playSound("click");
               fileRef.current?.click();
             }}
-            className="btn btn-sm btn-outline btn-neutral text-zinc-200 gap-1.5 uppercase font-mono text-xs"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700 transition-all"
           >
-            <Upload className="h-4 w-4" /> {isBn ? "[ ব্যাকআপ ইমপোর্ট ]" : "[ IMPORT BACKUP ]"}
+            <Upload className="h-3.5 w-3.5" /> {isBn ? "ব্যাকআপ ইমপোর্ট" : "Import Backup"}
           </button>
           {history.length > 0 && (
             <button
+              type="button"
               onClick={() => {
                 const prompt = isBn
                   ? "ডিভাইসের সব ওয়ার্কআউট হিস্ট্রি মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।"
-                  : "Purge all hunter combat history on this device? This cannot be undone.";
+                  : "Delete all workout history on this device? This action cannot be undone.";
                 if (window.confirm(prompt)) {
-                  playSound("system-alert");
+                  playSound("warning");
                   onClear();
                 }
               }}
-              className="btn btn-sm btn-outline btn-error gap-1.5 uppercase font-mono text-xs"
+              className="flex items-center gap-1.5 rounded-lg border border-red-900/50 bg-red-950/20 px-3 py-1.5 text-xs font-medium text-red-300 hover:bg-red-950/40 transition-all ml-auto"
             >
-              <Trash2 className="h-4 w-4" /> {isBn ? "[ হিস্ট্রি মুছুন ]" : "[ PURGE ARCHIVES ]"}
+              <Trash2 className="h-3.5 w-3.5" /> {isBn ? "হিস্ট্রি মুছুন" : "Clear History"}
             </button>
           )}
           <input
@@ -207,7 +220,7 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
             }}
           />
         </div>
-        {message && <div role="status" className="alert alert-info py-2 text-xs font-bold text-cyan-300 font-mono mt-2">{message}</div>}
+        {message && <div role="status" className="rounded-lg bg-emerald-950/40 border border-emerald-500/30 p-2 text-xs font-medium text-emerald-300 mt-2">{message}</div>}
       </div>
     </div>
   );

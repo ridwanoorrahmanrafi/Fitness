@@ -4,13 +4,15 @@ import {
   ArrowLeftRight,
   CheckCircle2,
   Clock,
+  Dumbbell,
   ExternalLink,
+  Info,
   Play,
+  RefreshCw,
+  Sliders,
   Timer,
   TrendingDown,
   TrendingUp,
-  Maximize2,
-  Flame,
 } from "lucide-react";
 import { useState } from "react";
 import { MUSCLE_LABEL } from "@/lib/exercises";
@@ -25,6 +27,7 @@ interface Props {
   exercise: Exercise;
   sets: SetLog[];
   lastWeightKg?: number;
+  previousSets?: { reps?: number; weightKg?: number }[];
   easier?: Exercise;
   harder?: Exercise;
   alternatives: Exercise[];
@@ -35,6 +38,7 @@ interface Props {
   onSwap: (exerciseId: string) => void;
   onStartHold: (seconds: number, label: string) => void;
   onOpenAnimation?: () => void;
+  onOpenPlateCalculator?: (initialWeight: number) => void;
 }
 
 /** "30-45s" -> 45, "40s" -> 40 */
@@ -49,6 +53,7 @@ export function ExerciseCard({
   exercise,
   sets,
   lastWeightKg,
+  previousSets,
   easier,
   harder,
   alternatives,
@@ -59,16 +64,18 @@ export function ExerciseCard({
   onSwap,
   onStartHold,
   onOpenAnimation,
+  onOpenPlateCalculator,
 }: Props) {
   const [swapOpen, setSwapOpen] = useState(false);
+  const [detailedOpen, setDetailedOpen] = useState(false);
+  const [isSwappingAnim, setIsSwappingAnim] = useState(false);
   const [imgError, setImgError] = useState(false);
+
   const doneCount = sets.filter((s) => s.done).length;
   const allDone = sets.length > 0 && doneCount === sets.length;
   const canSwap = doneCount === 0;
-  const equipmentText = exercise.requires.length
-    ? exercise.requires.map((r) => r.replace("_", " ")).join(" + ")
-    : "bodyweight";
   const t = TRANSLATIONS[lang] ?? TRANSLATIONS.bn;
+  const isBn = lang === "bn";
 
   const isImperial = unitSystem === "imperial";
   const weightUnit = isImperial ? "lbs" : "kg";
@@ -80,279 +87,322 @@ export function ExerciseCard({
 
   const media = getExerciseMedia(exercise.id);
   const previewGif = imgError ? media.remoteFallbackGif : media.localGif;
-  const progressPercent = sets.length > 0 ? (doneCount / sets.length) * 100 : 0;
+
+  const handleQuickSwap = (newId: string) => {
+    setIsSwappingAnim(true);
+    setTimeout(() => {
+      onSwap(newId);
+      setIsSwappingAnim(false);
+      setSwapOpen(false);
+    }, 280);
+  };
 
   return (
-    <article
-      className={`card group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 shadow-xl ${
-        allDone
-          ? "border-cyan-400 bg-[#040e29]/95 shadow-[0_0_30px_rgba(6,182,212,0.45)]"
-          : "border-cyan-500/35 bg-[#05112e]/90 hover:border-cyan-400/80 shadow-lg"
-      } system-scanlines system-grid-bg`}
+    <div
+      className={`rounded-3xl bg-[#18181B] border p-4 transition-all ${allDone
+        ? "border-emerald-500/40 bg-zinc-900/60"
+        : "border-zinc-800/80 hover:border-zinc-700/80"
+        } ${isSwappingAnim ? "opacity-50 scale-[0.99]" : ""}`}
     >
-      {/* Top Progress Accent Bar */}
-      <div className="h-1.5 w-full bg-zinc-950 overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(6,182,212,0.9)]"
-          style={{ width: `${progressPercent}%` }}
-        />
-      </div>
-
-      <div className="p-4 sm:p-5 card-body p-0">
-        {/* Header with Exercise Title and Live Animated Thumbnail */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0">
-            {/* Live Animated Exercise Thumbnail Preview */}
+      {/* Top Row: Index + Target Muscle + Title + Quick AI Swap Button */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3 min-w-0">
+          {/* Animated guide thumbnail button */}
+          {onOpenAnimation && (
             <button
               type="button"
               onClick={onOpenAnimation}
               title={`View ${exercise.name} animated guide`}
-              className="relative group/thumb shrink-0 h-14 w-14 sm:h-16 sm:w-16 rounded-xl overflow-hidden border-2 border-cyan-400/60 bg-zinc-950 shadow-md hover:border-cyan-400 transition-all active:scale-95 cursor-pointer"
+              className="relative shrink-0 h-12 w-12 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 shadow hover:border-lime-400 transition-all active:scale-95 cursor-pointer"
             >
               <img
                 src={previewGif}
                 alt={exercise.name}
-                className="w-full h-full object-cover object-center group-hover/thumb:scale-110 transition-transform duration-300"
+                className="w-full h-full object-cover object-center"
                 onError={() => setImgError(true)}
               />
-              <div className="absolute inset-0 bg-black/40 group-hover/thumb:bg-black/15 transition-colors flex items-center justify-center">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-400 text-zinc-950 shadow-md opacity-90 group-hover/thumb:opacity-100 group-hover/thumb:scale-110 transition-all">
-                  <Play className="h-3 w-3 fill-current ml-0.5" />
+              <div className="absolute inset-0 bg-black/30 hover:bg-black/10 transition-colors flex items-center justify-center">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-lime-400 text-zinc-950 shadow">
+                  <Play className="h-2.5 w-2.5 fill-current ml-0.5" />
                 </span>
               </div>
             </button>
+          )}
 
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="badge badge-primary badge-sm font-mono font-black">
-                  {index + 1}
-                </span>
-                <h3 className="text-base font-black text-white sm:text-lg truncate tracking-tight uppercase">
-                  {exercise.name}
-                </h3>
-              </div>
-              <p className="mt-0.5 text-xs font-mono font-bold text-cyan-300 truncate text-glow-cyan">
-                {exercise.muscles.slice(0, 3).map((m) => MUSCLE_LABEL[m]).join(" · ")}
-              </p>
-              <div className="mt-1 flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
-                <span className="badge badge-outline badge-sm font-bold text-zinc-300">
-                  {equipmentText}
-                </span>
-              </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300">
+                #{index + 1}
+              </span>
+              <span className="text-[11px] font-semibold text-emerald-400 truncate">
+                {exercise.muscles.map((m) => MUSCLE_LABEL[m]).join(" · ")}
+              </span>
             </div>
-          </div>
-
-          <div className="shrink-0 text-right">
-            <span className="badge badge-neutral badge-lg font-mono font-bold text-zinc-100 shadow-sm">
-              {pe.sets} × {pe.reps}
-            </span>
-            <div className="mt-1 flex items-center justify-end gap-1 text-[11px] text-zinc-400">
-              <Clock className="h-3 w-3 text-cyan-400" /> {t.restSecLabel(pe.restSeconds)}
-            </div>
+            <h3 className="text-base font-extrabold text-white leading-snug truncate">
+              {exercise.name}
+            </h3>
           </div>
         </div>
 
-        {/* Cues Box */}
-        <div className="my-3 rounded-xl border border-cyan-500/30 bg-[#03081a]/90 p-3 text-xs leading-relaxed text-zinc-200 font-mono">
-          <strong className="text-cyan-400 text-glow-cyan">{t.cuePrefix}</strong> {exercise.cues}
-          {pe.note && (
-            <>
-              <br />
-              <strong className="text-zinc-200">{t.coachNotePrefix}</strong> {pe.note}
-            </>
-          )}
-        </div>
-
-        {/* Action Buttons: Animation Guide, Swaps, YouTube */}
-        <div className="mb-3.5 flex flex-wrap items-center gap-2">
-          {/* Animated Demonstration & Form Guide */}
-          {onOpenAnimation && (
-            <button
-              id={`btn-animation-${exercise.id}`}
-              data-testid={`btn-animation-${exercise.id}`}
-              type="button"
-              onClick={onOpenAnimation}
-              className="btn btn-sm btn-outline btn-primary gap-1.5 text-xs font-bold shadow-sm active:scale-95 text-cyan-300 hover:text-black font-mono"
-              title={`Watch animated demonstration and form guide for ${exercise.name}`}
-            >
-              <Play className="h-3.5 w-3.5 fill-current" />
-              <span>{t.animationBtn}</span>
-            </button>
-          )}
-
-          {easier && (
-            <button
-              onClick={() => onSwap(easier.id)}
-              disabled={!canSwap}
-              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95 font-mono"
-            >
-              <TrendingDown className="h-3.5 w-3.5 text-amber-400" /> {t.easierBtn(easier.name)}
-            </button>
-          )}
-          {harder && (
-            <button
-              onClick={() => onSwap(harder.id)}
-              disabled={!canSwap}
-              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95 font-mono"
-            >
-              <TrendingUp className="h-3.5 w-3.5 text-cyan-400" /> {t.harderBtn(harder.name)}
-            </button>
-          )}
-          {alternatives.length > 0 && (
-            <button
-              onClick={() => setSwapOpen((o) => !o)}
-              aria-expanded={swapOpen}
-              disabled={!canSwap}
-              className="btn btn-sm btn-outline btn-ghost border-zinc-700 gap-1.5 text-xs text-zinc-300 hover:text-white disabled:opacity-40 active:scale-95 font-mono"
-            >
-              <ArrowLeftRight className="h-3.5 w-3.5 text-cyan-400" /> {t.swapBtn}
-            </button>
-          )}
-
-          {/* External video search link */}
-          <a
-            href={`https://www.youtube.com/results?search_query=proper+form+${encodeURIComponent(exercise.name)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-sm btn-ghost border border-zinc-700/80 text-xs text-zinc-300 hover:text-white ml-auto gap-1.5 font-mono"
-            title={`Search proper biomechanical form for ${exercise.name}`}
+        {/* AI Swap Button */}
+        {canSwap && alternatives.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setSwapOpen((prev) => !prev)}
+            disabled={isSwappingAnim}
+            title={isBn ? "ব্যায়াম পরিবর্তন করুন (AI Swap)" : "Instant AI Exercise Swap"}
+            className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-[11px] font-bold text-lime-400 active:scale-95 transition-all cursor-pointer"
           >
-            <ExternalLink className="h-3 w-3 text-cyan-400" />
-            <span className="hidden sm:inline">{t.formVideoBtn}</span>
-          </a>
-        </div>
-        {!canSwap && <p className="mb-2 text-[11px] text-zinc-500 font-mono">{t.swapNotice}</p>}
+            <RefreshCw
+              className={`w-3 h-3 ${isSwappingAnim ? "animate-spin" : ""}`}
+            />
+            <span>{isBn ? "সোয়াপ" : "AI Swap"}</span>
+          </button>
+        )}
+      </div>
 
-        {swapOpen && canSwap && (
-          <ul className="mb-3 space-y-1 rounded-xl border border-cyan-500/30 bg-[#020512] p-2 shadow-inner font-mono">
-            {alternatives.slice(0, 6).map((alt) => (
+      {/* Alternative Swap Dropdown Menu */}
+      {swapOpen && canSwap && (
+        <div className="mt-3 rounded-2xl border border-lime-400/30 bg-zinc-950 p-3 space-y-2 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-lime-400">
+            <span>{isBn ? "বিকল্প ব্যায়াম বেছে নিন" : "Select Alternative Movement"}</span>
+            <button
+              type="button"
+              onClick={() => setSwapOpen(false)}
+              className="text-zinc-500 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {easier && (
+              <button
+                type="button"
+                onClick={() => handleQuickSwap(easier.id)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-amber-400 hover:bg-zinc-850 transition-colors"
+              >
+                <TrendingDown className="w-3 h-3" />
+                <span>{isBn ? `সহজ: ${easier.name}` : `Easier: ${easier.name}`}</span>
+              </button>
+            )}
+            {harder && (
+              <button
+                type="button"
+                onClick={() => handleQuickSwap(harder.id)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-sky-400 hover:bg-zinc-850 transition-colors"
+              >
+                <TrendingUp className="w-3 h-3" />
+                <span>{isBn ? `কঠিন: ${harder.name}` : `Harder: ${harder.name}`}</span>
+              </button>
+            )}
+          </div>
+
+          <ul className="space-y-1 pt-1">
+            {alternatives.slice(0, 5).map((alt) => (
               <li key={alt.id}>
                 <button
-                  onClick={() => {
-                    setSwapOpen(false);
-                    onSwap(alt.id);
-                  }}
-                  className="flex min-h-[40px] w-full items-center justify-between rounded-lg px-3 text-left text-sm text-zinc-200 hover:bg-cyan-950/30 hover:text-cyan-200 transition-colors"
+                  type="button"
+                  onClick={() => handleQuickSwap(alt.id)}
+                  className="w-full text-left px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800/80 flex items-center justify-between text-xs text-zinc-200 hover:text-white transition-colors cursor-pointer"
                 >
-                  <span className="font-medium">{alt.name}</span>
-                  <span className="text-[11px] text-zinc-500">
+                  <span className="font-semibold truncate">{alt.name}</span>
+                  <span className="text-[10px] text-zinc-400 shrink-0 ml-2">
                     {alt.requires.length ? alt.requires.join(" + ").replace("_", " ") : "bodyweight"}
                   </span>
                 </button>
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Sets x Reps & Rest Metadata Row */}
+      <div className="flex flex-wrap items-center gap-2 mt-2.5 text-xs">
+        <span className="px-2.5 py-1 rounded-lg bg-zinc-950 border border-zinc-800/90 font-bold text-zinc-200">
+          {pe.sets} × {pe.reps}
+        </span>
+        <span className="px-2.5 py-1 rounded-lg bg-zinc-950 border border-zinc-800/90 text-zinc-400 flex items-center gap-1">
+          <Clock className="w-3 h-3 text-lime-400" />
+          {pe.restSeconds}s rest
+        </span>
+
+        {exercise.requires.includes("barbell") && onOpenPlateCalculator && (
+          <button
+            type="button"
+            onClick={() => onOpenPlateCalculator(lastWeightKg || 60)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-semibold text-sky-400 hover:text-sky-300 transition-colors cursor-pointer"
+            title="Open Barbell Plate Calculator"
+          >
+            <Dumbbell className="w-3 h-3" />
+            <span>{isBn ? "প্লেট হিসাব" : "Plates"}</span>
+          </button>
         )}
 
-        {/* Sets Tracker Header */}
-        <div className="mb-2.5 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-zinc-400 font-mono">
-          <span>{t.setsProgress(doneCount, sets.length)}</span>
-          {exercise.loaded && lastWeightDisplay ? (
-            <span className="normal-case text-cyan-400/90 font-mono">
-              {t.lastWeightPrefix(lastWeightDisplay, weightUnit)}
-            </span>
-          ) : null}
-        </div>
-
-        {/* Sets List */}
-        <ul className="space-y-2.5">
-          {sets.map((s, i) => {
-            const currentWeightDisplay =
-              s.weightKg !== undefined
-                ? isImperial
-                  ? kgToLbs(s.weightKg)
-                  : s.weightKg
-                : "";
-
-            return (
-              <li
-                key={i}
-                className={`flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-xl border transition-all duration-200 ${
-                  s.done
-                    ? "bg-cyan-950/30 border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.25)]"
-                    : "bg-[#020512]/60 border-cyan-500/20 hover:border-cyan-500/40"
-                }`}
-              >
-                <span className="w-8 sm:w-12 shrink-0 text-center sm:text-left text-[11px] sm:text-xs font-bold text-zinc-300 font-mono">
-                  <span className="sm:hidden">S{i + 1}</span>
-                  <span className="hidden sm:inline">Set {i + 1}</span>
-                </span>
-
-                {exercise.timed ? (
-                  <button
-                    onClick={() => onStartHold(holdSeconds(pe.reps), exercise.name)}
-                    className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-cyan-500/30 bg-[#091326] text-xs font-semibold text-zinc-200 hover:border-cyan-400 hover:text-white active:scale-95 transition-all font-mono"
-                  >
-                    <Timer className="h-4 w-4 text-cyan-400" /> Start {holdSeconds(pe.reps)}s hold
-                  </button>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <input
-                        aria-label={`Set ${i + 1} reps`}
-                        type="number"
-                        inputMode="numeric"
-                        min={0}
-                        max={200}
-                        placeholder={pe.reps.split(" ")[0]}
-                        value={s.reps ?? ""}
-                        onChange={(e) =>
-                          onChangeSet(i, {
-                            reps: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)),
-                          })
-                        }
-                        className="input input-bordered input-primary input-sm w-14 sm:w-16 font-mono text-center font-bold"
-                      />
-                      <span className="text-[11px] sm:text-xs text-zinc-400 font-medium hidden xs:inline">reps</span>
-                    </div>
-
-                    {exercise.loaded && (
-                      <div className="flex items-center gap-1 shrink-0">
-                        <input
-                          aria-label={`Set ${i + 1} weight in ${weightUnit}`}
-                          type="number"
-                          inputMode="decimal"
-                          min={0}
-                          max={1000}
-                          step={isImperial ? "1" : "0.5"}
-                          placeholder={lastWeightDisplay ? String(lastWeightDisplay) : weightUnit}
-                          value={currentWeightDisplay}
-                          onChange={(e) => {
-                            if (e.target.value === "") {
-                              onChangeSet(i, { weightKg: undefined });
-                            } else {
-                              const val = Math.max(0, Number(e.target.value));
-                              const kgVal = isImperial ? lbsToKg(val) : val;
-                              onChangeSet(i, { weightKg: kgVal });
-                            }
-                          }}
-                          className="input input-bordered input-primary input-sm w-16 sm:w-20 font-mono text-center font-bold"
-                        />
-                        <span className="text-[11px] sm:text-xs text-zinc-400 font-medium">{weightUnit}</span>
-                      </div>
-                    )}
-                    <span className="flex-1" />
-                  </>
-                )}
-
-                {/* Complete Set Checkbox Button with DaisyUI button */}
-                <button
-                  onClick={() => onToggleSet(i)}
-                  aria-pressed={s.done}
-                  aria-label={`Mark set ${i + 1} ${s.done ? "not done" : "done"}`}
-                  className={`btn btn-sm btn-square h-10 w-10 sm:h-11 sm:w-11 transition-all duration-200 active:scale-90 cursor-pointer ${
-                    s.done
-                      ? "btn-primary shadow-[0_0_18px_rgba(6,182,212,0.85)] scale-105"
-                      : "btn-outline btn-ghost border-cyan-500/40 text-cyan-400 hover:bg-cyan-950/40 hover:text-cyan-200 hover:border-cyan-400"
-                  }`}
-                >
-                  <CheckCircle2 className={`h-5 w-5 ${s.done ? "stroke-[3]" : ""}`} />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <button
+          type="button"
+          onClick={() => setDetailedOpen(!detailedOpen)}
+          className="ml-auto text-[11px] font-semibold text-zinc-400 hover:text-lime-400 flex items-center gap-1 transition-colors"
+        >
+          <Sliders className="w-3 h-3" />
+          <span>{detailedOpen ? (isBn ? "সহজ ভিউ" : "Simple") : (isBn ? "বিস্তারিত লগ" : "Custom Reps/Kg")}</span>
+        </button>
       </div>
-    </article>
+
+      {/* Form Cue Pill */}
+      <div className="mt-2.5 px-3 py-2 rounded-xl bg-zinc-950/80 border border-zinc-800/70 flex items-start gap-2">
+        <Info className="w-3.5 h-3.5 text-lime-400 shrink-0 mt-0.5" />
+        <p className="text-[11px] text-zinc-400 leading-relaxed">
+          <strong className="text-zinc-200 font-semibold">{t.cuePrefix}</strong> {exercise.cues}
+          {pe.note && (
+            <>
+              {" "}
+              <strong className="text-emerald-400 font-semibold">({pe.note})</strong>
+            </>
+          )}
+        </p>
+      </div>
+
+      {/* Thumb-Friendly Set Completion Pills */}
+      <div className={`grid grid-cols-${Math.min(sets.length, 4)} sm:grid-cols-4 gap-2 mt-3.5`}>
+        {sets.map((s, setIdx) => {
+          const isDone = s.done;
+          return (
+            <button
+              key={setIdx}
+              type="button"
+              onClick={() => onToggleSet(setIdx)}
+              className={`py-2.5 px-2 rounded-2xl text-xs font-extrabold flex flex-col items-center justify-center gap-0.5 transition-all active:scale-90 cursor-pointer ${isDone
+                ? "bg-gradient-to-br from-lime-400 to-emerald-500 text-zinc-950 shadow-md shadow-lime-400/20"
+                : "bg-zinc-950 text-zinc-300 border border-zinc-800 hover:border-zinc-700"
+                }`}
+            >
+              <CheckCircle2
+                className={`w-4 h-4 ${isDone ? "text-zinc-950 stroke-[2.75]" : "text-zinc-600"
+                  }`}
+              />
+              <span className="text-[11px]">Set {setIdx + 1}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Expandable Detailed Log Drawer (Reps, Weight, Hold Timer) */}
+      {detailedOpen && (
+        <div className="mt-3.5 pt-3 border-t border-zinc-800/80 space-y-2 animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-zinc-400">
+            <span>{t.setsProgress(doneCount, sets.length)}</span>
+            {previousSets && previousSets.length > 0 && doneCount === 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  previousSets.forEach((ps, idx) => {
+                    if (idx < sets.length) {
+                      onChangeSet(idx, { reps: ps.reps, weightKg: ps.weightKg });
+                    }
+                  });
+                }}
+                className="text-lime-400 hover:underline cursor-pointer"
+              >
+                {isBn ? "পূর্ববর্তী ওজন ও রেপ কপি" : "Copy Previous Values"}
+              </button>
+            )}
+          </div>
+
+          <ul className="space-y-1.5">
+            {sets.map((s, i) => {
+              const currentWeightDisplay =
+                s.weightKg !== undefined
+                  ? isImperial
+                    ? kgToLbs(s.weightKg)
+                    : s.weightKg
+                  : "";
+
+              return (
+                <li
+                  key={i}
+                  className={`flex items-center gap-2 p-2 rounded-xl border transition-all ${s.done
+                    ? "bg-emerald-950/20 border-emerald-500/40"
+                    : "bg-zinc-950 border-zinc-800"
+                    }`}
+                >
+                  <span className="w-12 text-xs font-bold text-zinc-400">
+                    Set {i + 1}
+                  </span>
+
+                  {exercise.timed ? (
+                    <button
+                      type="button"
+                      onClick={() => onStartHold(holdSeconds(pe.reps), exercise.name)}
+                      className="flex min-h-[36px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs font-semibold text-zinc-200 hover:text-lime-400"
+                    >
+                      <Timer className="h-3.5 w-3.5 text-lime-400" /> Start {holdSeconds(pe.reps)}s hold
+                    </button>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1">
+                        <input
+                          aria-label={`Set ${i + 1} reps`}
+                          type="number"
+                          min={0}
+                          max={200}
+                          placeholder={pe.reps.split(" ")[0]}
+                          value={s.reps ?? ""}
+                          onChange={(e) =>
+                            onChangeSet(i, {
+                              reps: e.target.value === "" ? undefined : Math.max(0, Number(e.target.value)),
+                            })
+                          }
+                          className="h-8 w-14 rounded-lg border border-zinc-800 bg-zinc-900 text-center text-xs font-bold text-white focus:border-lime-400 focus:outline-none"
+                        />
+                        <span className="text-[10px] text-zinc-500">reps</span>
+                      </div>
+
+                      {exercise.loaded && (
+                        <div className="flex items-center gap-1">
+                          <input
+                            aria-label={`Set ${i + 1} weight in ${weightUnit}`}
+                            type="number"
+                            min={0}
+                            max={1000}
+                            step={isImperial ? "1" : "0.5"}
+                            placeholder={lastWeightDisplay ? String(lastWeightDisplay) : weightUnit}
+                            value={currentWeightDisplay}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "") {
+                                onChangeSet(i, { weightKg: undefined });
+                              } else {
+                                const num = Math.max(0, Number(val));
+                                onChangeSet(i, {
+                                  weightKg: isImperial ? lbsToKg(num) : num,
+                                });
+                              }
+                            }}
+                            className="h-8 w-16 rounded-lg border border-zinc-800 bg-zinc-900 text-center text-xs font-bold text-white focus:border-lime-400 focus:outline-none"
+                          />
+                          <span className="text-[10px] text-zinc-500">{weightUnit}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => onToggleSet(i)}
+                    className={`ml-auto px-3 py-1 rounded-lg text-xs font-bold transition-all ${s.done
+                      ? "bg-lime-400 text-zinc-950"
+                      : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+                      }`}
+                  >
+                    {s.done ? "Done ✓" : "Check"}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }

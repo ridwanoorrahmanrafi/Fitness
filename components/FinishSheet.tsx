@@ -52,24 +52,24 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
 
   const difficultyOptions: { id: Difficulty; label: string; hint: string }[] = isBn
     ? [
-        { id: "too_easy", label: "সহজ ছিল", hint: "পরের বার আরও লোড দিন" },
-        { id: "just_right", label: "একদম উপযুক্ত", hint: "একই লোড ধরে রাখুন" },
-        { id: "too_hard", label: "খুব কঠিন ছিল", hint: "পরের বার লোড কমান" },
-      ]
+      { id: "too_easy", label: "সহজ ছিল", hint: "পরের বার আরও লোড দিন" },
+      { id: "just_right", label: "একদম উপযুক্ত", hint: "একই লোড ধরে রাখুন" },
+      { id: "too_hard", label: "খুব কঠিন ছিল", hint: "পরের বার লোড কমান" },
+    ]
     : [
-        { id: "too_easy", label: "Too easy", hint: "Do more next time" },
-        { id: "just_right", label: "Just right", hint: "Keep it similar" },
-        { id: "too_hard", label: "Too hard", hint: "Ease off next time" },
-      ];
+      { id: "too_easy", label: "Too easy", hint: "Do more next time" },
+      { id: "just_right", label: "Just right", hint: "Keep it similar" },
+      { id: "too_hard", label: "Too hard", hint: "Ease off next time" },
+    ];
 
   useEffect(() => {
     if (open) {
       try {
         confetti({
-          particleCount: 75,
+          particleCount: 60,
           spread: 60,
           origin: { y: 0.65 },
-          colors: ["#06b6d4", "#3b82f6", "#a855f7", "#10b981"],
+          colors: ["#10b981", "#3b82f6", "#6366f1"],
         });
       } catch {
         // Confetti is optional
@@ -86,32 +86,31 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
   return (
     <Sheet
       open={open}
-      title={isBn ? "[ DUNGEON CLEARED : ডানজিয়ন জয় সম্পন্ন ]" : "[ DUNGEON CLEARED : MISSION SUCCESS ]"}
+      title={isBn ? "ওয়ার্কআউট সম্পন্ন" : "Workout Completed"}
       onClose={onClose}
     >
-      <div className="space-y-5 font-mono">
-        {/* Holographic Dungeon Clear Banner */}
-        <div className="relative rounded-xl p-4 bg-gradient-to-r from-cyan-950/80 via-black to-purple-950/80 border-2 border-cyan-400/70 shadow-[0_0_25px_rgba(6,182,212,0.35)] overflow-hidden">
-          <div className="absolute top-1.5 right-2 flex items-center gap-2">
+      <div className="space-y-5 font-sans">
+        {/* Workout Complete Banner */}
+        <div className="relative rounded-2xl p-5 bg-gradient-to-br from-emerald-950/40 via-[#111726] to-[#0d121f] border border-emerald-500/20 shadow-lg overflow-hidden">
+          <div className="absolute top-2.5 right-3 flex items-center gap-2">
             {onLanguageChange && (
               <div
                 role="group"
                 aria-label="Language selection"
-                className="flex items-center rounded-lg border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+                className="flex items-center rounded-lg border border-slate-700/60 bg-slate-900/80 p-0.5 text-xs"
               >
                 <button
                   type="button"
                   onClick={() => {
                     if (lang !== "bn") {
-                      playSound("system-click");
+                      playSound("click");
                       onLanguageChange("bn");
                     }
                   }}
-                  className={`rounded px-1.5 py-0.5 text-[9px] font-black transition-all cursor-pointer ${
-                    lang === "bn"
-                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
-                  }`}
+                  className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all cursor-pointer ${lang === "bn"
+                      ? "bg-emerald-500 text-slate-950"
+                      : "text-slate-400 hover:text-white"
+                    }`}
                   aria-pressed={lang === "bn"}
                 >
                   বাংলা
@@ -120,92 +119,71 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
                   type="button"
                   onClick={() => {
                     if (lang !== "en") {
-                      playSound("system-click");
+                      playSound("click");
                       onLanguageChange("en");
                     }
                   }}
-                  className={`rounded px-1.5 py-0.5 text-[9px] font-black transition-all cursor-pointer ${
-                    lang === "en"
-                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
-                  }`}
+                  className={`rounded px-2 py-0.5 text-[10px] font-bold transition-all cursor-pointer ${lang === "en"
+                      ? "bg-emerald-500 text-slate-950"
+                      : "text-slate-400 hover:text-white"
+                    }`}
                   aria-pressed={lang === "en"}
                 >
                   EN
                 </button>
               </div>
             )}
-            <span className="text-[10px] text-cyan-300 font-bold uppercase tracking-widest hidden sm:inline">
-              {isBn ? "স্ট্যাটাস : সফলভাবে সম্পন্ন" : "DUNGEON STATUS : CONQUERED"}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-400 to-purple-600 text-black shadow-lg shadow-cyan-400/50">
-              <Trophy className="h-6 w-6 stroke-[2.5]" />
-            </div>
-            <div>
-              <div className="text-lg font-black text-white uppercase tracking-wide text-glow-cyan">
-                {t.setsDone} / {t.setsTotal} {isBn ? "সেট সম্পন্ন" : "COMBAT SETS CLEARED"}
-              </div>
-              <div className="text-xs text-cyan-300/80 font-bold">
-                {completion === 1
-                  ? isBn ? "১০০% সম্পূর্ণ ওয়ার্কআউট শেষ হয়েছে! বস পরাজিত।" : "100% Full Workout Cleared. Mission conquered."
-                  : isBn ? "আংশিক ওয়ার্কআউট সম্পন্ন হয়েছে। প্রগ্রেস সংরক্ষিত।" : "Partial extraction completed. Rewards tallied."}
-              </div>
-            </div>
           </div>
 
-          {/* Dungeon Clear Rewards Pill */}
-          <div className="mt-3 pt-2.5 border-t border-cyan-500/30 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="text-zinc-400 uppercase font-bold text-[10px]">
-              {isBn ? "অর্জিত পুরস্কার:" : "CLEAR REWARDS:"}
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="badge badge-info badge-outline font-black text-[11px]">
-                +250 EXP
-              </span>
-              <span className="badge badge-secondary badge-outline font-black text-[11px]">
-                {isBn ? "+১ স্ট্যাট পয়েন্ট" : "+1 STAT POINT"}
-              </span>
-              <span className="badge badge-success badge-outline font-black text-[11px]">
-                {isBn ? "ক্লান্তি মুক্তি" : "FATIGUE RECOVERY"}
-              </span>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <Trophy className="h-6 w-6 stroke-[2]" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-white">
+                {t.setsDone} / {t.setsTotal} {isBn ? "সেট সম্পন্ন হয়েছে" : "Sets Completed"}
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                {completion === 1
+                  ? isBn ? "সম্পূর্ণ ওয়ার্কআউট সফলভাবে শেষ হয়েছে! দারুণ কাজ করেছেন।" : "Full workout completed! Great job on finishing strong."
+                  : isBn ? "ওয়ার্কআউট শেষ হয়েছে। আপনার প্রগ্রেস সেভ করা হবে।" : "Session wrapped up. Progress will be saved."}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Combat Stats Grid */}
-        <div className="stats stats-horizontal shadow w-full bg-base-300/80 border border-cyan-500/30">
-          <div className="stat p-2.5 text-center">
-            <div className="stat-title text-[10px] text-zinc-400 uppercase font-bold">
-              {isBn ? "সময়" : "TIME ELAPSED"}
+        {/* Workout Stats Grid */}
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className="rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-center">
+            <div className="text-[11px] text-slate-400 font-medium">
+              {isBn ? "সময়কাল" : "Duration"}
             </div>
-            <div className="stat-value text-base font-black text-white font-mono text-glow-cyan">
+            <div className="text-base font-bold text-white mt-1">
               {minutes} {isBn ? "মি." : "min"}
             </div>
           </div>
-          <div className="stat p-2.5 text-center">
-            <div className="stat-title text-[10px] text-zinc-400 uppercase font-bold">
-              {isBn ? "মোট ওজন" : "VOLUME LOAD"}
+          <div className="rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-center">
+            <div className="text-[11px] text-slate-400 font-medium">
+              {isBn ? "মোট ভলিউম" : "Total Volume"}
             </div>
-            <div className="stat-value text-base font-black text-white font-mono text-glow-cyan">
+            <div className="text-base font-bold text-white mt-1">
               {t.volumeKg ? `${t.volumeKg} kg` : "-"}
             </div>
           </div>
-          <div className="stat p-2.5 text-center">
-            <div className="stat-title text-[10px] text-zinc-400 uppercase font-bold">
-              {isBn ? "ক্যালোরি" : "ENERGY (EST.)"}
+          <div className="rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-center">
+            <div className="text-[11px] text-slate-400 font-medium">
+              {isBn ? "আনুমানিক ক্যালোরি" : "Calories (Est.)"}
             </div>
-            <div className="stat-value text-base font-black text-amber-400 font-mono">
+            <div className="text-base font-bold text-amber-400 mt-1">
               ~{kcal} kcal
             </div>
           </div>
         </div>
 
-        {/* Perceived Dungeon Difficulty */}
+        {/* Perceived Intensity */}
         <section>
-          <h3 className="mb-2 text-xs font-black uppercase text-cyan-300 tracking-wider">
-            {isBn ? "[ অনুভূত ব্যায়ামের তীব্রতা : WORKOUT INTENSITY ]" : "[ PERCEIVED DIFFICULTY : INTENSITY ]"}
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+            {isBn ? "ব্যায়ামের তীব্রতা কেমন ছিল?" : "How did the workout feel?"}
           </h3>
           <div className="grid grid-cols-3 gap-2">
             {difficultyOptions.map((d) => (
@@ -214,14 +192,13 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
                 type="button"
                 aria-pressed={difficulty === d.id}
                 onClick={() => setDifficulty(d.id)}
-                className={`btn min-h-[56px] h-auto p-2 flex flex-col items-center justify-center transition-all cursor-pointer ${
-                  difficulty === d.id
-                    ? "btn-primary shadow-[0_0_15px_rgba(6,182,212,0.6)]"
-                    : "btn-outline btn-neutral text-zinc-400 hover:text-white"
-                }`}
+                className={`min-h-[56px] h-auto p-2.5 flex flex-col items-center justify-center rounded-xl border transition-all cursor-pointer ${difficulty === d.id
+                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold"
+                    : "border-slate-800 bg-[#111726]/60 text-slate-400 hover:text-white hover:border-slate-700"
+                  }`}
               >
-                <div className="text-xs font-black uppercase">{d.label}</div>
-                <div className="text-[10px] opacity-80">{d.hint}</div>
+                <div className="text-xs font-semibold">{d.label}</div>
+                <div className="text-[10px] opacity-75 mt-0.5">{d.hint}</div>
               </button>
             ))}
           </div>
@@ -229,8 +206,8 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
 
         {/* Muscular Soreness & Recovery */}
         <section>
-          <h3 className="mb-2 text-xs font-black uppercase text-purple-300 tracking-wider">
-            {isBn ? "[ অতিরিক্ত ক্লান্ত পেশীসমূহ (SORE MUSCLES) ]" : "[ TARGETED SORENESS / FATIGUED MUSCLES ]"}
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+            {isBn ? "কোন পেশীতে বেশি চাপ অনুভূত হচ্ছে?" : "Targeted Muscle Soreness & Fatigue"}
           </h3>
           <div className="flex flex-wrap gap-2">
             {MUSCLES.map((m) => (
@@ -239,17 +216,17 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
               </Chip>
             ))}
           </div>
-          <p className="mt-1 text-[11px] text-zinc-400">
+          <p className="mt-1.5 text-[11px] text-slate-400">
             {isBn
               ? "নির্বাচিত পেশীগুলোকে পরবর্তী ৭২ ঘণ্টার জন্য রিকভারি অগ্রাধিকার দেওয়া হবে।"
-              : "Selected muscle regions will be granted prioritized regeneration for 72 hours."}
+              : "Selected muscle groups will be scheduled for recovery prioritization over the next 72 hours."}
           </p>
         </section>
 
-        {/* Combat Log Notes */}
+        {/* Workout Notes */}
         <section>
-          <label htmlFor="notes" className="mb-1 block text-xs font-black uppercase text-zinc-300">
-            {isBn ? "[ হান্টার নোট / অনুভূতি (ঐচ্ছিক) ]" : "[ HUNTER COMBAT LOG NOTES (OPTIONAL) ]"}
+          <label htmlFor="notes" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            {isBn ? "ওয়ার্কআউট নোট / অনুভূতি (ঐচ্ছিক)" : "Workout Notes & Reflections (Optional)"}
           </label>
           <textarea
             id="notes"
@@ -257,22 +234,23 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
             maxLength={200}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder={isBn ? "যেমন: শেষ সেটে খুব ভালো পাম্প পেয়েছি, ফর্ম সঠিক ছিল" : "e.g. explosive leg drive, form remained rigid through final set"}
-            className="textarea textarea-bordered textarea-primary w-full bg-black/80 text-xs text-zinc-100 font-mono"
+            placeholder={isBn ? "যেমন: শেষ সেটে দারুণ পাম্প পেয়েছি, ফর্ম সঠিক ছিল" : "e.g. good depth on squats, maintained steady tempo throughout"}
+            className="w-full rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
           />
         </section>
 
-        {/* Claim Rewards Button */}
+        {/* Save Workout Button */}
         <button
           onClick={() => onSave({ difficulty, soreMuscles: sore, notes: notes.trim(), minutes, kcal })}
           disabled={t.setsDone === 0}
-          className={`btn btn-primary w-full min-h-[52px] font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(6,182,212,0.8)] ${
-            t.setsDone === 0 ? "btn-disabled opacity-50" : ""
-          }`}
+          className={`w-full py-3.5 px-4 rounded-xl font-semibold text-sm transition-all cursor-pointer ${t.setsDone === 0
+              ? "bg-slate-800 text-slate-500 cursor-not-allowed"
+              : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 active:scale-[0.99]"
+            }`}
         >
           {t.setsDone === 0
-            ? isBn ? "অন্তত একটি সেট শেষ করুন" : "COMPLETE AT LEAST ONE SET"
-            : isBn ? "পুরস্কার সংরক্ষণ ও সংগ্রহ করুন" : "CONFIRM CLEAR & RECORD EXP REWARDS"}
+            ? isBn ? "অন্তত একটি সেট সম্পন্ন করুন" : "Complete at least one set"
+            : isBn ? "ওয়ার্কআউট সেভ করুন" : "Save Workout"}
         </button>
       </div>
     </Sheet>

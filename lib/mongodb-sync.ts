@@ -1,5 +1,5 @@
 import type { HistoryEntry, Profile, UserGoal, ProgressEvaluation } from "./types";
-import type { PlayerStats } from "./systemStats";
+import type { AthleteStats } from "./athleteStats";
 
 /**
  * Client-side sync client for MongoDB cloud database.
@@ -70,23 +70,25 @@ export async function syncEvaluationToMongo(
   }
 }
 
-export async function syncPlayerStatsToMongo(
-  playerStats: PlayerStats,
+export async function syncAthleteStatsToMongo(
+  athleteStats: AthleteStats,
   userId: string
 ): Promise<boolean> {
   try {
     const res = await fetch("/api/cloud/sync", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, playerStats }),
+      body: JSON.stringify({ userId, athleteStats }),
     });
     const data = await res.json();
     return Boolean(data.ok);
   } catch (err) {
-    console.warn("syncPlayerStatsToMongo error:", err);
+    console.warn("syncAthleteStatsToMongo error:", err);
     return false;
   }
 }
+
+export const syncPlayerStatsToMongo = syncAthleteStatsToMongo;
 
 export async function pullUserCloudDataFromMongo(userId: string): Promise<{
   workouts: HistoryEntry[];
@@ -110,16 +112,18 @@ export async function pullUserCloudDataFromMongo(userId: string): Promise<{
   }
 }
 
-export async function pullPlayerStatsFromMongo(userId: string): Promise<PlayerStats | null> {
+export async function pullAthleteStatsFromMongo(userId: string): Promise<AthleteStats | null> {
   try {
     const res = await fetch(`/api/cloud/pull?userId=${encodeURIComponent(userId)}`);
     const data = await res.json();
-    return data.ok && data.playerStats ? (data.playerStats as PlayerStats) : null;
+    return data.ok && data.athleteStats ? (data.athleteStats as AthleteStats) : null;
   } catch (err) {
-    console.warn("pullPlayerStatsFromMongo error:", err);
+    console.warn("pullAthleteStatsFromMongo error:", err);
     return null;
   }
 }
+
+export const pullPlayerStatsFromMongo = pullAthleteStatsFromMongo;
 
 export async function pullUserProfileFromMongo(
   userId: string
@@ -128,7 +132,7 @@ export async function pullUserProfileFromMongo(
     const res = await fetch(`/api/cloud/pull?userId=${encodeURIComponent(userId)}`);
     const data = await res.json();
     if (data.ok && data.profile) {
-      return { profile: data.profile as Profile, name: data.name || "Hunter" };
+      return { profile: data.profile as Profile, name: data.name || "Athlete" };
     }
     return null;
   } catch (err) {
@@ -146,3 +150,10 @@ export async function seedExercisesToMongo(): Promise<{ ok: boolean; count: numb
     return { ok: false, count: 0, error: String(err) };
   }
 }
+
+export function isCloudConfigured(): boolean {
+  return true;
+}
+
+export const pullUserCloudData = pullUserCloudDataFromMongo;
+

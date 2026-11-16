@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,7 +8,7 @@
   color-scheme: dark;
   --spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
   --smooth-easing: cubic-bezier(0.32, 0.72, 0, 1);
-  --font-system: 'Orbitron', 'Chakra Petch', monospace;
+  --font-fitness: 'Poppins', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 html {
@@ -18,11 +18,21 @@ html {
 }
 
 body {
-  background: #020510;
-  color: #e0f2fe;
+  background: #09090B;
+  color: #f4f4f5;
+  font-family: var(--font-fitness);
   -webkit-tap-highlight-color: transparent;
   padding-bottom: env(safe-area-inset-bottom);
   overflow-x: hidden;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Custom Fluid Scrollbars */
@@ -31,7 +41,7 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(9, 9, 11, 0.6);
+  background: rgba(9, 13, 22, 0.6);
 }
 ::-webkit-scrollbar-thumb {
   background: #27272a;
@@ -59,24 +69,24 @@ input[type="number"] {
 
 /* Glassmorphism & Fluid Styling Utilities */
 .glass-panel {
-  background: rgba(18, 18, 22, 0.75);
+  background: rgba(17, 23, 38, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-pill {
-  background: rgba(24, 24, 27, 0.7);
+  background: rgba(24, 32, 50, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-dock {
-  background: rgba(9, 9, 11, 0.85);
+  background: rgba(13, 19, 32, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(63, 63, 70, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .glow-emerald {
@@ -84,242 +94,21 @@ input[type="number"] {
 }
 
 .glow-subtle {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 
-/* Solo Leveling & Leveling Fitness Design System */
-.leveling-bg {
-  background: radial-gradient(circle at 50% 0%, #0d1e3d 0%, #060b18 55%, #03060f 100%);
+/* Clean Modern Fitness Card Utilities */
+.fitness-card {
+  background: #111726;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-.leveling-card {
-  background: linear-gradient(180deg, rgba(11, 22, 44, 0.92) 0%, rgba(6, 13, 26, 0.96) 100%);
-  border: 1.5px solid rgba(0, 140, 255, 0.38);
-  box-shadow: 0 0 35px -5px rgba(0, 110, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border-radius: 1.5rem;
-}
-
-.leveling-card-glow {
-  box-shadow: 0 0 35px rgba(0, 140, 255, 0.35), inset 0 0 20px rgba(0, 140, 255, 0.1);
-}
-
-.leveling-header-box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1.75rem;
-  border: 1.5px solid #0088ff;
-  border-radius: 0.625rem;
-  background: rgba(0, 110, 255, 0.1);
-  color: #38bdf8;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  text-shadow: 0 0 14px rgba(56, 189, 248, 0.8), 0 0 28px rgba(0, 136, 255, 0.5);
-  box-shadow: 0 0 22px rgba(0, 136, 255, 0.35), inset 0 0 12px rgba(0, 136, 255, 0.18);
-}
-
-.leveling-dialog-box {
-  border-radius: 1.25rem;
-  border: 1.5px solid rgba(0, 136, 255, 0.45);
-  background: linear-gradient(180deg, rgba(8, 18, 38, 0.95) 0%, rgba(4, 10, 22, 0.98) 100%);
-  box-shadow: 0 0 40px rgba(0, 110, 255, 0.28), inset 0 0 20px rgba(0, 136, 255, 0.12);
-}
-
-.leveling-dialog-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid #0088ff;
-  background: rgba(0, 136, 255, 0.14);
-  color: #38bdf8;
-  font-weight: 800;
-  box-shadow: 0 0 12px rgba(0, 136, 255, 0.35);
-}
-
-/* Floating Navigation Dock */
-.leveling-dock {
-  background: rgba(7, 14, 28, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1.5px solid rgba(56, 189, 248, 0.22);
-  border-radius: 9999px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 110, 255, 0.25);
-}
-
-.leveling-dock-active {
-  background: linear-gradient(135deg, #0070f3 0%, #00a8ff 100%);
-  color: #ffffff;
-  box-shadow: 0 0 22px rgba(0, 140, 255, 0.85);
-}
-
-/* 2x2 Metric Cards */
-.leveling-metric-purple {
-  border: 1.5px solid rgba(168, 85, 247, 0.45);
-  background: linear-gradient(180deg, rgba(28, 12, 48, 0.9) 0%, rgba(14, 6, 26, 0.95) 100%);
-  box-shadow: 0 0 25px -4px rgba(168, 85, 247, 0.35);
-}
-
-.leveling-metric-gold {
-  border: 1.5px solid rgba(245, 158, 11, 0.45);
-  background: linear-gradient(180deg, rgba(42, 28, 8, 0.9) 0%, rgba(20, 14, 4, 0.95) 100%);
-  box-shadow: 0 0 25px -4px rgba(245, 158, 11, 0.35);
-}
-
-.leveling-metric-cyan {
-  border: 1.5px solid rgba(6, 182, 212, 0.45);
-  background: linear-gradient(180deg, rgba(8, 28, 44, 0.9) 0%, rgba(4, 14, 24, 0.95) 100%);
-  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.35);
-}
-
-.leveling-metric-orange {
-  border: 1.5px solid rgba(249, 115, 22, 0.45);
-  background: linear-gradient(180deg, rgba(42, 18, 8, 0.9) 0%, rgba(22, 9, 3, 0.95) 100%);
-  box-shadow: 0 0 25px -4px rgba(249, 115, 22, 0.35);
-}
-
-.leveling-circle-btn {
-  height: 2.75rem;
-  width: 2.75rem;
-  border-radius: 9999px;
-  background: rgba(14, 23, 42, 0.85);
-  border: 1.5px solid rgba(56, 189, 248, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #93c5fd;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 15px rgba(0, 140, 255, 0.15);
-}
-.leveling-circle-btn:hover {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: rgba(56, 189, 248, 0.6);
-  color: #ffffff;
-  box-shadow: 0 0 20px rgba(0, 140, 255, 0.35);
-  transform: scale(1.04);
-}
-.leveling-circle-btn:active {
-  transform: scale(0.95);
-}
-
-.leveling-btn-primary {
-  background: linear-gradient(135deg, #0066ff 0%, #0099ff 100%);
-  color: #ffffff;
-  font-weight: 800;
-  box-shadow: 0 0 25px rgba(0, 110, 255, 0.55);
-  transition: all 0.2s ease;
-}
-.leveling-btn-primary:hover {
-  box-shadow: 0 0 35px rgba(0, 110, 255, 0.8);
-  filter: brightness(1.08);
-}
-.leveling-btn-primary:active {
-  transform: scale(0.97);
-}
-
-/* Solo Leveling System UI Styles */
-.system-window {
-  background: rgba(3, 8, 24, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(6, 182, 212, 0.5);
-  box-shadow: 0 0 35px -5px rgba(6, 182, 212, 0.35), inset 0 0 20px rgba(6, 182, 212, 0.08);
-}
-
-.system-window-purple {
-  background: rgba(8, 4, 24, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px solid rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 35px -5px rgba(168, 85, 247, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.1);
-}
-
-/* Manhwa Chamfered Cut-Corner Polygons */
-.system-chamfer {
-  clip-path: polygon(
-    0 12px,
-    12px 0,
-    calc(100% - 12px) 0,
-    100% 12px,
-    100% calc(100% - 12px),
-    calc(100% - 12px) 100%,
-    12px 100%,
-    0 calc(100% - 12px)
-  );
-}
-
-.system-chamfer-lg {
-  clip-path: polygon(
-    0 20px,
-    20px 0,
-    calc(100% - 20px) 0,
-    100% 20px,
-    100% calc(100% - 20px),
-    calc(100% - 20px) 100%,
-    20px 100%,
-    0 calc(100% - 20px)
-  );
-}
-
-.system-btn-chamfer {
-  clip-path: polygon(
-    0 8px,
-    8px 0,
-    calc(100% - 8px) 0,
-    100% 8px,
-    100% calc(100% - 8px),
-    calc(100% - 8px) 100%,
-    8px 100%,
-    0 calc(100% - 8px)
-  );
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.system-btn-chamfer:active {
-  transform: scale(0.96) translateY(1px);
-}
-
-/* High-Tech Circuit Matrix Grid */
-.system-grid-bg {
-  background-image: 
-    linear-gradient(to right, rgba(6, 182, 212, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(6, 182, 212, 0.08) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.system-scanlines {
-  background-image: linear-gradient(rgba(6, 182, 212, 0.04) 50%, rgba(0, 0, 0, 0.35) 50%);
-  background-size: 100% 4px;
-}
-
-.glow-cyan {
-  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.55);
-}
-
-.glow-purple {
-  box-shadow: 0 0 25px -4px rgba(168, 85, 247, 0.55);
-}
-
-.text-glow-cyan {
-  text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
-}
-
-.text-glow-purple {
-  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.4);
-}
-
-.text-glow-amber {
-  text-shadow: 0 0 10px rgba(245, 158, 11, 0.8), 0 0 20px rgba(245, 158, 11, 0.4);
-}
-
-.system-btn {
-  position: relative;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.system-btn:active {
-  transform: scale(0.94);
-}
-.system-btn:hover {
-  box-shadow: 0 0 18px rgba(6, 182, 212, 0.6);
+.fitness-elevated {
+  background: #151d30;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
 }
 
 /* Biomechanical Kinematic Animations */

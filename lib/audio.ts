@@ -32,53 +32,60 @@ function tone(freq: number, startOffset: number, duration: number, volume = 0.2)
   osc.stop(t0 + duration + 0.02);
 }
 
-export type Sound = "tick" | "set" | "rest-end" | "complete" | "system-alert" | "level-up" | "quest-complete" | "system-click" | "arise";
+export type Sound =
+  | "tick"
+  | "set"
+  | "rest-end"
+  | "complete"
+  | "click"
+  | "warning"
+  // Legacy aliases for backward compatibility
+  | "system-click"
+  | "system-alert"
+  | "level-up"
+  | "quest-complete"
+  | "arise";
 
 export function playSound(kind: Sound): void {
   switch (kind) {
     case "tick":
+      tone(784, 0, 0.05, 0.12);
+      break;
+    case "click":
     case "system-click":
-      tone(784, 0, 0.05, 0.15);
+      tone(600, 0, 0.04, 0.1);
       break;
     case "set":
-      tone(880, 0, 0.08, 0.2);
-      tone(1320, 0.06, 0.1, 0.22);
+      // Crisp 2-tone workout set completion confirmation
+      tone(880, 0, 0.06, 0.18);
+      tone(1320, 0.05, 0.08, 0.2);
       break;
     case "rest-end":
-      tone(1046, 0, 0.25, 0.25);
-      tone(1318, 0.2, 0.3, 0.25);
+    case "warning":
+    case "system-alert":
+      // Double gym buzzer alerting rest period has expired
+      tone(1046, 0, 0.18, 0.22);
+      tone(1318, 0.15, 0.22, 0.24);
       break;
     case "complete":
     case "quest-complete":
-      // Victorious System arpeggio
-      tone(523, 0, 0.15, 0.25);      // C5
-      tone(659, 0.12, 0.15, 0.25);    // E5
-      tone(783, 0.24, 0.18, 0.28);    // G5
-      tone(1046, 0.38, 0.4, 0.3);     // C6
-      tone(1318, 0.52, 0.55, 0.32);   // E6
-      break;
-    case "system-alert":
-      // Iconic high-tech dual ding [ SYSTEM NOTIFICATION ]
-      tone(1760, 0, 0.09, 0.3);      // A6
-      tone(2349, 0.1, 0.22, 0.32);   // D7
-      break;
     case "level-up":
-      // Euphoric Level Up ascending power chime
-      tone(440, 0, 0.12, 0.25);
-      tone(554, 0.1, 0.12, 0.25);
-      tone(659, 0.2, 0.14, 0.28);
-      tone(880, 0.32, 0.2, 0.3);
-      tone(1108, 0.46, 0.25, 0.32);
-      tone(1760, 0.62, 0.6, 0.35);
-      break;
     case "arise":
-      // Deep bass resonance surge + electric harmonics for ARISE (জাগ্রত হও)
-      tone(110, 0, 0.8, 0.4);        // Deep A2
-      tone(220, 0.15, 0.6, 0.35);    // A3
-      tone(440, 0.3, 0.5, 0.3);      // A4
-      tone(880, 0.45, 0.4, 0.25);    // A5
-      tone(1760, 0.6, 0.6, 0.3);     // A6
+      // Clean, rewarding session finished arpeggio
+      tone(523, 0, 0.12, 0.2);      // C5
+      tone(659, 0.1, 0.12, 0.22);   // E5
+      tone(783, 0.2, 0.15, 0.24);   // G5
+      tone(1046, 0.32, 0.35, 0.25); // C6
       break;
+  }
+}
+
+export function playAudioTone(frequency = 880, duration = 0.14): void {
+  try {
+    unlockAudio();
+    tone(frequency, 0, duration, 0.18);
+  } catch {
+    /* ignore */
   }
 }
 

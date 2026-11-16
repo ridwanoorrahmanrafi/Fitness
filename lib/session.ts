@@ -36,6 +36,21 @@ export function lastWeights(history: HistoryEntry[]): Record<string, number> {
   return out;
 }
 
+/** Most recent logged sets per exercise, newest history first. Provides progressive overload telemetry. */
+export function lastExerciseSets(history: HistoryEntry[]): Record<string, { reps?: number; weightKg?: number }[]> {
+  const out: Record<string, { reps?: number; weightKg?: number }[]> = {};
+  for (const h of history) {
+    for (const ex of h.exercises) {
+      if (out[ex.exerciseId] !== undefined) continue;
+      const completedSets = ex.sets.filter((s) => s.done);
+      if (completedSets.length > 0) {
+        out[ex.exerciseId] = completedSets.map((s) => ({ reps: s.reps, weightKg: s.weightKg }));
+      }
+    }
+  }
+  return out;
+}
+
 const SORE_WINDOW_MS = 72 * 60 * 60 * 1000;
 
 /** Everything the coach should know from past sessions. History is newest first. */

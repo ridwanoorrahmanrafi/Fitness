@@ -3,6 +3,7 @@ import { EQUIPMENT_IDS, FOCUS_IDS, MUSCLES } from "./types";
 import { LIMITS } from "./calc";
 
 export const ProfileSchema = z.object({
+  name: z.string().max(100).optional(),
   gender: z.enum(["male", "female", "other"]),
   age: z.number().int().min(LIMITS.age.min).max(LIMITS.age.max),
   heightCm: z.number().min(LIMITS.heightCm.min).max(LIMITS.heightCm.max),

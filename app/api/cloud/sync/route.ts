@@ -8,7 +8,7 @@ import {
   isMongoConfigured,
 } from "@/lib/server/mongodb";
 import type { HistoryEntry, Profile, UserGoal, ProgressEvaluation } from "@/lib/types";
-import type { PlayerStats } from "@/lib/systemStats";
+import type { AthleteStats } from "@/lib/athleteStats";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,13 +19,14 @@ interface SyncPayload {
   workout?: HistoryEntry;
   goals?: UserGoal[];
   evaluation?: ProgressEvaluation;
-  playerStats?: PlayerStats;
+  athleteStats?: AthleteStats;
+  playerStats?: any;
 }
 
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as SyncPayload;
-    const { userId, profile, workout, goals, evaluation, playerStats } = body;
+    const { userId, profile, workout, goals, evaluation, athleteStats, playerStats } = body;
 
     if (!userId) {
       return NextResponse.json({ ok: false, error: "Missing userId" }, { status: 400 });
@@ -151,35 +152,29 @@ export async function POST(req: Request) {
       synced.push("evaluation");
     }
 
-    // 5. Sync Solo Leveling Player Stats
-    if (playerStats) {
+    // 5. Sync Athletic Performance Stats
+    const statsData = athleteStats || playerStats;
+    if (statsData) {
       const col = getPlayerStatsCollection();
       await col.updateOne(
         { _id: `stats_${userId}` },
         {
           $set: {
             userId,
-            name: playerStats.name,
-            job: playerStats.job,
-            title: playerStats.title,
-            level: playerStats.level,
-            exp: playerStats.exp,
-            expToNext: playerStats.expToNext,
-            rank: playerStats.rank,
-            hp: playerStats.hp,
-            mp: playerStats.mp,
-            fatigue: playerStats.fatigue,
-            attributes: playerStats.attributes,
-            unallocatedPoints: playerStats.unallocatedPoints,
-            shadowArmyUnlocked: playerStats.shadowArmyUnlocked,
-            totalWorkoutsCleared: playerStats.totalWorkoutsCleared,
-            totalSetsCompleted: playerStats.totalSetsCompleted,
+            totalWorkouts: statsData.totalWorkouts ?? statsData.totalWorkoutsCleared ?? 0,
+            totalVolumeKg: statsData.totalVolumeKg ?? 0,
+            totalSets: statsData.totalSets ?? statsData.totalSetsCompleted ?? 0,
+            currentStreak: statsData.currentStreak ?? 0,
+            bestStreak: statsData.bestStreak ?? 0,
+            lastWorkoutDate: statsData.lastWorkoutDate,
+            personalRecords: statsData.personalRecords ?? {},
+            fitnessLevel: statsData.fitnessLevel ?? "beginner",
             updatedAt: new Date().toISOString(),
           },
         },
         { upsert: true }
       );
-      synced.push("playerStats");
+      synced.push("athleteStats");
     }
 
     return NextResponse.json({ ok: true, synced });

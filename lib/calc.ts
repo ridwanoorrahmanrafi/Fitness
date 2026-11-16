@@ -128,3 +128,153 @@ export function cmToFtIn(cm: number): { feet: number; inches: number } {
 export function ftInToCm(feet: number, inches: number): number {
   return Math.round((feet * 12 + inches) * 2.54);
 }
+
+/**
+ * 1-Repetition Maximum (1RM) Estimator.
+ * Computes estimated maximum single-rep load using the validated scientific
+ * Epley and Brzycki formulas.
+ */
+export function oneRepMax(weightKg: number, reps: number): {
+  epley: number;
+  brzycki: number;
+  average: number;
+} {
+  if (weightKg <= 0 || reps <= 0) {
+    return { epley: 0, brzycki: 0, average: 0 };
+  }
+  if (reps === 1) {
+    return { epley: weightKg, brzycki: weightKg, average: weightKg };
+  }
+
+  // Epley: weight * (1 + reps / 30)
+  const epley = Math.round(weightKg * (1 + reps / 30) * 10) / 10;
+
+  // Brzycki: weight * (36 / (37 - reps))
+  const brzycki =
+    reps < 37
+      ? Math.round(weightKg * (36 / (37 - reps)) * 10) / 10
+      : epley;
+
+  const average = Math.round(((epley + brzycki) / 2) * 10) / 10;
+  return { epley, brzycki, average };
+}
+
+export function estimate1Rm(weightKg: number, reps: number): number {
+  return oneRepMax(weightKg, reps).average;
+}
+
+/**
+ * DOTS Formula (International Powerlifting Federation Standard).
+ * Normalizes strength output across diverse bodyweights.
+ */
+export function dotsScore(
+  gender: Gender,
+  bodyweightKg: number,
+  totalWeightLiftedKg: number
+): number {
+  if (bodyweightKg <= 0 || totalWeightLiftedKg <= 0) return 0;
+
+  const w = Math.min(220, Math.max(40, bodyweightKg));
+  const isFemale = gender === "female";
+
+  // Polynomial coefficients
+  const a = isFemale ? -0.0000010706 : -0.000001093;
+  const b = isFemale ? 0.0005158568 : 0.0007391293;
+  const c = isFemale ? -0.1126655495 : -0.1918759221;
+  const d = isFemale ? 13.6175032 : 24.0900756;
+  const e = isFemale ? -57.96288 : -307.75076;
+
+  const denom = a * Math.pow(w, 4) + b * Math.pow(w, 3) + c * Math.pow(w, 2) + d * w + e;
+  if (denom <= 0) return 0;
+
+  const score = (totalWeightLiftedKg * 500) / denom;
+  return Math.round(score * 100) / 100;
+}
+
+/**
+ * Categorizes DOTS score into standardized athletic powerlifting classes.
+ */
+export function strengthClassification(dots: number): string {
+  if (dots < 200) return "Novice";
+  if (dots < 300) return "Intermediate";
+  if (dots < 380) return "Advanced";
+  if (dots < 450) return "Master / Elite";
+  return "International / S-Rank Elite";
+}
+
+/** Precomputed discrete option lists for biometric select dropdowns */
+export const AGE_OPTIONS = Array.from(
+  { length: LIMITS.age.max - LIMITS.age.min + 1 },
+  (_, i) => LIMITS.age.min + i
+); // 14 to 90
+
+export const HEIGHT_CM_OPTIONS = Array.from(
+  { length: 220 - 120 + 1 },
+  (_, i) => 120 + i
+); // 120 to 220 cm
+
+export const HEIGHT_FEET_OPTIONS = [4, 5, 6, 7];
+
+export const HEIGHT_INCHES_OPTIONS = Array.from({ length: 12 }, (_, i) => i); // 0 to 11
+
+export const WEIGHT_KG_OPTIONS = Array.from(
+  { length: 200 - 35 + 1 },
+  (_, i) => 35 + i
+); // 35 to 200 kg
+
+export const WEIGHT_LBS_OPTIONS = Array.from(
+  { length: 440 - 75 + 1 },
+  (_, i) => 75 + i
+); // 75 to 440 lbs
+
+export function toBengaliDigits(val: number | string): string {
+  const bnDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  return String(val).replace(/[0-9]/g, (d) => bnDigits[Number(d)] ?? d);
+}
+
+export function formatAgeOption(age: number, lang: "en" | "bn" = "en"): string {
+  if (lang === "bn") {
+    return `${toBengaliDigits(age)} বছর`;
+  }
+  return `${age} years`;
+}
+
+export function formatHeightCmOption(cm: number, lang: "en" | "bn" = "en"): string {
+  const ftIn = cmToFtIn(cm);
+  if (lang === "bn") {
+    return `${toBengaliDigits(cm)} সেমি (${toBengaliDigits(ftIn.feet)}'${toBengaliDigits(ftIn.inches)}")`;
+  }
+  return `${cm} cm (${ftIn.feet}'${ftIn.inches}")`;
+}
+
+export function formatHeightFtOption(ft: number, lang: "en" | "bn" = "en"): string {
+  if (lang === "bn") {
+    return `${toBengaliDigits(ft)} ফুট`;
+  }
+  return `${ft} ft`;
+}
+
+export function formatHeightInOption(inches: number, lang: "en" | "bn" = "en"): string {
+  if (lang === "bn") {
+    return `${toBengaliDigits(inches)} ইঞ্চি`;
+  }
+  return `${inches} in`;
+}
+
+export function formatWeightKgOption(kg: number, lang: "en" | "bn" = "en"): string {
+  const lbs = kgToLbs(kg);
+  if (lang === "bn") {
+    return `${toBengaliDigits(kg)} কেজি (${toBengaliDigits(lbs)} পাউন্ড)`;
+  }
+  return `${kg} kg (${lbs} lbs)`;
+}
+
+export function formatWeightLbsOption(lbs: number, lang: "en" | "bn" = "en"): string {
+  const kg = lbsToKg(lbs);
+  if (lang === "bn") {
+    return `${toBengaliDigits(lbs)} পাউন্ড (${toBengaliDigits(kg)} কেজি)`;
+  }
+  return `${lbs} lbs (${kg} kg)`;
+}
+
+

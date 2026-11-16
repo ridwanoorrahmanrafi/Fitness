@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldAlert, Scale, Zap, Info, Calendar, Utensils } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 import { playSound } from "@/lib/audio";
 import { DAYS_OF_WEEK } from "@/lib/schedule";
@@ -12,7 +12,19 @@ import {
   cmToFtIn,
   ftInToCm,
   kgToLbs,
-  lbsToKg
+  lbsToKg,
+  AGE_OPTIONS,
+  HEIGHT_CM_OPTIONS,
+  HEIGHT_FEET_OPTIONS,
+  HEIGHT_INCHES_OPTIONS,
+  WEIGHT_KG_OPTIONS,
+  WEIGHT_LBS_OPTIONS,
+  formatAgeOption,
+  formatHeightCmOption,
+  formatHeightFtOption,
+  formatHeightInOption,
+  formatWeightKgOption,
+  formatWeightLbsOption,
 } from "@/lib/calc";
 import {
   type Activity,
@@ -27,6 +39,8 @@ import {
 } from "@/lib/types";
 import { Chip, Sheet } from "./Sheet";
 import { BmiGauge } from "./BmiGauge";
+import { StrengthCalculatorCard } from "./StrengthCalculatorCard";
+import { CyberDropdown } from "./CyberDropdown";
 
 import {
   type Language,
@@ -57,8 +71,8 @@ interface Props {
 }
 
 const inputCls =
-  "input input-bordered input-primary w-full min-h-[44px] bg-[#03081a]/90 px-3 text-sm font-mono text-cyan-100 placeholder:text-cyan-800 focus:outline-none transition-all";
-const labelCls = "mb-1 block text-xs font-mono font-semibold tracking-wider text-cyan-400/80 uppercase";
+  "input input-bordered w-full min-h-[44px] bg-zinc-900/90 border-zinc-700 px-3 text-sm text-white placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none transition-all";
+const labelCls = "mb-1.5 block text-xs font-semibold tracking-wider text-zinc-400 uppercase";
 
 function Segmented<T extends string | number>({
   value,
@@ -77,11 +91,10 @@ function Segmented<T extends string | number>({
           type="button"
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`btn btn-sm min-h-[44px] px-2 text-xs sm:text-sm font-mono tracking-wide transition-all ${
-            value === o.value
-              ? "btn-primary font-bold shadow-[0_0_12px_rgba(6,182,212,0.35)]"
-              : "btn-ghost border border-cyan-500/20 bg-[#03081a]/80 text-zinc-400 hover:border-cyan-500/40 hover:text-cyan-200"
-          }`}
+          className={`btn btn-sm min-h-[44px] px-2 text-xs sm:text-sm font-medium tracking-wide transition-all ${value === o.value
+            ? "bg-emerald-500 text-black font-semibold border-emerald-500 hover:bg-emerald-400 shadow-sm"
+            : "btn-ghost border border-zinc-700/80 bg-zinc-900/80 text-zinc-400 hover:border-zinc-600 hover:text-white"
+            }`}
         >
           {o.label}
         </button>
@@ -103,8 +116,10 @@ export function ProfileSheet({
   onClose,
 }: Props) {
   const [draft, setDraft] = useState<Profile>(profile);
+  const [name, setName] = useState(profile.name ?? "");
   const [currentUnit, setCurrentUnit] = useState<"metric" | "imperial">(unitSystem);
   const [currentLang, setCurrentLang] = useState<Language>(lang);
+  const [entryMode, setEntryMode] = useState<"select" | "manual">("select");
   const [age, setAge] = useState(String(profile.age));
   const [height, setHeight] = useState(String(profile.heightCm));
   const [weight, setWeight] = useState(String(profile.weightKg));
@@ -163,7 +178,7 @@ export function ProfileSheet({
       return;
     }
     onSave(
-      { ...draft, ...numbers, limitations: draft.limitations.trim() },
+      { ...draft, name: name.trim() || undefined, ...numbers, limitations: draft.limitations.trim() },
       "",
       "",
       currentUnit,
@@ -171,8 +186,12 @@ export function ProfileSheet({
     );
   };
 
+  const sheetTitle = firstRun
+    ? (currentLang === "bn" ? "অ্যাথলেট প্রোফাইল সেটআপ (My Details)" : "Athlete Profile Setup (My Details)")
+    : (currentLang === "bn" ? "আমার শারীরিক বিবরণ ও প্রোফাইল" : "Athlete Profile & Biometrics (My Details)");
+
   return (
-    <Sheet open={open} title={firstRun ? t.firstRunTitle : t.profileSheetTitle} onClose={onClose} dismissable={!firstRun}>
+    <Sheet open={open} title={sheetTitle} onClose={onClose} dismissable={!firstRun}>
       <form onSubmit={submit} className="space-y-5">
         {firstRun && (
           <p className="text-sm text-zinc-400">
@@ -181,12 +200,33 @@ export function ProfileSheet({
         )}
 
         <section className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Athlete Name / Alias Field */}
+          <div>
+            <label className={labelCls} htmlFor="athlete-name">
+              {currentLang === "bn" ? "অ্যাথলেট নাম / ডাকনাম (ঐচ্ছিক)" : "Athlete Name / Nickname (Optional)"}
+            </label>
+            <input
+              id="athlete-name"
+              type="text"
+              placeholder={currentLang === "bn" ? "যেমন: রাফি / Alex" : "e.g. Rafi / Alex"}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputCls}
+              maxLength={60}
+            />
+            <span className="mt-1 block text-[11px] text-zinc-500">
+              {currentLang === "bn"
+                ? "আপনার ব্যক্তিগত ওয়ার্কআউট ও ড্যাশবোর্ডে প্রদর্শিত হবে।"
+                : "Personalizes your training dashboard and workout sessions."}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-zinc-800/80">
             <h3 className="text-sm font-semibold text-white">{t.bodyBiometricsTitle}</h3>
             <div className="flex items-center gap-1.5">
               {/* Language Switcher */}
               <div
-                className="flex gap-1 rounded-lg border border-cyan-500/30 bg-[#03081a] p-0.5 text-xs font-mono"
+                className="flex gap-1 rounded-lg border border-zinc-700 bg-zinc-900/90 p-0.5 text-xs"
                 role="group"
                 aria-label="Language selection"
               >
@@ -194,14 +234,13 @@ export function ProfileSheet({
                   type="button"
                   id="btn-profile-lang-bn"
                   onClick={() => {
-                    playSound("system-click");
+                    playSound("click");
                     handleLanguageSwitch("bn");
                   }}
-                  className={`rounded px-2.5 py-1 text-xs font-bold transition-all ${
-                    currentLang === "bn"
-                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
-                      : "text-zinc-400 hover:text-zinc-200"
-                  }`}
+                  className={`rounded px-2.5 py-1 text-xs font-semibold transition-all ${currentLang === "bn"
+                    ? "bg-emerald-500 text-black shadow-sm"
+                    : "text-zinc-400 hover:text-white"
+                    }`}
                   aria-pressed={currentLang === "bn"}
                 >
                   বাংলা
@@ -210,37 +249,66 @@ export function ProfileSheet({
                   type="button"
                   id="btn-profile-lang-en"
                   onClick={() => {
-                    playSound("system-click");
+                    playSound("click");
                     handleLanguageSwitch("en");
                   }}
-                  className={`rounded px-2.5 py-1 text-xs font-bold transition-all ${
-                    currentLang === "en"
-                      ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)] font-black"
-                      : "text-zinc-400 hover:text-zinc-200"
-                  }`}
+                  className={`rounded px-2.5 py-1 text-xs font-semibold transition-all ${currentLang === "en"
+                    ? "bg-emerald-500 text-black shadow-sm"
+                    : "text-zinc-400 hover:text-white"
+                    }`}
                   aria-pressed={currentLang === "en"}
                 >
                   EN
                 </button>
               </div>
 
+              {/* Mode Switcher: Select (Dropdown) vs Manual (Type) */}
+              <div
+                className="flex gap-1 rounded-lg border border-zinc-700 bg-zinc-900/90 p-0.5 text-xs"
+                role="group"
+                aria-label="Input mode selection"
+              >
+                <button
+                  type="button"
+                  id="btn-profile-mode-select"
+                  onClick={() => setEntryMode("select")}
+                  className={`rounded px-2.5 py-1 font-semibold transition-all ${entryMode === "select"
+                    ? "bg-emerald-500 text-black shadow-sm"
+                    : "text-zinc-400 hover:text-white"
+                    }`}
+                  aria-pressed={entryMode === "select"}
+                >
+                  {t.modeSelectOption}
+                </button>
+                <button
+                  type="button"
+                  id="btn-profile-mode-manual"
+                  onClick={() => setEntryMode("manual")}
+                  className={`rounded px-2.5 py-1 font-semibold transition-all ${entryMode === "manual"
+                    ? "bg-emerald-500 text-black shadow-sm"
+                    : "text-zinc-400 hover:text-white"
+                    }`}
+                  aria-pressed={entryMode === "manual"}
+                >
+                  {t.modeManualOption}
+                </button>
+              </div>
+
               {/* Unit System Switcher */}
-              <div className="flex gap-1 rounded-lg border border-cyan-500/30 bg-[#03081a] p-0.5 text-xs font-mono">
+              <div className="flex gap-1 rounded-lg border border-zinc-700 bg-zinc-900/90 p-0.5 text-xs">
                 <button
                   type="button"
                   onClick={() => setCurrentUnit("metric")}
-                  className={`rounded px-2.5 py-1 font-bold transition-all ${
-                    currentUnit === "metric" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
-                  }`}
+                  className={`rounded px-2.5 py-1 font-semibold transition-all ${currentUnit === "metric" ? "bg-emerald-500 text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                    }`}
                 >
                   {t.metricOption}
                 </button>
                 <button
                   type="button"
                   onClick={() => setCurrentUnit("imperial")}
-                  className={`rounded px-2.5 py-1 font-bold transition-all ${
-                    currentUnit === "imperial" ? "bg-cyan-500 text-black shadow-[0_0_8px_rgba(6,182,212,0.6)]" : "text-cyan-400/60 hover:text-cyan-200"
-                  }`}
+                  className={`rounded px-2.5 py-1 font-semibold transition-all ${currentUnit === "imperial" ? "bg-emerald-500 text-black shadow-sm" : "text-zinc-400 hover:text-white"
+                    }`}
                 >
                   {t.imperialOption}
                 </button>
@@ -250,61 +318,175 @@ export function ProfileSheet({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls} htmlFor="gender">{t.sexLabel}</label>
-              <select id="gender" className={inputCls} value={draft.gender} onChange={(e) => set("gender", e.target.value as Gender)}>
-                <option value="male">{t.maleOption}</option>
-                <option value="female">{t.femaleOption}</option>
-                <option value="other">{t.otherSexOption}</option>
-              </select>
+              <CyberDropdown
+                id="gender"
+                label={t.sexLabel}
+                value={draft.gender}
+                options={[
+                  { value: "male", label: t.maleOption },
+                  { value: "female", label: t.femaleOption },
+                  { value: "other", label: t.otherSexOption },
+                ]}
+                onChange={(val) => set("gender", val as Gender)}
+                searchable={false}
+              />
             </div>
             <div>
-              <label className={labelCls} htmlFor="age">{t.ageLabel}</label>
-              <input id="age" className={inputCls} type="number" inputMode="numeric" value={age} onChange={(e) => setAge(e.target.value)} />
+              {entryMode === "select" ? (
+                <CyberDropdown
+                  id="age"
+                  label={t.ageLabel}
+                  value={Math.round(Number(age)) || 24}
+                  options={
+                    Number(age) > 0 && !AGE_OPTIONS.includes(Math.round(Number(age)))
+                      ? [
+                        { value: Math.round(Number(age)), label: `${age} (Custom)` },
+                        ...AGE_OPTIONS.map((a) => ({ value: a, label: formatAgeOption(a, currentLang) })),
+                      ]
+                      : AGE_OPTIONS.map((a) => ({ value: a, label: formatAgeOption(a, currentLang) }))
+                  }
+                  onChange={(val) => setAge(String(val))}
+                  searchable
+                />
+              ) : (
+                <div>
+                  <label className={labelCls} htmlFor="age">{t.ageLabel}</label>
+                  <input id="age" className={inputCls} type="number" inputMode="numeric" value={age} onChange={(e) => setAge(e.target.value)} />
+                </div>
+              )}
             </div>
 
             {currentUnit === "metric" ? (
               <>
                 <div>
-                  <label className={labelCls} htmlFor="height">{t.heightLabelMetric}</label>
-                  <input id="height" className={inputCls} type="number" inputMode="decimal" value={height} onChange={(e) => setHeight(e.target.value)} />
+                  {entryMode === "select" ? (
+                    <CyberDropdown
+                      id="height"
+                      label={t.heightLabelMetric}
+                      value={Math.round(Number(height)) || 175}
+                      options={
+                        Number(height) > 0 && !HEIGHT_CM_OPTIONS.includes(Math.round(Number(height)))
+                          ? [
+                            { value: Math.round(Number(height)), label: `${height} cm (Custom)` },
+                            ...HEIGHT_CM_OPTIONS.map((c) => ({ value: c, label: formatHeightCmOption(c, currentLang) })),
+                          ]
+                          : HEIGHT_CM_OPTIONS.map((c) => ({ value: c, label: formatHeightCmOption(c, currentLang) }))
+                      }
+                      onChange={(val) => {
+                        setHeight(String(val));
+                        const ftIn = cmToFtIn(Number(val) || 175);
+                        setFt(String(ftIn.feet));
+                        setInch(String(ftIn.inches));
+                      }}
+                      searchable
+                    />
+                  ) : (
+                    <div>
+                      <label className={labelCls} htmlFor="height">{t.heightLabelMetric}</label>
+                      <input id="height" className={inputCls} type="number" inputMode="decimal" value={height} onChange={(e) => setHeight(e.target.value)} />
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className={labelCls} htmlFor="weight">{t.weightLabelMetric}</label>
-                  <input id="weight" className={inputCls} type="number" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
+                  {entryMode === "select" ? (
+                    <CyberDropdown
+                      id="weight"
+                      label={t.weightLabelMetric}
+                      value={Math.round(Number(weight)) || 70}
+                      options={
+                        Number(weight) > 0 && !WEIGHT_KG_OPTIONS.includes(Math.round(Number(weight)))
+                          ? [
+                            { value: Math.round(Number(weight)), label: `${weight} kg (Custom)` },
+                            ...WEIGHT_KG_OPTIONS.map((k) => ({ value: k, label: formatWeightKgOption(k, currentLang) })),
+                          ]
+                          : WEIGHT_KG_OPTIONS.map((k) => ({ value: k, label: formatWeightKgOption(k, currentLang) }))
+                      }
+                      onChange={(val) => {
+                        setWeight(String(val));
+                        setLbs(String(kgToLbs(Number(val) || 70)));
+                      }}
+                      searchable
+                    />
+                  ) : (
+                    <div>
+                      <label className={labelCls} htmlFor="weight">{t.weightLabelMetric}</label>
+                      <input id="weight" className={inputCls} type="number" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} />
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
               <>
                 <div>
                   <label className={labelCls}>{t.heightLabelImperial}</label>
-                  <div className="flex gap-1.5">
-                    <input
-                      placeholder="ft"
-                      aria-label="Height in feet"
-                      className={`${inputCls} text-center`}
-                      type="number"
-                      value={ft}
-                      onChange={(e) => handleImperialHeight(e.target.value, inch)}
-                    />
-                    <input
-                      placeholder="in"
-                      aria-label="Height in inches"
-                      className={`${inputCls} text-center`}
-                      type="number"
-                      value={inch}
-                      onChange={(e) => handleImperialHeight(ft, e.target.value)}
-                    />
-                  </div>
+                  {entryMode === "select" ? (
+                    <div className="flex gap-1.5">
+                      <CyberDropdown
+                        aria-label="Height feet"
+                        value={Number(ft) || 5}
+                        options={HEIGHT_FEET_OPTIONS.map((f) => ({ value: f, label: formatHeightFtOption(f, currentLang) }))}
+                        onChange={(newFt) => handleImperialHeight(String(newFt), inch)}
+                        searchable={false}
+                      />
+                      <CyberDropdown
+                        aria-label="Height inches"
+                        value={Number(inch) || 0}
+                        options={HEIGHT_INCHES_OPTIONS.map((i) => ({ value: i, label: formatHeightInOption(i, currentLang) }))}
+                        onChange={(newIn) => handleImperialHeight(ft, String(newIn))}
+                        searchable={false}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex gap-1.5">
+                      <input
+                        placeholder="ft"
+                        aria-label="Height in feet"
+                        className={`${inputCls} text-center`}
+                        type="number"
+                        value={ft}
+                        onChange={(e) => handleImperialHeight(e.target.value, inch)}
+                      />
+                      <input
+                        placeholder="in"
+                        aria-label="Height in inches"
+                        className={`${inputCls} text-center`}
+                        type="number"
+                        value={inch}
+                        onChange={(e) => handleImperialHeight(ft, e.target.value)}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className={labelCls}>{t.weightLabelImperial}</label>
-                  <input
-                    aria-label="Weight in pounds"
-                    className={inputCls}
-                    type="number"
-                    value={lbs}
-                    onChange={(e) => handleImperialWeight(e.target.value)}
-                  />
+                  {entryMode === "select" ? (
+                    <CyberDropdown
+                      id="weightLbs"
+                      label={t.weightLabelImperial}
+                      value={Math.round(Number(lbs)) || 154}
+                      options={
+                        Number(lbs) > 0 && !WEIGHT_LBS_OPTIONS.includes(Math.round(Number(lbs)))
+                          ? [
+                            { value: Math.round(Number(lbs)), label: `${lbs} lbs (Custom)` },
+                            ...WEIGHT_LBS_OPTIONS.map((l) => ({ value: l, label: formatWeightLbsOption(l, currentLang) })),
+                          ]
+                          : WEIGHT_LBS_OPTIONS.map((l) => ({ value: l, label: formatWeightLbsOption(l, currentLang) }))
+                      }
+                      onChange={(val) => handleImperialWeight(String(val))}
+                      searchable
+                    />
+                  ) : (
+                    <div>
+                      <label className={labelCls} htmlFor="weightLbs">{t.weightLabelImperial}</label>
+                      <input
+                        id="weightLbs"
+                        aria-label="Weight in pounds"
+                        className={inputCls}
+                        type="number"
+                        value={lbs}
+                        onChange={(e) => handleImperialWeight(e.target.value)}
+                      />
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -321,50 +503,59 @@ export function ProfileSheet({
 
           {/* Interactive Visual BMI Gauge */}
           {stats && (
-            <div className="rounded-2xl border border-cyan-500/30 bg-[#03081a]/90 p-3.5 space-y-3 font-mono system-scanlines">
+            <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 space-y-3">
               <BmiGauge bmi={stats.bmi} category={stats.bmiCategory} />
 
-              <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-cyan-500/20">
-                <div className="rounded-xl border border-cyan-500/20 bg-black/60 p-2">
+              <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t border-zinc-800">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-2.5">
                   <div className="text-[10px] text-zinc-400 uppercase">{t.restingBmr}</div>
-                  <div className="text-base font-bold text-white">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
+                  <div className="text-base font-bold text-white font-mono">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
-                <div className="rounded-xl border border-cyan-500/20 bg-black/60 p-2">
-                  <div className="text-[10px] text-cyan-300 uppercase">{t.dailyTdee}</div>
-                  <div className="text-base font-black text-cyan-400 text-glow-cyan">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-2.5">
+                  <div className="text-[10px] text-zinc-400 uppercase">{t.dailyTdee}</div>
+                  <div className="text-base font-bold text-emerald-400 font-mono">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
                 </div>
               </div>
 
               {nutrition && (
-                <div className="rounded-xl bg-[#020512] p-2.5 border border-cyan-500/25 text-center">
-                  <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-1.5 font-medium">
+                <div className="rounded-xl bg-zinc-900/80 p-3 border border-zinc-800 text-center">
+                  <div className="flex items-center justify-between text-xs text-zinc-300 mb-1.5 font-medium">
                     <span>{t.targetCalories(draft.goal)}</span>
                     <strong className="text-white font-mono">{nutrition.targetCalories} kcal/day</strong>
                   </div>
-                  <div className="grid grid-cols-3 gap-1.5 text-[11px]">
-                    <div className="bg-black/60 p-1.5 rounded-lg border border-cyan-500/20">
-                      <span className="text-cyan-400 font-bold block">{t.proteinLabel}</span>
+                  <div className="grid grid-cols-3 gap-1.5 text-xs">
+                    <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                      <span className="text-emerald-400 font-semibold block text-[10px]">{t.proteinLabel}</span>
                       <strong className="text-white font-mono">{nutrition.proteinGrams}g</strong>
                     </div>
-                    <div className="bg-black/60 p-1.5 rounded-lg border border-cyan-500/20">
-                      <span className="text-blue-400 font-bold block">{t.carbsLabel}</span>
+                    <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                      <span className="text-sky-400 font-semibold block text-[10px]">{t.carbsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.carbGrams}g</strong>
                     </div>
-                    <div className="bg-black/60 p-1.5 rounded-lg border border-cyan-500/20">
-                      <span className="text-amber-400 font-bold block">{t.fatsLabel}</span>
+                    <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                      <span className="text-amber-400 font-semibold block text-[10px]">{t.fatsLabel}</span>
                       <strong className="text-white font-mono">{nutrition.fatGrams}g</strong>
                     </div>
                   </div>
                 </div>
               )}
+
+              <div className="pt-2">
+                <StrengthCalculatorCard
+                  lang={currentLang}
+                  defaultGender={draft.gender}
+                  defaultBodyweightKg={numbers.weightKg > 0 ? numbers.weightKg : 70}
+                  compact={false}
+                />
+              </div>
             </div>
           )}
 
           {rangeError && <p className="text-xs text-amber-400">{rangeError}</p>}
         </section>
 
-        <section className="space-y-3 font-mono">
-          <h3 className="text-sm font-black text-white uppercase text-glow-cyan">{currentLang === "bn" ? "[ প্রশিক্ষণের প্যারামিটার ]" : "[ TRAINING PARAMETERS ]"}</h3>
+        <section className="space-y-3">
+          <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{currentLang === "bn" ? "প্রশিক্ষণের প্যারামিটার" : "TRAINING PARAMETERS"}</h3>
           <div>
             <span className={labelCls}>{t.levelLabel}</span>
             <Segmented<Level>
@@ -420,21 +611,21 @@ export function ProfileSheet({
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 3, 5])}
-                  className="btn btn-xs uppercase font-mono btn-outline btn-neutral text-cyan-300 hover:text-white"
+                  className="btn btn-xs uppercase border border-zinc-700 bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 hover:text-white"
                 >
                   {t.daysPpl}
                 </button>
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 2, 4, 5])}
-                  className="btn btn-xs uppercase font-mono btn-outline btn-neutral text-cyan-300 hover:text-white"
+                  className="btn btn-xs uppercase border border-zinc-700 bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 hover:text-white"
                 >
                   {t.daysFour}
                 </button>
                 <button
                   type="button"
                   onClick={() => set("workoutDays", [1, 2, 3, 4, 5])}
-                  className="btn btn-xs uppercase font-mono btn-outline btn-neutral text-cyan-300 hover:text-white"
+                  className="btn btn-xs uppercase border border-zinc-700 bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 hover:text-white"
                 >
                   {t.daysFive}
                 </button>
@@ -457,11 +648,10 @@ export function ProfileSheet({
                       }
                       set("workoutDays", Array.from(cur).sort((a, b) => a - b));
                     }}
-                    className={`flex flex-col items-center justify-center rounded-xl p-2 min-h-[50px] border text-center transition-all cursor-pointer font-mono ${
-                      active
-                        ? "border-cyan-400 bg-cyan-950/60 text-cyan-200 font-bold shadow-[0_0_12px_rgba(6,182,212,0.35)] scale-102"
-                        : "border-cyan-500/20 bg-black/60 text-zinc-400 hover:border-cyan-500/40 hover:text-cyan-200"
-                    }`}
+                    className={`flex flex-col items-center justify-center rounded-xl p-2 min-h-[50px] border text-center transition-all cursor-pointer ${active
+                      ? "border-emerald-500/80 bg-emerald-500/10 text-emerald-400 font-bold shadow-sm scale-102"
+                      : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                      }`}
                   >
                     <span className="text-[10px] uppercase font-bold">{d.short}</span>
                     <span className="text-[10px] opacity-75">{currentLang === "bn" ? d.bengaliName.slice(0, 3) : d.short}</span>
@@ -508,12 +698,12 @@ export function ProfileSheet({
           </p>
         </section>
 
-        <section className="space-y-3 font-mono">
-          <h3 className="text-sm font-black text-white uppercase text-glow-cyan">{currentLang === "bn" ? "[ নিরাপত্তা ও পছন্দ ]" : "[ PREFERENCES & SAFETY ]"}</h3>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-cyan-500/30 bg-[#03081a]/80 px-3 text-sm cursor-pointer hover:border-cyan-400/60 transition-colors">
+        <section className="space-y-3">
+          <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">{currentLang === "bn" ? "নিরাপত্তা ও পছন্দ" : "PREFERENCES & SAFETY"}</h3>
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 text-sm cursor-pointer hover:border-zinc-600 transition-colors">
             <input
               type="checkbox"
-              className="checkbox checkbox-primary h-5 w-5"
+              className="checkbox checkbox-success h-5 w-5"
               checked={draft.lowImpact}
               onChange={(e) => set("lowImpact", e.target.checked)}
             />
@@ -532,7 +722,7 @@ export function ProfileSheet({
               id="limits"
               rows={2}
               maxLength={300}
-              className="textarea textarea-bordered textarea-primary w-full bg-[#03081a]/90 font-mono text-sm text-cyan-100"
+              className="textarea textarea-bordered w-full bg-zinc-900/90 border-zinc-700 text-sm text-white placeholder:text-zinc-500 focus:border-emerald-500"
               placeholder={t.limitationsPlaceholder}
               value={draft.limitations}
               onChange={(e) => set("limitations", e.target.value)}
@@ -546,13 +736,15 @@ export function ProfileSheet({
           </div>
         </section>
 
-        {error && <p className="font-mono text-xs text-red-400 [text-shadow:0_0_8px_rgba(248,113,113,0.5)]">{error}</p>}
+        {error && <p className="text-xs text-red-400">{error}</p>}
 
         <button
           type="submit"
-          className="btn btn-primary w-full min-h-[48px] font-mono font-black tracking-widest uppercase text-black shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all active:scale-[0.98]"
+          className="btn w-full min-h-[48px] font-bold text-sm bg-emerald-500 hover:bg-emerald-400 text-black border-none shadow-md transition-all active:scale-[0.98]"
         >
-          {firstRun ? (currentLang === "bn" ? "◆ সিস্টেম সক্রিয় করুন (AWAKEN) ◆" : "◆ CONFIRM & AWAKEN SYSTEM ◆") : t.saveProfileBtn}
+          {firstRun
+            ? (currentLang === "bn" ? "বিবরণ সংরক্ষণ ও ওয়ার্কআউট শুরু করুন" : "Save Details & Start Training")
+            : (currentLang === "bn" ? "শারীরিক বিবরণ সংরক্ষণ করুন (Save Details)" : "Save Details & Apply")}
         </button>
       </form>
     </Sheet>

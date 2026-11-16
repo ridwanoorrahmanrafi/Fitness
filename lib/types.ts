@@ -97,6 +97,7 @@ export interface WarmupMove {
 }
 
 export interface Profile {
+  name?: string;
   gender: Gender;
   age: number;
   heightCm: number;
@@ -117,6 +118,7 @@ export interface Profile {
 }
 
 export const DEFAULT_PROFILE: Profile = {
+  name: "",
   gender: "male",
   age: 25,
   heightCm: 175,
@@ -250,7 +252,7 @@ export interface UserAccount {
   createdAt: number;
   lastActive: number;
   profile?: Profile;
-  supabaseUser?: boolean;
+  cloudUser?: boolean;
 }
 
 export interface GenerateDietRequest {
@@ -311,11 +313,5 @@ export interface ProgressEvaluation {
   aiSummary: string;
   recommendations: string[];
 }
-
-export interface SupabaseConfig {
-  url: string;
-  anonKey: string;
-}
-
 
 

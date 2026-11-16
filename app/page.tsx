@@ -3,7 +3,11 @@
 import {
   Activity,
   AlertTriangle,
-  Bell,
+  ArrowRight,
+  BatteryCharging,
+  Bot,
+  Calendar,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
@@ -11,96 +15,81 @@ import {
   ChevronUp,
   Clock,
   Dumbbell,
+  ExternalLink,
   Flame,
   HeartPulse,
   History as HistoryIcon,
+  Home,
   Info,
   Loader2,
   Menu,
   Package,
+  Pause,
   Play,
+  Plus,
+  RefreshCw,
   RotateCcw,
+  Scale,
+  Search,
+  Send,
   Shield,
+  Sliders,
   SlidersHorizontal,
   Sparkles,
+  Target,
   Timer,
+  TrendingDown,
+  TrendingUp,
   Trophy,
-  Users,
+  User as UserIcon,
   Utensils,
   Volume2,
   VolumeX,
   WifiOff,
   X,
-  Home,
-  User as UserIcon,
-  Target,
-  Database,
-  Cloud,
+  Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { FinishSheet, type FinishResult } from "@/components/FinishSheet";
 import { HistoryView } from "@/components/HistoryView";
 import { ProfileSheet } from "@/components/ProfileSheet";
-import { RestTimer } from "@/components/RestTimer";
 import { BmiGauge } from "@/components/BmiGauge";
 import { DietSheet } from "@/components/DietSheet";
 import { WeeklyScheduleBar } from "@/components/WeeklyScheduleBar";
 import { ExerciseAnimationModal } from "@/components/ExerciseAnimationModal";
 import { ExerciseLibraryModal } from "@/components/ExerciseLibraryModal";
 import { GoalsProgressView } from "@/components/GoalsProgressView";
+import { StrengthCalculatorCard } from "@/components/StrengthCalculatorCard";
+import { PlateCalculatorModal } from "@/components/PlateCalculatorModal";
+import { PersonalRecordsCard } from "@/components/PersonalRecordsCard";
+import { MuscleVolumeHeatmap } from "@/components/MuscleVolumeHeatmap";
+import { WaterTrackerCard } from "@/components/WaterTrackerCard";
 import { LandingPage } from "@/components/LandingPage";
-import { HunterAuthModal } from "@/components/HunterAuthModal";
+import { AuthModal } from "@/components/AuthModal";
+import { authClient } from "@/lib/auth-client";
+import { migrateGuestDataToCloud } from "@/lib/guest-migration";
 import { Chip } from "@/components/Sheet";
-import Image from "next/image";
-import SoloLevelingStatusModal from "@/components/SoloLevelingStatusModal";
-import DailyQuestCard from "@/components/DailyQuestCard";
-import AriseAwakeningOverlay from "@/components/AriseAwakeningOverlay";
-import SystemNotificationToast, { type SystemToast } from "@/components/SystemNotificationToast";
-import { SoloLevelingWelcomeOnboarding } from "@/components/SoloLevelingWelcomeOnboarding";
-import { SoloLevelingWelcomeBackModal } from "@/components/SoloLevelingWelcomeBackModal";
-import { LevelingQuestCarouselCard } from "@/components/LevelingQuestCarouselCard";
-import { LevelingStatisticsView } from "@/components/LevelingStatisticsView";
-import { LevelingInventoryView } from "@/components/LevelingInventoryView";
-import { LevelingStatusView } from "@/components/LevelingStatusView";
-import { AchievementsModal } from "@/components/AchievementsModal";
-import { GuildHubModal } from "@/components/GuildHubModal";
-import { LevelingSettingsDrawer } from "@/components/LevelingSettingsDrawer";
 import { getTodaySchedule } from "@/lib/schedule";
-import {
-  type PlayerStats,
-  type DailySystemQuest,
-  getDefaultPlayerStats,
-  loadPlayerStats,
-  savePlayerStats,
-  addPlayerExp,
-  getTodaySystemQuest,
-  saveTodaySystemQuest,
-} from "@/lib/systemStats";
-import { useCountdown } from "@/hooks/useCountdown";
 import { useStoredState } from "@/hooks/useStoredState";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { playSound, unlockAudio, vibrate } from "@/lib/audio";
-import { alternativesFor, buildOfflinePlan, estimateMinutes, focusLabel, prescribe } from "@/lib/builder";
+import { playSound, unlockAudio, vibrate, playAudioTone } from "@/lib/audio";
+import { alternativesFor, buildOfflinePlan, estimateMinutes, focusLabel } from "@/lib/builder";
 import { kcalEstimate, profileStats, macroTargets } from "@/lib/calc";
-import { WARMUP_MAP, getExercise, hasEquipment } from "@/lib/exercises";
-import { buildFeedback, initSets, lastWeights, normalizeHistory, normalizeSession, totals } from "@/lib/session";
+import { EXERCISES, WARMUP_MAP, getExercise, hasEquipment, MUSCLE_LABEL } from "@/lib/exercises";
+import { getExerciseMedia } from "@/lib/exerciseMedia";
+import { buildFeedback, initSets, lastWeights, lastExerciseSets, normalizeHistory, normalizeSession, totals } from "@/lib/session";
 import { KEYS, makeBackup, mergeHistory, parseProfile, readBackup } from "@/lib/storage";
 import { evaluateUserProgress } from "@/lib/evaluation";
 import { generateInitialGoals, evaluateAndUpdateGoals } from "@/lib/goals";
 import {
-  isSupabaseConfigured,
-  getSupabaseClient,
-  syncWorkoutToSupabase,
-  syncProfileToSupabase,
-  syncGoalsToSupabase,
-  syncEvaluationToSupabase,
-  syncPlayerStatsToSupabase,
-  pullUserCloudData,
-  pullPlayerStatsFromSupabase,
-  pullUserProfileFromSupabase,
-} from "@/lib/supabase";
-import { type Language, TRANSLATIONS, FOCUS_LABELS_I18N } from "@/lib/i18n";
+  syncWorkoutToMongo,
+  syncProfileToMongo,
+  syncGoalsToMongo,
+  syncEvaluationToMongo,
+  pullUserCloudDataFromMongo,
+} from "@/lib/mongodb-sync";
+import { type Language, TRANSLATIONS, FOCUS_LABELS_I18N, GOAL_LABELS_I18N } from "@/lib/i18n";
 import {
   DEFAULT_PROFILE,
   FOCUSES,
@@ -115,10 +104,126 @@ import {
   type UserAccount,
   type UserGoal,
   type ProgressEvaluation,
+  type Muscle,
+  type FocusId,
+  type Equipment,
 } from "@/lib/types";
 
-type View = "today" | "goals" | "history";
+// Supported tabs matching the fitness_workout_tracker design
+type ActiveTab = "today" | "coach" | "exercises" | "nutrition" | "analytics";
 type ActiveView = "landing" | "app";
+
+// Preset AI Coach Prompts from the design template
+const AI_QUICK_PROMPTS = [
+  {
+    label: "⚡ 20-Min Express Burn",
+    prompt: "I only have 20 mins right now, give me a fast high-intensity bodyweight session.",
+    presetFocus: "full" as FocusId,
+    customTitle: "20-Min Express Metabolic Circuit",
+    duration: 20,
+    exercises: [
+      {
+        uid: "exp_1",
+        exerciseId: "pushup",
+        sets: 3,
+        reps: "15 reps",
+        restSeconds: 35,
+        note: "Fast concentric drive, controlled 2s descent.",
+      },
+      {
+        uid: "exp_2",
+        exerciseId: "reverse_lunge",
+        sets: 3,
+        reps: "20 total reps",
+        restSeconds: 35,
+        note: "Stay upright; tap rear knee softly.",
+      },
+      {
+        uid: "exp_3",
+        exerciseId: "plank",
+        sets: 3,
+        reps: "40 seconds",
+        restSeconds: 30,
+        note: "Keep shoulders stacked directly over wrists.",
+      },
+    ],
+  },
+  {
+    label: "🦵 Knee-Friendly Low Impact",
+    prompt: "Give me a knee-friendly low-impact lower body & core session with zero jumping.",
+    presetFocus: "legs_core" as FocusId,
+    customTitle: "Zero-Impact Joint-Safe Lower Body",
+    duration: 28,
+    exercises: [
+      {
+        uid: "kf_1",
+        exerciseId: "glute_bridge",
+        sets: 4,
+        reps: "16 total reps",
+        restSeconds: 50,
+        note: "Zero patellar shear force; squeeze glutes firmly.",
+      },
+      {
+        uid: "kf_2",
+        exerciseId: "bodyweight_squat",
+        sets: 3,
+        reps: "12 - 15 reps",
+        restSeconds: 55,
+        note: "Shins vertical at 90 degrees; press heels into floor.",
+      },
+      {
+        uid: "kf_3",
+        exerciseId: "dead_bug",
+        sets: 3,
+        reps: "12 / side",
+        restSeconds: 40,
+        note: "Keep body in one straight lateral plane.",
+      },
+    ],
+  },
+  {
+    label: "💪 Chest & Triceps Pump",
+    prompt: "Target Chest & Triceps with strict hypertrophy tempo using bodyweight.",
+    presetFocus: "chest_tri" as FocusId,
+    customTitle: "Chest & Triceps Hypertrophy Sculpt",
+    duration: 32,
+    exercises: [
+      {
+        uid: "ct_1",
+        exerciseId: "diamond_pushup",
+        sets: 4,
+        reps: "12 reps",
+        restSeconds: 60,
+        note: "Shift load smoothly across triceps and inner pec fibers.",
+      },
+      {
+        uid: "ct_2",
+        exerciseId: "bench_dip",
+        sets: 3,
+        reps: "12 - 15 reps",
+        restSeconds: 50,
+        note: "Keep elbows pinned inward; extend fully at lockout.",
+      },
+    ],
+  },
+];
+
+interface ChatMessage {
+  id: string;
+  sender: "user" | "ai";
+  text: string;
+  suggestedPlan?: WorkoutPlan | null;
+}
+
+const MUSCLE_FILTER_OPTIONS: { id: string; label: string; labelBn: string; muscles: Muscle[] }[] = [
+  { id: "all", label: "All Muscles", labelBn: "সব মাসল", muscles: [] },
+  { id: "chest", label: "Chest", labelBn: "চেস্ট (বুক)", muscles: ["chest"] },
+  { id: "back", label: "Back", labelBn: "ব্যাক (পিঠ)", muscles: ["back"] },
+  { id: "legs", label: "Legs", labelBn: "লেগস (পা)", muscles: ["quads", "glutes", "hamstrings", "calves"] },
+  { id: "shoulders", label: "Shoulders", labelBn: "শোল্ডার (কাঁধ)", muscles: ["shoulders"] },
+  { id: "arms", label: "Arms", labelBn: "আর্মস (হাত)", muscles: ["biceps", "triceps"] },
+  { id: "core", label: "Core", labelBn: "কোর (অ্যাবস)", muscles: ["core"] },
+];
 
 export default function Page() {
   const [profile, setProfile, profileReady] = useStoredState<Profile | null>(KEYS.profile, null, parseProfile);
@@ -133,22 +238,32 @@ export default function Page() {
   const [accounts, setAccounts] = useStoredState<UserAccount[]>(KEYS.accounts, []);
 
   const tr = TRANSLATIONS[lang] ?? TRANSLATIONS.bn;
+  const isBn = lang === "bn";
 
   const [activeView, setActiveView] = useState<ActiveView>("app");
-  const [view, setView] = useState<View>("today");
-  const [activeTab, setActiveTab] = useState<"home" | "stats" | "inventory" | "status">("home");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("today");
+  const [analyticsSubTab, setAnalyticsSubTab] = useState<"biometrics" | "history" | "records" | "strength" | "goals">("biometrics");
+
+  // Rest Timer State
+  const [timerActive, setTimerActive] = useState(false);
+  const [timerSecondsLeft, setTimerSecondsLeft] = useState(0);
+  const [timerTotalDuration, setTimerTotalDuration] = useState(60);
+  const [activeRestExercise, setActiveRestExercise] = useState("");
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Workout Celebration Banner Modal
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  // Modals & Sheets
   const [showProfile, setShowProfile] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showFinish, setShowFinish] = useState(false);
   const [showDietSheet, setShowDietSheet] = useState(false);
   const [showLibraryModal, setShowLibraryModal] = useState(false);
-  const [showAchievementsModal, setShowAchievementsModal] = useState(false);
-  const [showGuildHubModal, setShowGuildHubModal] = useState(false);
-  const [showSettingsDrawer, setShowSettingsDrawer] = useState(false);
-  const [hapticsOn, setHapticsOn] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
   const [selectedAnimationEx, setSelectedAnimationEx] = useState<Exercise | null>(null);
+  const [plateCalcTarget, setPlateCalcTarget] = useState<{ open: boolean; weight: number; uid?: string } | null>(null);
+
+  // UI state
   const [warmupOpen, setWarmupOpen] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -156,79 +271,55 @@ export default function Page() {
   const [saved, setSaved] = useState<string | null>(null);
   const [nowTick, setNowTick] = useState(() => Date.now());
 
-  // Solo Leveling System State
-  const [playerStats, setPlayerStats] = useState<PlayerStats>(getDefaultPlayerStats);
-  const [dailyQuest, setDailyQuest] = useState<DailySystemQuest>(getTodaySystemQuest);
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [showAriseModal, setShowAriseModal] = useState(false);
-  const [ariseModalText, setAriseModalText] = useState<{ title: string; subtitle: string }>({
-    title: "ARISE",
-    subtitle: "THE SHADOW MONARCH AWAKENS",
-  });
-  const [toasts, setToasts] = useState<SystemToast[]>([]);
+  // Exercise Library search & filters
+  const [exerciseQuery, setExerciseQuery] = useState("");
+  const [selectedMuscleCategory, setSelectedMuscleCategory] = useState("all");
 
-  const addSystemToast = useCallback((title: string, message: string) => {
-    playSound("system-alert");
-    vibrate(25);
-    const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const newToast: SystemToast = { id, title, message };
-    setToasts((prev) => [...prev.slice(-3), newToast]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
-  }, []);
+  // AI Coach Chat Stream State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: "m_init",
+      sender: "ai",
+      text: isBn
+        ? "শুভ দিন! আপনার শরীরচর্চা ও রিকভারি অনুযায়ী আমি প্রস্তুত। ২০ মিনিটের এক্সপ্রেস ওয়ার্কআউট চান, জয়েন্ট-ফ্রেন্ডলি রুটিন, নাকি নির্দিষ্ট কোনো পেশি নিয়ে কাজ করবেন?"
+        : "Morning! Your readiness score is high based on your physical calibration. Need a fast 20-minute express burn, knee-friendly adjustments, or a targeted muscle split?",
+      suggestedPlan: null,
+    },
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [isAiTyping, setIsAiTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Hydrate Solo Leveling System State on client mount
-  useEffect(() => {
-    setPlayerStats(loadPlayerStats());
-    setDailyQuest(getTodaySystemQuest());
-  }, []);
+  const ready = profileReady && sessionReady && historyReady;
+  const needsSetup = ready && !profile;
+  const activeProfile = profile ?? DEFAULT_PROFILE;
 
-  // Formatted date string for Leveling header: "TODAY, 21 OCT"
-  const headerDateString = useMemo(() => {
-    const now = new Date();
-    if (lang === "bn") {
-      const monthNamesBn = ["জানু", "ফেব্রু", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টে", "অক্টো", "নভে", "ডিসে"];
-      return `আজ, ${now.getDate()} ${monthNamesBn[now.getMonth()]}`.toUpperCase();
-    }
-    const monthNamesEn = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-    return `TODAY, ${now.getDate()} ${monthNamesEn[now.getMonth()]}`;
-  }, [lang]);
+  // Goals and evaluation
+  const [goals, setGoals, goalsReady] = useStoredState<UserGoal[]>(KEYS.userGoals, []);
+  const [evaluation, setEvaluation, evalReady] = useStoredState<ProgressEvaluation | null>(KEYS.evaluations, null);
 
-  // URL Hash & return visitor synchronization for intuitive forward/back browser navigation
+  // URL Hash synchronization
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.toLowerCase();
       if (hash === "#landing") {
         setActiveView("landing");
-      } else if (hash === "#onboarding" || hash === "#welcome") {
-        setActiveView("app");
-        setShowWelcomeOnboarding(true);
       } else {
         setActiveView("app");
-        if (hash === "#stats" || hash === "#history" || hash === "#activities") {
-          setActiveTab("stats");
-        } else if (hash === "#inventory" || hash === "#items" || hash === "#shop") {
-          setActiveTab("inventory");
-        } else if (hash === "#status" || hash === "#player" || hash === "#attributes") {
-          setActiveTab("status");
-        } else if (hash === "#achievements") {
-          setShowAchievementsModal(true);
-        } else if (hash === "#guild" || hash === "#guilds") {
-          setShowGuildHubModal(true);
-        } else if (hash === "#settings" || hash === "#drawer") {
-          setShowSettingsDrawer(true);
-        } else if (hash === "#diet") {
-          setShowDietSheet(true);
-        } else if (hash === "#library" || hash === "#exercises" || hash === "#animations") {
-          setShowLibraryModal(true);
+        if (hash === "#coach" || hash === "#ai") {
+          setActiveTab("coach");
+        } else if (hash === "#exercises" || hash === "#library") {
+          setActiveTab("exercises");
+        } else if (hash === "#analytics" || hash === "#stats" || hash === "#progress" || hash === "#history") {
+          setActiveTab("analytics");
+        } else if (hash === "#nutrition" || hash === "#diet") {
+          setActiveTab("nutrition");
+        } else if (hash === "#profile" || hash === "#details" || hash === "#settings") {
+          setShowProfile(true);
         } else if (hash === "#auth" || hash === "#login") {
           setShowAuthModal(true);
-        } else if (hash === "#arise") {
-          setShowAriseModal(true);
         } else {
-          setActiveTab("home");
-          setView("today");
+          setActiveTab("today");
         }
       }
     };
@@ -238,60 +329,64 @@ export default function Page() {
     return () => window.removeEventListener("hashchange", handleHash);
   }, []);
 
-  // Reactive viewport & device layout observer (supports auto-adjust for mobile, tablet, compact laptop, widescreen)
+  // Biometric statistics and nutrition targets
+  const stats = useMemo(() => profileStats(activeProfile), [activeProfile]);
+  const nutrition = useMemo(
+    () => macroTargets(stats.tdee, activeProfile.weightKg, activeProfile.goal),
+    [stats.tdee, activeProfile.weightKg, activeProfile.goal]
+  );
+  const weights = useMemo(() => lastWeights(history), [history]);
+  const previousSetsMap = useMemo(() => lastExerciseSets(history), [history]);
+  const t = useMemo(() => (session ? totals(session) : null), [session]);
+
+  const allDone = useMemo(() => {
+    if (!session) return false;
+    const lists = Object.values(session.sets);
+    if (!lists.length) return false;
+    return lists.every((arr) => arr.length > 0 && arr.every((s) => s.done));
+  }, [session]);
+
+  // Auth & Cloud Sync
   useEffect(() => {
-    const handleViewportResize = () => {
-      const width = window.innerWidth;
-      try {
-        const storedPref = localStorage.getItem("arise_sidebar_collapsed");
-        if (storedPref !== null) {
-          setSidebarCollapsed(storedPref === "true");
-          return;
-        }
-      } catch {}
+    void authClient.getSession().then(({ data: authSession }) => {
+      if (authSession?.user) {
+        const u = authSession.user;
+        const displayName = u.name || u.email?.split("@")[0] || "User";
+        const cloudAccount: UserAccount = {
+          id: u.id,
+          name: displayName,
+          emailOrHandle: u.email,
+          createdAt: u.createdAt ? new Date(u.createdAt).getTime() : Date.now(),
+          lastActive: Date.now(),
+          profile: activeProfile,
+          cloudUser: true,
+        };
+        setActiveUser(cloudAccount);
 
-      // Responsive defaults based on device category:
-      // On compact laptops & tablet landscape (1024px <= width < 1280px): collapse sidebar to prioritize content
-      // On wide screens (width >= 1280px): expand sidebar
-      if (width >= 1024 && width < 1280) {
-        setSidebarCollapsed(true);
-      } else if (width >= 1280) {
-        setSidebarCollapsed(false);
+        try {
+          const rawHist = typeof localStorage !== "undefined" ? localStorage.getItem(KEYS.history) : null;
+          const localHist = rawHist ? JSON.parse(rawHist) : [];
+          if (localHist.length > 0) {
+            void migrateGuestDataToCloud(u.id, {
+              profile: activeProfile,
+              history: localHist,
+              goals,
+              evaluations: evaluation ? [evaluation] : [],
+            });
+          }
+        } catch {}
+
+        void pullUserCloudDataFromMongo(u.id).then(({ workouts, goals: cloudGoals, evaluations: cloudEvals }) => {
+          if (workouts.length > 0) setHistory(workouts);
+          if (cloudGoals.length > 0) setGoals(cloudGoals);
+          if (cloudEvals.length > 0 && cloudEvals[0]) setEvaluation(cloudEvals[0]);
+        });
       }
-    };
-
-    handleViewportResize();
-    window.addEventListener("resize", handleViewportResize);
-    return () => window.removeEventListener("resize", handleViewportResize);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const timer = useCountdown(soundOn);
-  const ready = profileReady && sessionReady && historyReady;
-  const needsSetup = ready && !profile;
-  const activeProfile = profile ?? DEFAULT_PROFILE;
-
-  // Solo Leveling Welcome Experience State
-  const [showWelcomeOnboarding, setShowWelcomeOnboarding] = useState(false);
-  const [showWelcomeBackModal, setShowWelcomeBackModal] = useState(false);
-  const todaySchedule = useMemo(() => getTodaySchedule(activeProfile.workoutDays ?? [1, 3, 5]), [activeProfile.workoutDays]);
-
-  // Solo Leveling System Launch Greeting: First-time Onboarding or Returning Hunter Briefing
-  useEffect(() => {
-    if (!profileReady) return;
-    if (!profile) {
-      setShowWelcomeOnboarding(true);
-    } else {
-      const welcomedThisSession = sessionStorage.getItem("arise_session_welcomed");
-      if (!welcomedThisSession) {
-        sessionStorage.setItem("arise_session_welcomed", "true");
-        setShowWelcomeBackModal(true);
-      }
-    }
-  }, [profileReady, profile]);
-  const [goals, setGoals, goalsReady] = useStoredState<UserGoal[]>(KEYS.userGoals, []);
-  const [evaluation, setEvaluation, evalReady] = useStoredState<ProgressEvaluation | null>(KEYS.evaluations, null);
-
-  // Initialize goals and evaluation when storage is hydrated
+  // Goals and Evaluation auto initialization
   useEffect(() => {
     if (!goalsReady || !evalReady) return;
     const userId = activeUser?.id ?? "default";
@@ -303,552 +398,1859 @@ export default function Page() {
     }
   }, [goalsReady, evalReady, activeProfile, activeUser?.id, goals.length, evaluation, history, setGoals, setEvaluation]);
 
-  // Supabase Auth session listener & automatic bi-directional cloud data synchronization
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-    const supabase = getSupabaseClient();
-    if (!supabase) return;
-
-    // 1. Check existing session on mount
-    void supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      if (currentSession?.user) {
-        const u = currentSession.user;
-        const hunterName =
-          (u.user_metadata?.hunter_name as string) ||
-          u.email?.split("@")[0] ||
-          "Hunter";
-
-        const cloudAccount: UserAccount = {
-          id: u.id,
-          name: hunterName,
-          emailOrHandle: u.email,
-          createdAt: new Date(u.created_at).getTime(),
-          lastActive: Date.now(),
-          profile: activeProfile,
-          supabaseUser: true,
-        };
-        setActiveUser(cloudAccount);
-
-        // Pull full cloud records
-        void pullUserCloudData(u.id).then(({ workouts, goals: cloudGoals, evaluations: cloudEvals }) => {
-          if (workouts.length > 0) setHistory(workouts);
-          if (cloudGoals.length > 0) setGoals(cloudGoals);
-          if (cloudEvals.length > 0 && cloudEvals[0]) setEvaluation(cloudEvals[0]);
-        });
-        void pullPlayerStatsFromSupabase(u.id).then((cloudStats) => {
-          if (cloudStats) {
-            setPlayerStats(cloudStats);
-            savePlayerStats(cloudStats);
-          }
-        });
-        void pullUserProfileFromSupabase(u.id).then((cloudProfile) => {
-          if (cloudProfile?.profile) {
-            setProfile(cloudProfile.profile);
-          }
-        });
-      }
-    });
-
-    // 2. Listen to auth state transitions (Sign in, Sign out, Token Refresh)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if ((event === "SIGNED_IN" || event === "USER_UPDATED") && newSession?.user) {
-        const u = newSession.user;
-        const hunterName =
-          (u.user_metadata?.hunter_name as string) ||
-          u.email?.split("@")[0] ||
-          "Hunter";
-
-        const cloudAccount: UserAccount = {
-          id: u.id,
-          name: hunterName,
-          emailOrHandle: u.email,
-          createdAt: new Date(u.created_at).getTime(),
-          lastActive: Date.now(),
-          profile: activeProfile,
-          supabaseUser: true,
-        };
-        setActiveUser(cloudAccount);
-
-        addSystemToast(
-          lang === "bn" ? "[ ক্লাউড অথেন্টিকেশন : সফল ]" : "[ CLOUD AUTHENTICATION : VERIFIED ]",
-          lang === "bn"
-            ? `স্বাগতম হান্টার ${hunterName}! সুপাবেস ক্লাউডে যুক্ত হয়েছেন।`
-            : `Welcome Hunter ${hunterName}! Synchronized with Supabase Cloud.`
-        );
-
-        // Pull full cloud data
-        const { workouts, goals: cloudGoals, evaluations: cloudEvals } = await pullUserCloudData(u.id);
-        if (workouts.length > 0) setHistory(workouts);
-        if (cloudGoals.length > 0) setGoals(cloudGoals);
-        if (cloudEvals.length > 0 && cloudEvals[0]) setEvaluation(cloudEvals[0]);
-
-        const cloudStats = await pullPlayerStatsFromSupabase(u.id);
-        if (cloudStats) {
-          setPlayerStats(cloudStats);
-          savePlayerStats(cloudStats);
-        } else {
-          void syncPlayerStatsToSupabase(playerStats, u.id);
-        }
-
-        const cloudProfile = await pullUserProfileFromSupabase(u.id);
-        if (cloudProfile?.profile) {
-          setProfile(cloudProfile.profile);
-        } else {
-          void syncProfileToSupabase(activeProfile, u.id);
-        }
-      } else if (event === "SIGNED_OUT") {
-        setActiveUser(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const handleForceCloudSync = useCallback(async () => {
-    if (!isSupabaseConfigured()) return;
-    const userId = activeUser?.id ?? "default";
-    await Promise.all([
-      syncProfileToSupabase(activeProfile, userId),
-      syncPlayerStatsToSupabase(playerStats, userId),
-      goals.length > 0 ? syncGoalsToSupabase(goals, userId) : Promise.resolve(true),
-      evaluation ? syncEvaluationToSupabase(evaluation, userId) : Promise.resolve(true),
-      history[0] ? syncWorkoutToSupabase(history[0], userId) : Promise.resolve(true),
-    ]);
-  }, [activeProfile, activeUser?.id, evaluation, goals, history, playerStats]);
-
-  const stats = useMemo(() => profileStats(activeProfile), [activeProfile]);
-  const nutrition = useMemo(
-    () => macroTargets(stats.tdee, activeProfile.weightKg, activeProfile.goal),
-    [stats.tdee, activeProfile.weightKg, activeProfile.goal],
-  );
-
-  useWakeLock(!!session?.startedAt);
-
-  // Elapsed-time display refresh.
+  // Timer interval for elapsed session minutes
   useEffect(() => {
     if (!session?.startedAt) return;
-    const id = window.setInterval(() => setNowTick(Date.now()), 30_000);
+    const id = window.setInterval(() => setNowTick(Date.now()), 30000);
     return () => window.clearInterval(id);
   }, [session?.startedAt]);
 
-  const weights = useMemo(() => lastWeights(history), [history]);
-  const t = useMemo(() => (session ? totals(session) : null), [session]);
-  const allDone = !!t && t.setsTotal > 0 && t.setsDone === t.setsTotal;
+  const wakeLockActive = Boolean(session?.startedAt);
+  useWakeLock(wakeLockActive);
 
-  // ----- generation -------------------------------------------------------
-
-  const applyPlan = useCallback(
-    (plan: WorkoutPlan, meta: PlanMeta, warning?: string) => {
-      timer.stop();
-      setSession({ plan, meta, warmupDone: {}, sets: initSets(plan) });
-      setNotice(warning ?? null);
-      setError(null);
-      setSaved(null);
-      setView("today");
-    },
-    [setSession, timer],
-  );
-
-  const generate = useCallback(
-    async (p: Profile, opts?: { offline?: boolean }) => {
-      setBusy(true);
-      setError(null);
-      setNotice(null);
-      const feedback = buildFeedback(history);
-      const seed = Math.floor(Math.random() * 1_000_000_000);
-      const meta = profileStats(p);
-      const metaOnly: PlanMeta = { bmi: meta.bmi, bmiCategory: meta.bmiCategory, bmr: meta.bmr, tdee: meta.tdee };
-
-      try {
-        if (opts?.offline) {
-          const { plan, warnings } = buildOfflinePlan(p, feedback, seed);
-          applyPlan(plan, metaOnly, ["Built on this device without AI.", ...warnings].join(" "));
-          return;
-        }
-
-        const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), 55_000);
-        let res: Response;
-        try {
-          const headers: Record<string, string> = {
-            "Content-Type": "application/json",
-            ...(accessCode ? { "x-access-code": accessCode } : {}),
-          };
-          res = await fetch("/api/generate-workout", {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ profile: p, feedback, seed }),
-            signal: controller.signal,
-          });
-        } finally {
-          window.clearTimeout(timeout);
-        }
-
-        const data = (await res.json().catch(() => null)) as GenerateResponse | null;
-        if (!data) {
-          setError(`The server returned an unexpected response (status ${res.status}).`);
-          return;
-        }
-        if (!data.ok) {
-          if (data.code === "unauthorized") {
-            setError("This server needs an access code. Add it in your profile.");
-            setShowProfile(true);
-          } else {
-            setError(data.error);
+  // Rest Timer Countdown logic with Web Audio synth beeps
+  useEffect(() => {
+    if (timerActive && timerSecondsLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimerSecondsLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            setTimerActive(false);
+            if (soundOn) {
+              playAudioTone(1046.5, 0.25);
+              setTimeout(() => playAudioTone(1046.5, 0.35), 280);
+            }
+            return 0;
           }
-          return;
-        }
-        applyPlan(data.plan, data.meta, data.warning);
-      } catch (err) {
-        const aborted = err instanceof DOMException && err.name === "AbortError";
-        setError(aborted ? "The AI coach took too long to answer." : "Could not reach the server. Check your connection.");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [accessCode, applyPlan, history],
-  );
-
-  const saveProfile = (p: Profile, code: string, _key?: string, unit?: "metric" | "imperial", l?: Language) => {
-    const first = !profile;
-    setProfile(p);
-    setAccessCode(code);
-    if (unit !== undefined) setUnitSystem(unit);
-    if (l !== undefined) setLang(l);
-    setShowProfile(false);
-    if (isSupabaseConfigured()) {
-      void syncProfileToSupabase(p, activeUser?.id ?? "default");
+          if (prev <= 4 && soundOn) {
+            playAudioTone(587.33, 0.07);
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
     }
-    if (first) void generate(p);
-  };
-
-  const handleCompleteWelcomeOnboarding = (newProfile: Profile, hunterName: string) => {
-    setProfile(newProfile);
-    setShowProfile(false);
-    setShowWelcomeOnboarding(false);
-    setHasVisited(true);
-    sessionStorage.setItem("arise_session_welcomed", "true");
-
-    const currentStats = loadPlayerStats();
-    const updatedStats: PlayerStats = {
-      ...currentStats,
-      name: hunterName || currentStats.name,
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
     };
-    savePlayerStats(updatedStats);
-    setPlayerStats(updatedStats);
+  }, [timerActive, timerSecondsLeft, soundOn]);
 
-    if (activeUser) {
-      const updatedUser: UserAccount = {
-        ...activeUser,
-        name: hunterName || activeUser.name,
-        profile: newProfile,
-      };
-      setActiveUser(updatedUser);
-      setAccounts((prev) => prev.map((a) => (a.id === updatedUser.id ? updatedUser : a)));
-    } else if (hunterName) {
-      const newAcc: UserAccount = {
-        id: `acc_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        name: hunterName,
-        pin: "1234",
-        createdAt: Date.now(),
-        lastActive: Date.now(),
-        profile: newProfile,
-      };
-      setAccounts((prev) => [...prev, newAcc]);
-      setActiveUser(newAcc);
+  // Celebration trigger when 100% of sets are completed
+  const totalSetsCount = t?.setsTotal ?? 0;
+  const doneSetsCount = t?.setsDone ?? 0;
+  useEffect(() => {
+    if (totalSetsCount > 0 && doneSetsCount === totalSetsCount) {
+      setShowCelebration(true);
+      if (soundOn) {
+        playSound("complete");
+      }
     }
+  }, [doneSetsCount, totalSetsCount, soundOn]);
 
-    if (isSupabaseConfigured()) {
-      const currentId = activeUser?.id ?? "default";
-      void syncProfileToSupabase(newProfile, currentId);
-      void syncPlayerStatsToSupabase(updatedStats, currentId);
-    }
+  // Scroll to bottom of chat when messages update
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages, isAiTyping]);
 
-    void generate(newProfile);
-
-    setActiveView("app");
-    setView("today");
-    window.location.hash = "app";
-
-    addSystemToast(
-      lang === "bn" ? "[ সিস্টেম এক্টিভেটেড ]" : "[ SYSTEM ACTIVATED ]",
-      lang === "bn"
-        ? `স্বাগতম খেলোয়াড় ${hunterName}! আপনার দৈনিক মিশন প্রস্তুত।`
-        : `Welcome Player ${hunterName}! Daily quest initialized.`
-    );
+  // Quick Profile Patch helper
+  const quickPatch = (patch: Partial<Profile>) => {
+    setProfile((prev) => {
+      const base = prev ?? DEFAULT_PROFILE;
+      const next = { ...base, ...patch };
+      if (activeUser?.id) {
+        void syncProfileToMongo(next, activeUser.id);
+      }
+      return next;
+    });
   };
 
-  const quickPatch = (patch: Partial<Profile>) => setProfile({ ...activeProfile, ...patch });
+  const saveProfile = (p: Profile) => {
+    setProfile(p);
+    setShowProfile(false);
+    if (p.name) {
+      setActiveUser((u) =>
+        u
+          ? { ...u, name: p.name! }
+          : {
+              id: "athlete_local",
+              name: p.name!,
+              createdAt: Date.now(),
+              lastActive: Date.now(),
+              profile: p,
+              cloudUser: false,
+            }
+      );
+    }
+    if (activeUser?.id) {
+      void syncProfileToMongo(p, activeUser.id);
+    }
+  };
 
-  // ----- session mutations --------------------------------------------------
+  // Build / Generate Routine
+  const generate = async (p: Profile, opts: { offline?: boolean; focusOverride?: FocusId; equipOverride?: Equipment[] } = {}) => {
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    setSaved(null);
 
-  const patchSession = (fn: (s: Session) => Session) => setSession((prev) => (prev ? fn(prev) : prev));
+    const targetProfile: Profile = {
+      ...p,
+      focus: opts.focusOverride ?? p.focus,
+      equipment: opts.equipOverride ?? p.equipment,
+    };
 
-  const toggleSet = (uid: string, idx: number) => {
-    if (!session || !t) return;
-    const pe = session.plan.exercises.find((e) => e.uid === uid);
-    const ex = pe && getExercise(pe.exerciseId);
-    const wasDone = session.sets[uid]?.[idx]?.done;
-    if (!pe || !ex) return;
-
-    patchSession((s) => ({
-      ...s,
-      startedAt: s.startedAt ?? Date.now(),
-      sets: { ...s.sets, [uid]: s.sets[uid].map((x, i) => (i === idx ? { ...x, done: !x.done } : x)) },
+    const prevFeedback = history.length > 0 ? buildFeedback(history) : undefined;
+    const historyPayload = history.slice(0, 3).map((h) => ({
+      focus: h.focus,
+      minutes: h.minutes,
+      finishedAt: h.finishedAt,
+      exercises: h.exercises.map((e) => ({
+        exerciseId: e.exerciseId,
+        setsDone: e.sets.filter((s) => s.done).length,
+        setsTotal: e.sets.length,
+      })),
     }));
 
-    if (wasDone) return;
-    unlockAudio();
-
-    // Solo Leveling System: Award +25 EXP per completed set
-    const expResult = addPlayerExp(playerStats, 25);
-    setPlayerStats(expResult.stats);
-    addSystemToast(
-      lang === "bn" ? "[ সিস্টেম নোটিফিকেশন : সতর্কবার্তা ]" : "[ SYSTEM NOTIFICATION : ALERT ]",
-      lang === "bn"
-        ? `কমব্যাট সেট সম্পন্ন। +২৫ EXP অর্জিত। (${expResult.stats.exp} / ${expResult.stats.expToNext} EXP)`
-        : `Combat set complete. +25 EXP acquired. (${expResult.stats.exp} / ${expResult.stats.expToNext} EXP)`
-    );
-    if (expResult.leveledUp) {
-      setAriseModalText({
-        title: `LEVEL UP : Lv. ${expResult.stats.level}`,
-        subtitle: `HUNTER RANK: ${expResult.stats.rank} · ALL GAUGES RESTORED`,
+    if (opts.offline) {
+      const { plan: offlinePlan } = buildOfflinePlan(targetProfile, prevFeedback, Date.now());
+      setSession({
+        plan: offlinePlan,
+        startedAt: undefined,
+        sets: initSets(offlinePlan),
+        warmupDone: {},
+        meta: profileStats(targetProfile),
       });
-      setShowAriseModal(true);
+      setBusy(false);
+      return;
     }
 
-    if (t.setsDone + 1 === t.setsTotal) {
-      timer.stop();
-      if (soundOn) playSound("complete");
-      vibrate([100, 50, 100, 50, 200]);
-    } else {
-      if (soundOn) playSound("set");
-      timer.start(pe.restSeconds, `Rest after ${ex.name}`);
+    try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (accessCode) headers["x-access-code"] = accessCode;
+
+      const res = await fetch("/api/generate-workout", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          profile: targetProfile,
+          previous: prevFeedback,
+          history: historyPayload,
+          language: lang,
+        }),
+      });
+
+      const data: GenerateResponse = await res.json();
+      if (!data.ok) {
+        throw new Error(data.error || "Generation failed");
+      }
+
+      setSession({
+        plan: data.plan,
+        startedAt: undefined,
+        sets: initSets(data.plan),
+        warmupDone: {},
+        meta: data.meta,
+      });
+
+      if (data.warning) setNotice(data.warning);
+    } catch {
+      const { plan: offlinePlan } = buildOfflinePlan(targetProfile, prevFeedback, Date.now());
+      setSession({
+        plan: offlinePlan,
+        startedAt: undefined,
+        sets: initSets(offlinePlan),
+        warmupDone: {},
+        meta: profileStats(targetProfile),
+      });
+      setNotice(isBn ? "ইন্টারনেট না থাকায় অফলাইন প্ল্যান তৈরি করা হয়েছে।" : "Built an offline plan based on your profile.");
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handleClaimDailyQuest = () => {
-    const expResult = addPlayerExp(playerStats, 300);
-    const updated: PlayerStats = {
-      ...expResult.stats,
-      unallocatedPoints: expResult.stats.unallocatedPoints + 3,
-      fatigue: 0,
-      hp: { ...expResult.stats.hp, current: expResult.stats.hp.max },
-      mp: { ...expResult.stats.mp, current: expResult.stats.mp.max },
-    };
-    savePlayerStats(updated);
-    setPlayerStats(updated);
-    addSystemToast(
-      lang === "bn" ? "[ কোয়েস্ট পুরষ্কার : সম্পন্ন ]" : "[ QUEST REWARD : CLAIMED ]",
-      lang === "bn"
-        ? "দৈনিক কোয়েস্ট সম্পন্ন! ক্লান্তি ০% এ নামিয়ে আনা হয়েছে। +৩ স্ট্যাট পয়েন্ট যোগ হলো।"
-        : "Daily Quest Cleared! Fatigue purged to 0%. +3 Stat Points awarded."
-    );
-    setAriseModalText({
-      title: "DAILY QUEST REWARD CLAIMED",
-      subtitle: "STATUS RECOVERY 100% · +3 STAT POINTS ACQUIRED",
-    });
-    setShowAriseModal(true);
-  };
-
-  const changeSet = (uid: string, idx: number, patch: Partial<SetLog>) =>
-    patchSession((s) => ({ ...s, sets: { ...s.sets, [uid]: s.sets[uid].map((x, i) => (i === idx ? { ...x, ...patch } : x)) } }));
-
-  const swapExercise = (uid: string, newId: string) => {
-    const next = getExercise(newId);
-    if (!next) return;
-    patchSession((s) => {
-      const i = s.plan.exercises.findIndex((e) => e.uid === uid);
-      if (i < 0) return s;
-      const old = s.plan.exercises[i];
-      const p = prescribe(next, activeProfile, undefined, i);
-      const exercises = s.plan.exercises.map((e, k) => (k === i ? { ...e, exerciseId: newId, reps: p.reps, restSeconds: p.restSeconds, note: undefined } : e));
-      return {
-        ...s,
-        plan: { ...s.plan, exercises },
-        sets: { ...s.sets, [uid]: Array.from({ length: old.sets }, () => ({ done: false })) },
-      };
-    });
-  };
-
-  const toggleWarmup = (moveId: string) =>
-    patchSession((s) => ({ ...s, warmupDone: { ...s.warmupDone, [moveId]: !s.warmupDone[moveId] } }));
+  // Auto initialize default session if empty on first load
+  useEffect(() => {
+    if (ready && !session) {
+      void generate(activeProfile, { offline: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   const startWorkout = () => {
     unlockAudio();
-    patchSession((s) => ({ ...s, startedAt: s.startedAt ?? Date.now() }));
+    playSound("click");
+    vibrate(20);
+    setSession((s) => (s ? { ...s, startedAt: Date.now() } : null));
   };
 
   const discard = () => {
-    if (!window.confirm("Discard this workout? Logged sets will be lost.")) return;
-    timer.stop();
+    const promptText = isBn
+      ? "বর্তমান সেশন বাতিল করবেন? সেভ করা হবে না।"
+      : "Discard the current session? Changes will not be saved.";
+    if (!window.confirm(promptText)) return;
+    playSound("warning");
     setSession(null);
   };
 
-  const finish = (r: FinishResult) => {
-    if (!session || !t) return;
+  const finish = (result: FinishResult) => {
+    if (!session) return;
+    playSound("click");
+    vibrate(40);
+
+    const now = Date.now();
+    const minutes = session.startedAt
+      ? Math.max(1, Math.round((now - session.startedAt) / 60000))
+      : estimateMinutes(session.plan);
+    const statsCalc = totals(session);
+
     const entry: HistoryEntry = {
-      id: session.plan.id,
-      finishedAt: Date.now(),
+      id: `session_${now}`,
+      finishedAt: now,
       title: session.plan.title,
       focus: session.plan.focus,
-      source: session.plan.source,
-      minutes: r.minutes,
-      setsDone: t.setsDone,
-      setsTotal: t.setsTotal,
-      volumeKg: t.volumeKg,
-      kcalEstimate: r.kcal,
-      difficulty: r.difficulty,
-      soreMuscles: r.soreMuscles,
-      notes: r.notes || undefined,
-      exercises: session.plan.exercises.map((e) => ({ exerciseId: e.exerciseId, sets: session.sets[e.uid] ?? [] })),
+      minutes,
+      difficulty: result.difficulty,
+      soreMuscles: [],
+      notes: result.notes,
+      volumeKg: statsCalc.volumeKg,
+      setsDone: statsCalc.setsDone,
+      setsTotal: statsCalc.setsTotal,
+      source: session.plan.source ?? "ai",
+      kcalEstimate: kcalEstimate(activeProfile.weightKg, minutes),
+      exercises: session.plan.exercises.map((pe) => ({
+        exerciseId: pe.exerciseId,
+        sets: session.sets[pe.uid] ?? [],
+      })),
     };
-    const newHistory = mergeHistory(history, [entry]);
-    setHistory(newHistory);
 
-    // Continuous progress evaluation & adaptive goals progression
+    const newHistory = [entry, ...history];
+    setHistory(newHistory);
+    setSession(null);
+    setShowFinish(false);
+    setShowCelebration(false);
+    setSaved(isBn ? "ওয়ার্কআউট সফলভাবে সংরক্ষিত হয়েছে!" : "Workout logged successfully!");
+
     const userId = activeUser?.id ?? "default";
     const newEval = evaluateUserProgress(newHistory, activeProfile, userId);
     setEvaluation(newEval);
-
     const { updatedGoals } = evaluateAndUpdateGoals(goals, newHistory, activeProfile, userId);
     setGoals(updatedGoals);
 
-    // Solo Leveling System: Dungeon Clear +250 EXP!
-    const dungeonExp = addPlayerExp(playerStats, 250);
-    const updatedStats: PlayerStats = {
-      ...dungeonExp.stats,
-      totalWorkoutsCleared: (dungeonExp.stats.totalWorkoutsCleared || 0) + 1,
-      totalSetsCompleted: (dungeonExp.stats.totalSetsCompleted || 0) + t.setsDone,
-    };
-    savePlayerStats(updatedStats);
-    setPlayerStats(updatedStats);
-
-    // Sync to Supabase cloud database if configured
-    if (isSupabaseConfigured()) {
-      void syncWorkoutToSupabase(entry, userId);
-      void syncProfileToSupabase(activeProfile, userId);
-      void syncGoalsToSupabase(updatedGoals, userId);
-      void syncEvaluationToSupabase(newEval, userId);
-      void syncPlayerStatsToSupabase(updatedStats, userId);
+    if (activeUser?.id) {
+      void syncWorkoutToMongo(entry, userId);
+      void syncGoalsToMongo(updatedGoals, userId);
+      void syncEvaluationToMongo(newEval, userId);
     }
-    addSystemToast(
-      lang === "bn" ? "[ অন্ধকূপ জয় : ডানজন ক্লিয়ার ]" : "[ DUNGEON CLEARED : CONQUERED ]",
-      lang === "bn"
-        ? "ডানজন বস পরাজিত! +২৫০ EXP এবং ক্লিয়ার রিওয়ার্ড লিপিবদ্ধ হয়েছে।"
-        : "Dungeon Boss Defeated! +250 EXP and clear rewards recorded."
-    );
-
-    if (dungeonExp.leveledUp) {
-      setAriseModalText({
-        title: `DUNGEON CLEARED · LEVEL UP!`,
-        subtitle: `NEW LEVEL: Lv. ${updatedStats.level} · RANK: ${updatedStats.rank}`,
-      });
-      setShowAriseModal(true);
-    }
-
-    timer.stop();
-    setSession(null);
-    setShowFinish(false);
-    setSaved(
-      r.difficulty === "too_hard"
-        ? "Saved. Your next plan will be lighter."
-        : r.difficulty === "too_easy"
-          ? "Saved. Your next plan will push a little harder."
-          : "Saved. Your next plan will keep a similar load.",
-    );
   };
 
-  // ----- backup -------------------------------------------------------------
+  const toggleSet = (uid: string, idx: number, restSeconds = 60, exName = "") => {
+    setSession((s) => {
+      if (!s) return null;
+      const cur = s.sets[uid] ?? [];
+      const willBeDone = !cur[idx]?.done;
+      if (willBeDone) {
+        playSound("set");
+        vibrate([30, 50, 30]);
+        if (restSeconds > 0) {
+          unlockAudio();
+          setTimerTotalDuration(restSeconds);
+          setTimerSecondsLeft(restSeconds);
+          setActiveRestExercise(exName);
+          setTimerActive(true);
+        }
+      } else {
+        playSound("click");
+        vibrate(15);
+      }
+      const updated = cur.map((set, i) => (i === idx ? { ...set, done: !set.done } : set));
+      return { ...s, sets: { ...s.sets, [uid]: updated } };
+    });
+  };
 
+  const changeSet = (uid: string, idx: number, patch: Partial<SetLog>) => {
+    setSession((s) => {
+      if (!s) return null;
+      const cur = s.sets[uid] ?? [];
+      const updated = cur.map((set, i) => (i === idx ? { ...set, ...patch } : set));
+      return { ...s, sets: { ...s.sets, [uid]: updated } };
+    });
+  };
+
+  const swapExercise = (uid: string, newExerciseId: string) => {
+    setSession((s) => {
+      if (!s) return null;
+      const target = getExercise(newExerciseId);
+      if (!target) return s;
+
+      const exercises = s.plan.exercises.map((pe) => {
+        if (pe.uid !== uid) return pe;
+        return {
+          ...pe,
+          exerciseId: target.id,
+          reps: target.timed ? "30-45s" : pe.reps,
+          note: undefined,
+        };
+      });
+
+      const updatedPlan = { ...s.plan, exercises };
+      const newSets = target.timed
+        ? Array.from({ length: 3 }, () => ({ reps: 0, done: false }))
+        : Array.from({ length: 3 }, () => ({ reps: 10, done: false }));
+
+      return {
+        ...s,
+        plan: updatedPlan,
+        sets: { ...s.sets, [uid]: newSets },
+      };
+    });
+  };
+
+  const toggleWarmup = (moveId: string) => {
+    playSound("click");
+    vibrate(15);
+    setSession((s) => {
+      if (!s) return null;
+      const cur = Boolean(s.warmupDone[moveId]);
+      return { ...s, warmupDone: { ...s.warmupDone, [moveId]: !cur } };
+    });
+  };
+
+  // AI Coach Prompt Send Handler
+  const handleSendCoachPrompt = (promptText: string, presetObj: (typeof AI_QUICK_PROMPTS)[number] | null = null) => {
+    const trimmed = promptText.trim();
+    if (!trimmed) return;
+
+    const userMsg: ChatMessage = {
+      id: `u_${Date.now()}`,
+      sender: "user",
+      text: trimmed,
+    };
+
+    setChatMessages((prev) => [...prev, userMsg]);
+    setChatInput("");
+    setIsAiTyping(true);
+
+    setTimeout(() => {
+      let generatedPlan: WorkoutPlan;
+      let replyText = "";
+
+      if (presetObj) {
+        generatedPlan = {
+          id: `preset_${Date.now()}`,
+          createdAt: Date.now(),
+          title: presetObj.customTitle,
+          focus: presetObj.presetFocus,
+          coachNote: `Tailored to your request: "${presetObj.label}". Keep rest crisp to maintain metabolic intensity.`,
+          warmup: [
+            { moveId: "jumping_jacks", seconds: 60 },
+            { moveId: "arm_circles", seconds: 45 },
+          ],
+          exercises: presetObj.exercises.map((ex) => ({
+            uid: ex.uid,
+            exerciseId: ex.exerciseId,
+            sets: ex.sets,
+            reps: ex.reps,
+            restSeconds: ex.restSeconds,
+            note: ex.note,
+          })),
+          source: "ai",
+        };
+        replyText = isBn
+          ? `আপনার বিএমআই (${stats.bmi}) অনুযায়ী **${presetObj.customTitle}** (${presetObj.duration} মিনিট) প্রস্তুত করা হয়েছে। সরাসরি আজকের ওয়ার্কআউটে লোড করতে নিচের বাটনে চাপ দিন।`
+          : `I've built your **${presetObj.customTitle}** (${presetObj.duration} mins) calibrated for your ${stats.bmi} BMI. Tap below to load it straight into your Today tracker.`;
+      } else {
+        const lower = trimmed.toLowerCase();
+        const inferredFocus: FocusId = lower.includes("chest") || lower.includes("push")
+          ? "chest_tri"
+          : lower.includes("back") || lower.includes("pull")
+          ? "back_bi"
+          : lower.includes("leg") || lower.includes("knee") || lower.includes("squat")
+          ? "legs_core"
+          : "full";
+
+        const { plan: offlinePlan } = buildOfflinePlan({ ...activeProfile, focus: inferredFocus }, undefined, Date.now());
+        generatedPlan = {
+          ...offlinePlan,
+          title: `AI Custom: ${focusLabel(inferredFocus)} Protocol`,
+          coachNote: `Generated from your prompt: "${trimmed}". Calibrated for ${activeProfile.gender} profile (${stats.bmi} BMI).`,
+        };
+
+        replyText = isBn
+          ? `আপনার শারীরিক তথ্য (${stats.bmi} BMI) ও উপলব্ধ সরঞ্জাম বিবেচনা করে আমি একটি লক্ষভিত্তিক **${focusLabel(inferredFocus)}** রুটিন সাজিয়েছি। এখনই শুরু করতে চান?`
+          : `Got it! Based on your biometrics (${stats.bmi} BMI) and available gear, I structured a targeted **${focusLabel(inferredFocus)}** routine. Ready to start?`;
+      }
+
+      const aiMsg: ChatMessage = {
+        id: `ai_${Date.now()}`,
+        sender: "ai",
+        text: replyText,
+        suggestedPlan: generatedPlan,
+      };
+
+      setChatMessages((prev) => [...prev, aiMsg]);
+      setIsAiTyping(false);
+    }, 600);
+  };
+
+  // Push Suggested AI Workout directly to Today Tab
+  const deployPlanToToday = (planToDeploy: WorkoutPlan) => {
+    setSession({
+      plan: planToDeploy,
+      startedAt: undefined,
+      sets: initSets(planToDeploy),
+      warmupDone: {},
+      meta: profileStats(activeProfile),
+    });
+    setTimerActive(false);
+    setTimerSecondsLeft(0);
+    setShowCelebration(false);
+    setActiveTab("today");
+    if (soundOn) playAudioTone(784, 0.14);
+  };
+
+  // Filtered Exercises for the Library Tab
+  const filteredLibraryExercises = useMemo(() => {
+    return EXERCISES.filter((ex) => {
+      if (exerciseQuery.trim()) {
+        const q = exerciseQuery.toLowerCase();
+        const matchesName = ex.name.toLowerCase().includes(q);
+        const matchesMuscles = ex.muscles.some((m) =>
+          (MUSCLE_LABEL[m] ?? m).toLowerCase().includes(q)
+        );
+        const matchesEquip = ex.requires.some((r) => r.toLowerCase().includes(q));
+        if (!matchesName && !matchesMuscles && !matchesEquip) return false;
+      }
+      if (selectedMuscleCategory !== "all") {
+        const filter = MUSCLE_FILTER_OPTIONS.find((f) => f.id === selectedMuscleCategory);
+        if (filter && filter.muscles.length > 0) {
+          const hasMuscle = ex.muscles.some((m) => filter.muscles.includes(m));
+          if (!hasMuscle) return false;
+        }
+      }
+      return true;
+    });
+  }, [exerciseQuery, selectedMuscleCategory]);
+
+  // Backup actions
   const exportData = () => {
-    const blob = new Blob([JSON.stringify(makeBackup(profile, history), null, 2)], { type: "application/json" });
+    const backup = makeBackup(profile, history);
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `arise-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `arise-fitness-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const importData = (text: string): string => {
     const b = readBackup(text);
-    if (!b) return "That file is not an Arise Coach backup.";
+    if (!b) return "Invalid backup file.";
     setHistory((h) => mergeHistory(h, b.history));
     if (b.profile && !profile) setProfile(b.profile);
     return `Imported ${b.history.length} session${b.history.length === 1 ? "" : "s"}.`;
   };
 
-  // ----- render -------------------------------------------------------------
+  // Metrics for Weight Goal Ring and Spectrum
+  const targetWeight = activeProfile.goal === "endurance" ? activeProfile.weightKg - 4 : activeProfile.goal === "muscle" ? activeProfile.weightKg + 4 : activeProfile.weightKg;
+  const startWeightRef = activeProfile.weightKg + (activeProfile.goal === "endurance" ? 4 : -3);
+  const weightDeltaSoFar = Math.abs(startWeightRef - activeProfile.weightKg);
+  const totalGoalDelta = Math.max(1, Math.abs(startWeightRef - targetWeight));
+  const goalProgressPct = Math.min(100, Math.max(10, Math.round((weightDeltaSoFar / totalGoalDelta) * 100)));
+  const bmiMarkerPct = Math.min(96, Math.max(4, ((stats.bmi - 15) / 20) * 100));
 
+  const plan = session?.plan;
+  const elapsedMin = session?.startedAt ? Math.max(0, Math.round((nowTick - session.startedAt) / 60000)) : null;
+  const sessionCompletionPct = totalSetsCount > 0 ? Math.round((doneSetsCount / totalSetsCount) * 100) : 0;
+
+  // View router
   if (activeView === "landing") {
     return (
-      <div className="min-h-screen bg-[#020510] text-cyan-100 system-grid-bg">
-        <LandingPage
-          lang={lang}
-          userName={activeUser?.name}
-          onLanguageToggle={() => setLang(lang === "bn" ? "en" : "bn")}
-          onLaunchApp={() => {
-            setHasVisited(true);
-            setActiveView("app");
-            window.location.hash = "app";
-            if (!profile) {
-              setShowWelcomeOnboarding(true);
-            }
-          }}
-          onOpenAuth={() => setShowAuthModal(true)}
-          onOpenDiet={() => setShowDietSheet(true)}
-          onOpenExercises={() => setShowLibraryModal(true)}
-        />
+      <LandingPage
+        lang={lang}
+        userName={activeUser?.name}
+        onLanguageToggle={() => setLang(lang === "bn" ? "en" : "bn")}
+        onLaunchApp={() => {
+          setHasVisited(true);
+          setActiveView("app");
+          window.location.hash = "app";
+          if (!profile) {
+            setShowProfile(true);
+          }
+        }}
+        onOpenAuth={() => setShowAuthModal(true)}
+        onOpenDiet={() => setShowDietSheet(true)}
+        onOpenExercises={() => setShowLibraryModal(true)}
+      />
+    );
+  }
 
-        <SoloLevelingWelcomeOnboarding
-          open={showWelcomeOnboarding}
-          initialProfile={activeProfile}
-          initialName={activeUser?.name || playerStats.name}
+  if (!ready) {
+    return (
+      <main className="flex min-h-screen items-center justify-center text-sm text-zinc-500 bg-[#09090B]" aria-busy="true">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin text-lime-400" /> Loading Arise Fitness...
+      </main>
+    );
+  }
+
+  return (
+    <div className="min-h-screen w-full bg-black text-zinc-100 flex items-center justify-center sm:p-4 md:p-6 font-sans antialiased selection:bg-lime-400 selection:text-zinc-950">
+      {/* Sleek Mobile Phone Viewport Frame on Desktop / Full-Bleed on Mobile */}
+      <div className="relative w-full sm:w-[440px] md:w-[480px] lg:w-[520px] h-[100dvh] sm:h-[890px] bg-[#09090B] sm:rounded-[44px] sm:border-[6px] sm:border-zinc-800/90 sm:shadow-[0_0_80px_rgba(163,230,53,0.12)] flex flex-col overflow-hidden">
+        
+        {/* Simulated Mobile Top Island on Desktop Frame */}
+        <div className="hidden sm:flex items-center justify-between px-7 pt-3 pb-1 text-[11px] font-semibold text-zinc-400 bg-[#09090B] select-none shrink-0">
+          <span>9:41</span>
+          <div className="w-24 h-5 bg-black rounded-full border border-zinc-800/80 flex items-center justify-end px-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500/80" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-lime-400 font-bold">5G</span>
+            <BatteryCharging className="w-4 h-4 text-zinc-300" />
+          </div>
+        </div>
+
+        {/* Top Sticky Header */}
+        <header className="px-4 pt-3 pb-2.5 bg-[#09090B]/95 backdrop-blur-md border-b border-zinc-800/70 shrink-0 z-20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-lime-400 to-emerald-500 flex items-center justify-center shadow-md shadow-lime-400/20 shrink-0">
+                <Flame className="w-5 h-5 text-zinc-950 stroke-[2.5]" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-extrabold tracking-tight text-white">
+                    ARISE AI
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-lime-400/15 text-lime-400 border border-lime-400/30">
+                    PWA
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-400 truncate">
+                  {activeTab === "today"
+                    ? (isBn ? "স্মার্ট কমান্ড সেন্টার" : "Adaptive Command Center")
+                    : activeTab === "coach"
+                    ? (isBn ? "এআই রুটিন আর্কিটেক্ট" : "Neural Routine Architect")
+                    : activeTab === "analytics"
+                    ? (isBn ? "বায়োমেট্রিক্স ও অ্যানালিটিক্স" : "Biometrics & Telemetry")
+                    : activeTab === "nutrition"
+                    ? (isBn ? "পুষ্টি ও ডায়েট প্ল্যানার" : "Nutrition & Diet Planner")
+                    : (isBn ? "ব্যায়াম ও টেকনিক লাইব্রেরি" : "Movement & Form Library")}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {/* Live BMI Quick Badge */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("analytics");
+                  setAnalyticsSubTab("biometrics");
+                }}
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs hover:border-zinc-700 transition-colors cursor-pointer"
+                title="View BMI & Biometrics Telemetry"
+              >
+                <HeartPulse className="w-3.5 h-3.5 text-lime-400" />
+                <span className="font-bold text-white">{stats.bmi}</span>
+                <span className="text-[10px] text-zinc-400">BMI</span>
+              </button>
+
+              {/* Audio Feedback Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  unlockAudio();
+                  setSoundOn(!soundOn);
+                }}
+                aria-label="Toggle Sound"
+                className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform cursor-pointer"
+              >
+                {soundOn ? (
+                  <Volume2 className="w-4 h-4 text-lime-400" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-zinc-500" />
+                )}
+              </button>
+
+              {/* Language Switch */}
+              <button
+                type="button"
+                onClick={() => setLang(lang === "bn" ? "en" : "bn")}
+                className="px-2 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] font-bold text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                title="Toggle Language / ভাষা পরিবর্তন"
+              >
+                {lang === "bn" ? "বাং" : "EN"}
+              </button>
+
+              {/* My Details Modal Button */}
+              <button
+                type="button"
+                id="btn-header-my-details"
+                onClick={() => setShowProfile(true)}
+                className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-lime-400/50 transition-colors cursor-pointer"
+                title={isBn ? "আমার শারীরিক বিবরণ" : "My Details"}
+              >
+                <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
+              </button>
+
+              {/* Account Modal Button */}
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(true)}
+                className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                title="Account & Cloud Sync"
+              >
+                <UserIcon className="w-4 h-4 text-zinc-400" />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Screen Body */}
+        <main className="flex-1 overflow-y-auto px-4 pt-3 pb-36 space-y-4 scroll-smooth no-scrollbar">
+          {error && (
+            <div role="alert" className="rounded-2xl border border-red-900/60 bg-red-950/40 p-3.5 text-xs text-red-200 flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p>{error}</p>
+              </div>
+              <button onClick={() => setError(null)} className="text-red-400 hover:text-white">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {saved && (
+            <div role="status" className="flex items-center gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-3 text-xs font-semibold text-emerald-300">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-lime-400" /> {saved}
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB 1: TODAY (AI COMMAND CENTER & ACTIVE WORKOUT)         */}
+          {/* ========================================================= */}
+          {activeTab === "today" && (
+            <>
+              {/* Biometric Readiness & Target Weight Ring Strip */}
+              <section className="grid grid-cols-2 gap-2.5">
+                <div className="rounded-2xl bg-[#18181B] border border-zinc-800/80 p-3 flex items-center gap-3">
+                  {/* SVG Readiness Ring */}
+                  <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
+                    <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="14"
+                        fill="none"
+                        stroke="#27272a"
+                        strokeWidth="3.5"
+                      />
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="14"
+                        fill="none"
+                        stroke="#a3e635"
+                        strokeWidth="3.5"
+                        strokeDasharray="88"
+                        strokeDashoffset={88 - (88 * 92) / 100}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="absolute text-[11px] font-extrabold text-white">
+                      92%
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold truncate">
+                      AI Readiness
+                    </div>
+                    <div className="text-xs font-bold text-lime-400 truncate">
+                      Prime Output
+                    </div>
+                    <div className="text-[10px] text-zinc-500 truncate">
+                      {stats.tdee} kcal TDEE
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => {
+                    setActiveTab("analytics");
+                    setAnalyticsSubTab("biometrics");
+                  }}
+                  className="rounded-2xl bg-[#18181B] border border-zinc-800/80 p-3 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
+                >
+                  {/* SVG Weight Goal Ring */}
+                  <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
+                    <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="14"
+                        fill="none"
+                        stroke="#27272a"
+                        strokeWidth="3.5"
+                      />
+                      <circle
+                        cx="18"
+                        cy="18"
+                        r="14"
+                        fill="none"
+                        stroke="#10b981"
+                        strokeWidth="3.5"
+                        strokeDasharray="88"
+                        strokeDashoffset={88 - (88 * goalProgressPct) / 100}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="absolute text-[10px] font-extrabold text-white">
+                      {goalProgressPct}%
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold truncate">
+                      Goal Weight
+                    </div>
+                    <div className="text-xs font-bold text-white truncate">
+                      {activeProfile.weightKg} → {targetWeight}kg
+                    </div>
+                    <div className="text-[10px] text-emerald-400 truncate">
+                      {stats.bmiCategory} ({stats.bmi})
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* AI Adaptive Coach Hero Card */}
+              <section className="rounded-3xl bg-gradient-to-b from-zinc-900 to-[#18181B] border border-zinc-800/90 p-4 shadow-lg relative overflow-hidden">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-lime-400/15 text-lime-400 border border-lime-400/30">
+                    <Sparkles className="w-3 h-3" /> AI Adaptive Coach
+                  </span>
+                  <span className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                    {plan ? `~${estimateMinutes(plan)}m` : `${activeProfile.minutes}m`}
+                  </span>
+                </div>
+
+                <h1 className="text-lg font-extrabold text-white tracking-tight leading-snug">
+                  {plan?.title || `${focusLabel(activeProfile.focus)} Adaptive Protocol`}
+                </h1>
+
+                <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
+                  {plan?.coachNote || (isBn
+                    ? "আপনার শারীরিক বিএমআই ও লক্ষ্য অনুযায়ী মুভমেন্ট ক্যালিব্রেট করা হয়েছে। কঠোর ফর্ম ও টেম্পো বজায় রাখুন।"
+                    : "Calibrated with progressive upper-lower mechanical tension. Focus on strict eccentric control on every rep.")}
+                </p>
+
+                {/* Target Split Quick Filter Chips */}
+                <div className="mt-3.5">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
+                    Target Body Split
+                  </div>
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                    {FOCUSES.map((f) => {
+                      const active = activeProfile.focus === f.id;
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => {
+                            quickPatch({ focus: f.id });
+                            void generate(activeProfile, { focusOverride: f.id });
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
+                            active
+                              ? "bg-lime-400 text-zinc-950 shadow-sm shadow-lime-400/30"
+                              : "bg-zinc-950 text-zinc-400 border border-zinc-800 hover:text-zinc-200"
+                          }`}
+                        >
+                          {FOCUS_LABELS_I18N[lang]?.[f.id] ?? f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Available Equipment Quick Chips */}
+                <div className="mt-2.5">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
+                    Equipment Access
+                  </div>
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                    {([
+                      { id: "bodyweight", label: "Bodyweight Only" },
+                      { id: "dumbbells", label: "Dumbbells" },
+                      { id: "pullup_bar", label: "Pull-up Bar" },
+                      { id: "barbell", label: "Barbell & Gym" },
+                    ] as const).map((eq) => {
+                      const active = eq.id === "bodyweight"
+                        ? activeProfile.equipment.length === 0
+                        : activeProfile.equipment.includes(eq.id as Equipment);
+                      return (
+                        <button
+                          key={eq.id}
+                          type="button"
+                          onClick={() => {
+                            let nextEquip: Equipment[];
+                            if (eq.id === "bodyweight") {
+                              nextEquip = [];
+                            } else {
+                              const targetId = eq.id as Equipment;
+                              nextEquip = active
+                                ? activeProfile.equipment.filter((i) => i !== targetId)
+                                : [...activeProfile.equipment, targetId];
+                            }
+                            quickPatch({ equipment: nextEquip });
+                            void generate(activeProfile, { equipOverride: nextEquip });
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap border transition-all active:scale-95 cursor-pointer ${
+                            active
+                              ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
+                              : "bg-zinc-950/80 border-zinc-800 text-zinc-500"
+                          }`}
+                        >
+                          {eq.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Live Session Completion Meter */}
+                <div className="mt-3.5 pt-3 border-t border-zinc-800/80">
+                  <div className="flex items-center justify-between text-[11px] mb-1.5">
+                    <span className="text-zinc-400 font-medium">
+                      Session Sets Completed
+                    </span>
+                    <span className="font-bold text-lime-400">
+                      {doneSetsCount}/{totalSetsCount} Sets ({sessionCompletionPct}%)
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-lime-400 to-emerald-500 rounded-full transition-all duration-300"
+                      style={{ width: `${sessionCompletionPct}%` }}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* Warm-Up Accordion */}
+              {plan?.warmup && plan.warmup.length > 0 && session && (
+                <section className="rounded-2xl border border-zinc-800 bg-[#18181B] overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setWarmupOpen(!warmupOpen)}
+                    className="flex min-h-[50px] w-full items-center justify-between p-3.5 text-left hover:bg-zinc-800/40 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-400/15 text-lime-400">
+                        <Flame className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">{tr.warmupTitle}</h3>
+                        <p className="text-[11px] text-zinc-400">
+                          {plan.warmup.filter((w) => session.warmupDone[w.moveId]).length} of {plan.warmup.length} completed
+                        </p>
+                      </div>
+                    </div>
+                    {warmupOpen ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
+                  </button>
+
+                  {warmupOpen && (
+                    <ul className="space-y-2 border-t border-zinc-800 p-3 pt-2">
+                      {plan.warmup.map((w) => {
+                        const move = WARMUP_MAP[w.moveId];
+                        if (!move) return null;
+                        const done = Boolean(session.warmupDone[w.moveId]);
+                        return (
+                          <li
+                            key={w.moveId}
+                            className={`flex items-start gap-3 rounded-xl border p-2.5 transition-all ${
+                              done ? "border-emerald-500/30 bg-emerald-950/15 opacity-70" : "border-zinc-800 bg-zinc-950"
+                            }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => toggleWarmup(w.moveId)}
+                              aria-label={`Mark ${move.name} done`}
+                              className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md cursor-pointer ${
+                                done ? "bg-lime-400 text-zinc-950" : "border border-zinc-700 bg-zinc-900"
+                              }`}
+                            >
+                              {done && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                            </button>
+                            <div className="min-w-0 flex-1">
+                              <div className={`text-xs font-semibold ${done ? "text-zinc-500 line-through" : "text-white"}`}>
+                                {move.name}
+                              </div>
+                              <p className="text-[10px] text-zinc-400">{move.notes}</p>
+                            </div>
+                            <span className="text-[10px] text-zinc-400 font-mono self-center">
+                              {w.seconds}s
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </section>
+              )}
+
+              {/* Interactive Exercise Cards */}
+              <section className="space-y-3">
+                <div className="flex items-center justify-between px-0.5">
+                  <h2 className="text-xs font-extrabold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                    <Dumbbell className="w-3.5 h-3.5 text-lime-400" />
+                    Today&apos;s Movements ({plan?.exercises.length ?? 0})
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void generate(activeProfile, { offline: true })}
+                      disabled={busy}
+                      className="text-[11px] font-semibold text-zinc-400 hover:text-lime-400 flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" /> Reset
+                    </button>
+                  </div>
+                </div>
+
+                {plan && session && plan.exercises.map((pe, idx) => {
+                  const ex = getExercise(pe.exerciseId);
+                  if (!ex) return null;
+                  const owned = activeProfile.equipment;
+                  const easier = ex.easier ? getExercise(ex.easier) : undefined;
+                  const harder = ex.harder ? getExercise(ex.harder) : undefined;
+                  const inPlan = plan.exercises.map((x) => x.exerciseId);
+
+                  return (
+                    <ExerciseCard
+                      key={pe.uid}
+                      index={idx}
+                      planExercise={pe}
+                      exercise={ex}
+                      sets={session.sets[pe.uid] ?? []}
+                      lastWeightKg={weights[ex.id]}
+                      previousSets={previousSetsMap[ex.id]}
+                      easier={easier && hasEquipment(easier, owned) && !inPlan.includes(easier.id) ? easier : undefined}
+                      harder={harder && hasEquipment(harder, owned) && !inPlan.includes(harder.id) ? harder : undefined}
+                      alternatives={alternativesFor(ex.id, activeProfile, inPlan)}
+                      unitSystem={unitSystem}
+                      lang={lang}
+                      onToggleSet={(setIdx) => toggleSet(pe.uid, setIdx, pe.restSeconds, ex.name)}
+                      onChangeSet={(setIdx, patch) => changeSet(pe.uid, setIdx, patch)}
+                      onSwap={(id) => swapExercise(pe.uid, id)}
+                      onStartHold={(secs, label) => {
+                        unlockAudio();
+                        setTimerTotalDuration(secs);
+                        setTimerSecondsLeft(secs);
+                        setActiveRestExercise(`Hold: ${label}`);
+                        setTimerActive(true);
+                      }}
+                      onOpenAnimation={() => setSelectedAnimationEx(ex)}
+                      onOpenPlateCalculator={(w) => setPlateCalcTarget({ open: true, weight: w, uid: pe.uid })}
+                    />
+                  );
+                })}
+
+                {/* Session Actions: Start or Finish Workout */}
+                {session && (
+                  <div className="pt-2 space-y-2">
+                    {!session.startedAt ? (
+                      <button
+                        type="button"
+                        onClick={startWorkout}
+                        className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-500 text-zinc-950 font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-lime-400/20 active:scale-95 transition-transform cursor-pointer"
+                      >
+                        <Play className="w-4 h-4 fill-current" />
+                        <span>{tr.startWorkoutBtn}</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setShowFinish(true)}
+                        className={`w-full py-3.5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
+                          allDone
+                            ? "bg-gradient-to-r from-lime-400 to-emerald-500 text-zinc-950 shadow-lg shadow-lime-400/20"
+                            : "bg-zinc-800 text-white hover:bg-zinc-700"
+                        }`}
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>{tr.finishWorkoutBtn}</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </section>
+            </>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB 2: AI COACH (NEURAL ROUTINE ARCHITECT & CHAT STREAM)  */}
+          {/* ========================================================= */}
+          {activeTab === "coach" && (
+            <div className="flex flex-col h-full space-y-3">
+              {/* Quick Preset Prompt Chips */}
+              <div className="rounded-2xl bg-[#18181B] border border-zinc-800/80 p-3">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-lime-400" />
+                  One-Tap AI Routine Presets
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {AI_QUICK_PROMPTS.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => handleSendCoachPrompt(preset.prompt, preset)}
+                      className="w-full text-left px-3 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all cursor-pointer"
+                    >
+                      <span>{preset.label}</span>
+                      <ChevronRight className="w-4 h-4 text-lime-400" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Chat Conversation Stream */}
+              <div className="space-y-3 pb-2">
+                {chatMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex flex-col ${
+                      msg.sender === "user" ? "items-end" : "items-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                        msg.sender === "user"
+                          ? "bg-lime-400 text-zinc-950 font-semibold rounded-br-sm"
+                          : "bg-[#18181B] border border-zinc-800 text-zinc-200 rounded-bl-sm"
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+
+                    {/* Generated Routine Action Card inside Chat */}
+                    {msg.suggestedPlan && (
+                      <div className="w-full mt-2 rounded-2xl bg-zinc-900 border border-lime-400/40 p-3.5 shadow-lg">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
+                            Ready to Deploy
+                          </span>
+                          <span className="text-[11px] text-zinc-400">
+                            ~{estimateMinutes(msg.suggestedPlan)} mins • {msg.suggestedPlan.exercises.length} moves
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-extrabold text-white mb-2">
+                          {msg.suggestedPlan.title}
+                        </h4>
+                        <div className="space-y-1 mb-3">
+                          {msg.suggestedPlan.exercises.map((pe, i) => {
+                            const ex = getExercise(pe.exerciseId);
+                            return (
+                              <div
+                                key={i}
+                                className="text-[11px] text-zinc-400 flex justify-between"
+                              >
+                                <span>• {ex?.name || pe.exerciseId}</span>
+                                <span className="text-zinc-300 font-semibold">
+                                  {pe.sets}×{pe.reps}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => deployPlanToToday(msg.suggestedPlan!)}
+                          className="w-full py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-500 text-zinc-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-lime-400/20 active:scale-95 transition-transform cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Load Into Today&apos;s Workout</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {isAiTyping && (
+                  <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-[#18181B] border border-zinc-800 text-xs text-lime-400">
+                    <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                    <span>Calibrating routine for {stats.bmi} BMI...</span>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Custom Prompt Input Bar */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendCoachPrompt(chatInput);
+                }}
+                className="sticky bottom-0 pt-2 bg-[#09090B]"
+              >
+                <div className="flex items-center gap-2 bg-[#18181B] border border-zinc-800 rounded-2xl p-1.5 focus-within:border-lime-400/60">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask AI Coach (e.g., 'Back & Biceps no gear')..."
+                    className="flex-1 bg-transparent px-2.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    className="p-2.5 rounded-xl bg-lime-400 text-zinc-950 font-bold active:scale-90 transition-transform cursor-pointer"
+                  >
+                    <Send className="w-4 h-4 stroke-[2.5]" />
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB 3: BODY & STATS (BIOMETRICS & TELEMETRY)               */}
+          {/* ========================================================= */}
+          {activeTab === "analytics" && (
+            <div className="space-y-4">
+              {/* Analytics Sub-Tab Navigation Bar */}
+              <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
+                {[
+                  { id: "biometrics", label: "Biometrics & Engine" },
+                  { id: "history", label: "Workout History" },
+                  { id: "records", label: "PR Hall of Fame" },
+                  { id: "strength", label: "1RM Strength" },
+                  { id: "goals", label: "Goals & Milestones" },
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => setAnalyticsSubTab(st.id as typeof analyticsSubTab)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      analyticsSubTab === st.id
+                        ? "bg-lime-400 text-zinc-950 shadow-sm"
+                        : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              {analyticsSubTab === "biometrics" && (
+                <>
+                  {/* Live BMI & Calorie Calculator Card */}
+                  <section className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
+                          Live Biometric Engine
+                        </span>
+                        <h2 className="text-base font-extrabold text-white">
+                          BMI & Daily TDEE Telemetry
+                        </h2>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-black text-lime-400 leading-none">
+                          {stats.bmi}
+                        </div>
+                        <div className="text-[11px] font-semibold text-emerald-400 mt-0.5">
+                          {stats.bmiCategory}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Visual BMI Spectrum Bar */}
+                    <div>
+                      <div className="relative h-2.5 w-full rounded-full bg-gradient-to-r from-sky-400 via-lime-400 via-amber-400 to-rose-500">
+                        <div
+                          className="absolute -top-1.5 w-5 h-5 rounded-full bg-white border-4 border-zinc-950 shadow-md transition-all duration-200"
+                          style={{ left: `calc(${bmiMarkerPct}% - 10px)` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-zinc-500 font-semibold mt-1.5">
+                        <span>15 Under</span>
+                        <span>18.5 Optimal</span>
+                        <span>25 Over</span>
+                        <span>30+</span>
+                      </div>
+                    </div>
+
+                    {/* Gender Pill Switch */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {(["male", "female"] as const).map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => quickPatch({ gender: g })}
+                          className={`py-2 rounded-xl text-xs font-bold capitalize border transition-all cursor-pointer ${
+                            activeProfile.gender === g
+                              ? "bg-lime-400/15 border-lime-400 text-lime-400"
+                              : "bg-zinc-950 border-zinc-800 text-zinc-400"
+                          }`}
+                        >
+                          {g} Calibration
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Interactive Sliders */}
+                    <div className="space-y-3 pt-1">
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-zinc-400">Height</span>
+                          <span className="font-bold text-white font-mono">
+                            {activeProfile.heightCm} cm
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="140"
+                          max="210"
+                          value={activeProfile.heightCm}
+                          onChange={(e) => quickPatch({ heightCm: Number(e.target.value) })}
+                          className="w-full accent-lime-400 cursor-pointer"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-zinc-400">Current Weight</span>
+                          <span className="font-bold text-white font-mono">
+                            {activeProfile.weightKg} kg
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="42"
+                          max="140"
+                          step="0.5"
+                          value={activeProfile.weightKg}
+                          onChange={(e) => quickPatch({ weightKg: Number(e.target.value) })}
+                          className="w-full accent-lime-400 cursor-pointer"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-zinc-400">Age</span>
+                          <span className="font-bold text-white font-mono">
+                            {activeProfile.age} yrs
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="16"
+                          max="75"
+                          value={activeProfile.age}
+                          onChange={(e) => quickPatch({ age: Number(e.target.value) })}
+                          className="w-full accent-emerald-400 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Daily Calorie / Macro Summary Strip */}
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-800/80 text-center">
+                      <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800/70">
+                        <div className="text-[10px] text-zinc-500 uppercase">
+                          Daily TDEE
+                        </div>
+                        <div className="text-sm font-extrabold text-white mt-0.5 font-mono">
+                          {stats.tdee}
+                        </div>
+                        <div className="text-[10px] text-lime-400">kcal/day</div>
+                      </div>
+                      <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800/70">
+                        <div className="text-[10px] text-zinc-500 uppercase">
+                          Protein Goal
+                        </div>
+                        <div className="text-sm font-extrabold text-white mt-0.5 font-mono">
+                          {nutrition.proteinGrams}g
+                        </div>
+                        <div className="text-[10px] text-emerald-400">Hypertrophy</div>
+                      </div>
+                      <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800/70">
+                        <div className="text-[10px] text-zinc-500 uppercase">
+                          Cut Target
+                        </div>
+                        <div className="text-sm font-extrabold text-white mt-0.5 font-mono">
+                          {stats.tdee - 350}
+                        </div>
+                        <div className="text-[10px] text-zinc-400">-350 kcal</div>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Weight Trajectory SVG Area Chart */}
+                  <section className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                          <TrendingDown className="w-4 h-4 text-emerald-400" />
+                          6-Week Weight Trajectory
+                        </h3>
+                        <p className="text-[11px] text-zinc-400">
+                          Trending steadily toward {targetWeight} kg
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold px-2 py-1 rounded-lg bg-emerald-500/15 text-emerald-400">
+                        Active
+                      </span>
+                    </div>
+
+                    <svg viewBox="0 0 320 110" className="w-full h-28 overflow-visible">
+                      <defs>
+                        <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#a3e635" stopOpacity="0.35" />
+                          <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      <line x1="0" y1="25" x2="320" y2="25" stroke="#27272a" strokeDasharray="3 3" />
+                      <line x1="0" y1="60" x2="320" y2="60" stroke="#27272a" strokeDasharray="3 3" />
+                      <line x1="0" y1="95" x2="320" y2="95" stroke="#27272a" strokeDasharray="3 3" />
+
+                      <path
+                        d="M 10 22 L 70 34 L 130 42 L 190 56 L 250 66 L 310 78 L 310 100 L 10 100 Z"
+                        fill="url(#weightGrad)"
+                      />
+                      <path
+                        d="M 10 22 L 70 34 L 130 42 L 190 56 L 250 66 L 310 78"
+                        fill="none"
+                        stroke="#a3e635"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      {[
+                        [10, 22, `${activeProfile.weightKg + 3}`],
+                        [70, 34, `${activeProfile.weightKg + 2.2}`],
+                        [130, 42, `${activeProfile.weightKg + 1.5}`],
+                        [190, 56, `${activeProfile.weightKg + 0.8}`],
+                        [250, 66, `${activeProfile.weightKg + 0.3}`],
+                        [310, 78, `${activeProfile.weightKg}`],
+                      ].map(([cx, cy, label], i) => (
+                        <g key={i}>
+                          <circle
+                            cx={Number(cx)}
+                            cy={Number(cy)}
+                            r="4"
+                            fill="#09090B"
+                            stroke="#a3e635"
+                            strokeWidth="2.5"
+                          />
+                          <text
+                            x={Number(cx)}
+                            y={Number(cy) - 9}
+                            textAnchor="middle"
+                            fill="#a1a1aa"
+                            fontSize="9"
+                            fontWeight="bold"
+                          >
+                            {label}
+                          </text>
+                        </g>
+                      ))}
+                    </svg>
+                  </section>
+
+                  {/* 28-Day Consistency Heatmap */}
+                  <section className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-extrabold text-white flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4 text-lime-400" />
+                        28-Day Consistency Heatmap
+                      </h3>
+                      <span className="text-xs font-bold text-lime-400">
+                        {Math.min(28, history.length + 12)} / 28 Active
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1.5">
+                      {[
+                        3, 2, 0, 3, 2, 1, 0,
+                        3, 3, 2, 0, 3, 2, 1,
+                        2, 3, 3, 2, 0, 3, 2,
+                        3, 0, 2, 3, 3, 2, 3,
+                      ].map((intensity, i) => {
+                        const bg =
+                          intensity === 3
+                            ? "bg-lime-400"
+                            : intensity === 2
+                            ? "bg-emerald-500/70"
+                            : intensity === 1
+                            ? "bg-emerald-900/80"
+                            : "bg-zinc-900 border border-zinc-800";
+                        return (
+                          <div
+                            key={i}
+                            className={`h-7 rounded-lg ${bg} flex items-center justify-center text-[10px] font-bold ${
+                              intensity === 3 ? "text-zinc-950" : "text-zinc-500"
+                            }`}
+                          >
+                            {i + 1}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                </>
+              )}
+
+              {analyticsSubTab === "history" && (
+                <div className="space-y-4">
+                  <MuscleVolumeHeatmap history={history} lang={lang} />
+                  <HistoryView
+                    history={history}
+                    lang={lang}
+                    onExport={exportData}
+                    onImport={importData}
+                    onClear={() => {
+                      setHistory([]);
+                      setSaved(isBn ? "হিস্ট্রি সফলভাবে মুছে ফেলা হয়েছে।" : "History cleared.");
+                    }}
+                  />
+                </div>
+              )}
+
+              {analyticsSubTab === "records" && (
+                <div className="space-y-4">
+                  <PersonalRecordsCard
+                    history={history}
+                    lang={lang}
+                    unitSystem={unitSystem}
+                  />
+                  <MuscleVolumeHeatmap history={history} lang={lang} />
+                </div>
+              )}
+
+              {analyticsSubTab === "strength" && (
+                <div className="space-y-4">
+                  <StrengthCalculatorCard
+                    lang={lang}
+                    defaultBodyweightKg={activeProfile.weightKg}
+                    defaultGender={activeProfile.gender}
+                  />
+                </div>
+              )}
+
+              {analyticsSubTab === "goals" && (
+                <GoalsProgressView
+                  goals={goals}
+                  evaluation={evaluation}
+                  history={history}
+                  profile={activeProfile}
+                  lang={lang}
+                  onSyncCloud={async () => {
+                    if (activeUser?.id) {
+                      await syncGoalsToMongo(goals, activeUser.id);
+                      if (evaluation) await syncEvaluationToMongo(evaluation, activeUser.id);
+                    }
+                  }}
+                  onOpenCloudConfig={() => setShowAuthModal(true)}
+                  onAddCustomGoal={(newG) => {
+                    const fullG: UserGoal = {
+                      ...newG,
+                      id: `goal_${Date.now()}`,
+                      createdAt: Date.now(),
+                      currentValue: 0,
+                      status: "active",
+                    };
+                    setGoals((prev) => [...prev, fullG]);
+                    if (activeUser?.id) {
+                      void syncGoalsToMongo([...goals, fullG], activeUser.id);
+                    }
+                  }}
+                />
+              )}
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB 4: NUTRITION & DIET                                  */}
+          {/* ========================================================= */}
+          {activeTab === "nutrition" && (
+            <div className="space-y-4">
+              {/* Daily Hydration Tracking Widget */}
+              <WaterTrackerCard lang={lang} />
+
+              <div className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/80 pb-3">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
+                      Sports Nutrition
+                    </span>
+                    <h2 className="text-base font-extrabold text-white">
+                      {isBn ? "বাঙালি পুষ্টিবিজ্ঞান ও সুষম খাদ্য" : "Bangladeshi Sports Nutrition & Meals"}
+                    </h2>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowDietSheet(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-500 text-zinc-950 font-bold text-xs shadow-md shadow-lime-400/20 active:scale-95 transition-transform cursor-pointer"
+                  >
+                    <Utensils className="w-3.5 h-3.5" />
+                    <span>{isBn ? "পূর্ণাঙ্গ মিল চার্ট" : "Full Meal Plan"}</span>
+                  </button>
+                </div>
+
+                {/* Energy & Macros Display */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-2xl bg-zinc-950 p-2.5 border border-zinc-800">
+                    <span className="text-[10px] text-lime-400 uppercase font-semibold block">{tr.proteinLabel}</span>
+                    <strong className="text-sm font-extrabold text-white font-mono">{nutrition.proteinGrams}g</strong>
+                    <span className="text-[9px] text-zinc-500 block">Hypertrophy</span>
+                  </div>
+                  <div className="rounded-2xl bg-zinc-950 p-2.5 border border-zinc-800">
+                    <span className="text-[10px] text-sky-400 uppercase font-semibold block">{tr.carbsLabel}</span>
+                    <strong className="text-sm font-extrabold text-white font-mono">{nutrition.carbGrams}g</strong>
+                    <span className="text-[9px] text-zinc-500 block">Energy</span>
+                  </div>
+                  <div className="rounded-2xl bg-zinc-950 p-2.5 border border-zinc-800">
+                    <span className="text-[10px] text-amber-400 uppercase font-semibold block">{tr.fatsLabel}</span>
+                    <strong className="text-sm font-extrabold text-white font-mono">{nutrition.fatGrams}g</strong>
+                    <span className="text-[9px] text-zinc-500 block">Hormones</span>
+                  </div>
+                </div>
+
+                {/* Key Bangladeshi Foods Checklist */}
+                <div className="pt-2 border-t border-zinc-800/80 space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                    {isBn ? "সেরা দেশীয় প্রোটিন ও খাবার" : "Essential Local Powerfoods"}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                      <div className="font-bold text-white">🐟 রুই ও কাতলা মাছ</div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">প্রতি ১০০ গ্রামে ১৮-২০ গ্রাম প্রোটিন</div>
+                    </div>
+                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                      <div className="font-bold text-white">🥚 দেশি ও ফার্মের ডিম</div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">প্রতি ডিমে ৬ গ্রাম প্রোটিন ও কোলিন</div>
+                    </div>
+                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                      <div className="font-bold text-white">🍗 মুরগির মাংস</div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">কম ফ্যাটে উচ্চমানের লীন প্রোটিন</div>
+                    </div>
+                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                      <div className="font-bold text-white">🥣 মুগ ও মসুর ডাল</div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">সহজলভ্য প্রোটিন, ফাইবার ও আয়রন</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* TAB 5: EXERCISES LIBRARY                                 */}
+          {/* ========================================================= */}
+          {activeTab === "exercises" && (
+            <div className="space-y-4">
+              <div className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4 space-y-3">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
+                    Exercise Catalog
+                  </span>
+                  <h2 className="text-base font-extrabold text-white">
+                    {isBn ? "ব্যায়াম লাইব্রেরি ও মুভমেন্ট গাইড" : "Movement & Form Guide"}
+                  </h2>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder={isBn ? "ব্যায়ামের নাম, পেশি বা সরঞ্জাম দিয়ে খুঁজুন..." : "Search exercises by name, muscle, or gear..."}
+                    value={exerciseQuery}
+                    onChange={(e) => setExerciseQuery(e.target.value)}
+                    className="h-10 w-full rounded-2xl border border-zinc-800 bg-zinc-950 pl-9 pr-8 text-xs text-white placeholder-zinc-500 focus:border-lime-400 focus:outline-none"
+                  />
+                  {exerciseQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setExerciseQuery("")}
+                      className="absolute right-3 top-3 text-zinc-400 hover:text-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Muscle Filter Chips */}
+                <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                  {MUSCLE_FILTER_OPTIONS.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setSelectedMuscleCategory(f.id)}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                        selectedMuscleCategory === f.id
+                          ? "bg-lime-400 text-zinc-950 shadow-sm"
+                          : "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      {isBn ? f.labelBn : f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Movement Cards Grid */}
+              <div className="space-y-3">
+                {filteredLibraryExercises.map((ex) => {
+                  const media = getExerciseMedia(ex.id);
+                  return (
+                    <div
+                      key={ex.id}
+                      onClick={() => setSelectedAnimationEx(ex)}
+                      className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-3.5 flex items-center justify-between gap-3 hover:border-lime-400/50 transition-all cursor-pointer active:scale-[0.99]"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative h-14 w-14 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 shrink-0">
+                          <img
+                            src={media.localGif}
+                            alt={ex.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-lime-400 text-zinc-950 shadow">
+                              <Play className="h-2.5 w-2.5 fill-current ml-0.5" />
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="min-w-0">
+                          <h3 className="font-extrabold text-white text-sm truncate">
+                            {ex.name}
+                          </h3>
+                          <p className="text-[11px] font-semibold text-emerald-400 truncate mt-0.5">
+                            {ex.muscles.map((m) => MUSCLE_LABEL[m]).join(" · ")}
+                          </p>
+                          <span className="text-[10px] text-zinc-500 uppercase mt-0.5 block truncate">
+                            {ex.requires.length ? ex.requires.join(", ").replace("_", " ") : "bodyweight"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <ChevronRight className="w-4 h-4 text-zinc-500 shrink-0" />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* ========================================================= */}
+        {/* FLOATING GLASSMORPHIC AI REST COUNTDOWN TIMER PILL        */}
+        {/* ========================================================= */}
+        {timerSecondsLeft > 0 && (
+          <div className="absolute bottom-[84px] left-3.5 right-3.5 z-30 rounded-2xl bg-zinc-900/90 backdrop-blur-xl border border-lime-400/40 p-3 shadow-[0_10px_35px_rgba(0,0,0,0.85)] animate-in slide-in-from-bottom-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-lime-400 animate-ping" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-lime-400">
+                    AI Rest Timer
+                  </span>
+                </div>
+                <div className="text-[11px] text-zinc-400 truncate">
+                  {activeRestExercise || "Next Set Interval"}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-xl font-black font-mono text-white mr-1">
+                  {Math.floor(timerSecondsLeft / 60)}:
+                  {(timerSecondsLeft % 60).toString().padStart(2, "0")}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setTimerSecondsLeft((s) => Math.max(0, s - 15))}
+                  className="px-2 py-1.5 rounded-xl bg-zinc-800 text-[11px] font-bold text-zinc-200 active:scale-90 cursor-pointer"
+                >
+                  -15s
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimerSecondsLeft((s) => s + 15)}
+                  className="px-2 py-1.5 rounded-xl bg-zinc-800 text-[11px] font-bold text-zinc-200 active:scale-90 cursor-pointer"
+                >
+                  +15s
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimerActive(!timerActive)}
+                  className="p-2 rounded-xl bg-lime-400 text-zinc-950 font-bold active:scale-90 cursor-pointer"
+                >
+                  {timerActive ? (
+                    <Pause className="w-3.5 h-3.5 stroke-[2.75]" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 stroke-[2.75]" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTimerActive(false);
+                    setTimerSecondsLeft(0);
+                  }}
+                  aria-label="Skip Rest"
+                  className="p-2 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white active:scale-90 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Rest Progress Bar */}
+            <div className="w-full h-1 bg-zinc-800 rounded-full mt-2 overflow-hidden">
+              <div
+                className="h-full bg-lime-400 transition-all duration-300"
+                style={{
+                  width: `${
+                    timerTotalDuration > 0
+                      ? (timerSecondsLeft / timerTotalDuration) * 100
+                      : 0
+                  }%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* THUMB-ZONE FLOATING BOTTOM NAVIGATION BAR                 */}
+        {/* ========================================================= */}
+        <nav
+          aria-label="Primary Mobile Navigation"
+          className="shrink-0 px-4 pt-2 pb-4 sm:pb-5 bg-[#09090B]/95 backdrop-blur-lg border-t border-zinc-800/80 z-30"
+        >
+          <div className="grid grid-cols-5 gap-1 bg-[#18181B] p-1.5 rounded-2xl border border-zinc-800/90">
+            {[
+              { id: "today", label: isBn ? "আজকের" : "Today", icon: Flame },
+              { id: "coach", label: isBn ? "কোচ" : "AI Coach", icon: Bot },
+              { id: "exercises", label: isBn ? "ব্যায়াম" : "Library", icon: Dumbbell },
+              { id: "nutrition", label: isBn ? "পুষ্টি" : "Diet", icon: Utensils },
+              { id: "analytics", label: isBn ? "বডি" : "Body", icon: Activity },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as ActiveTab)}
+                  className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer ${
+                    isActive
+                      ? "bg-lime-400 text-zinc-950 font-extrabold shadow-sm shadow-lime-400/25"
+                      : "text-zinc-400 hover:text-zinc-200 font-semibold"
+                  }`}
+                >
+                  <Icon
+                    className={`w-4 h-4 ${
+                      isActive ? "stroke-[2.5]" : "stroke-[2]"
+                    }`}
+                  />
+                  <span className="text-[10px] truncate">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* ========================================================= */}
+        {/* WORKOUT COMPLETION CELEBRATION MODAL                      */}
+        {/* ========================================================= */}
+        {showCelebration && (
+          <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end p-4 animate-in fade-in">
+            <div className="w-full rounded-3xl bg-[#18181B] border border-lime-400/40 p-6 text-center shadow-2xl">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-lime-400 to-emerald-500 mx-auto flex items-center justify-center text-zinc-950 mb-3 shadow-lg shadow-lime-400/20">
+                <Trophy className="w-7 h-7 stroke-[2.5]" />
+              </div>
+              <h3 className="text-xl font-black text-white">
+                Session Crushed!
+              </h3>
+              <p className="text-xs text-zinc-400 mt-1 mb-5">
+                All {totalSetsCount} sets completed. Your recovery & progressive
+                overload metrics have been updated.
+              </p>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCelebration(false);
+                    setShowFinish(true);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-lime-400 text-zinc-950 font-extrabold text-sm active:scale-95 transition-transform cursor-pointer"
+                >
+                  Save & Log Session
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCelebration(false)}
+                  className="w-full py-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs hover:text-white"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* MODALS & DRAWERS                                          */}
+        {/* ========================================================= */}
+        {(showProfile || needsSetup) && (
+          <ProfileSheet
+            open
+            firstRun={needsSetup}
+            profile={activeProfile}
+            accessCode={accessCode}
+            unitSystem={unitSystem}
+            lang={lang}
+            onLanguageChange={setLang}
+            onSave={saveProfile}
+            onClose={() => setShowProfile(false)}
+          />
+        )}
+
+        {showFinish && session && (
+          <FinishSheet
+            open
+            session={session}
+            weightKg={activeProfile.weightKg}
+            lang={lang}
+            onLanguageChange={setLang}
+            onSave={finish}
+            onClose={() => setShowFinish(false)}
+          />
+        )}
+
+        <DietSheet
+          open={showDietSheet}
+          weightKg={activeProfile.weightKg}
+          heightCm={activeProfile.heightCm}
+          bmi={stats.bmi}
+          bmiCategory={stats.bmiCategory}
+          tdee={stats.tdee}
+          initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
           lang={lang}
           onLanguageChange={setLang}
-          onComplete={handleCompleteWelcomeOnboarding}
-          onClose={() => setShowWelcomeOnboarding(false)}
+          accessCode={accessCode}
+          onClose={() => setShowDietSheet(false)}
         />
 
-        <SoloLevelingWelcomeBackModal
-          open={showWelcomeBackModal}
-          stats={playerStats}
-          quest={dailyQuest}
-          isWorkoutDay={todaySchedule.isWorkoutDay}
-          focusTitle={lang === "bn" ? `${todaySchedule.bengaliName} · ${todaySchedule.sessionTitle}` : `${todaySchedule.dayName} · ${todaySchedule.sessionTitle}`}
-          lang={lang}
-          onLanguageChange={setLang}
-          onStartWorkout={() => {
-            setShowWelcomeBackModal(false);
-            setActiveView("app");
-            setView("today");
-            window.location.hash = "app";
-            if (!session) {
-              void generate(activeProfile);
-            }
-          }}
-          onOpenQuest={() => {
-            setShowWelcomeBackModal(false);
-            setActiveView("app");
-            setView("today");
-            window.location.hash = "app";
-            const el = document.getElementById("daily-quest-card");
-            if (el) el.scrollIntoView({ behavior: "smooth" });
-          }}
-          onOpenStatus={() => {
-            setShowWelcomeBackModal(false);
-            setActiveView("app");
-            setShowStatusModal(true);
-          }}
-          onClose={() => setShowWelcomeBackModal(false)}
-        />
-
-        <HunterAuthModal
+        <AuthModal
           open={showAuthModal}
           lang={lang}
           onLanguageChange={setLang}
@@ -870,1815 +2272,59 @@ export default function Page() {
             setAccounts((prev) => [...prev, newAcc]);
             setActiveUser(newAcc);
           }}
-          onSyncCloud={handleForceCloudSync}
+          onSyncCloud={async () => {
+            if (activeUser?.id) {
+              await syncProfileToMongo(activeProfile, activeUser.id);
+              await syncGoalsToMongo(goals, activeUser.id);
+              if (evaluation) await syncEvaluationToMongo(evaluation, activeUser.id);
+            }
+          }}
           onClose={() => setShowAuthModal(false)}
         />
 
-        <DietSheet
-          open={showDietSheet}
-          weightKg={activeProfile.weightKg}
-          heightCm={activeProfile.heightCm}
-          bmi={stats.bmi}
-          bmiCategory={stats.bmiCategory}
-          tdee={stats.tdee}
-          initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
+        <ExerciseAnimationModal
+          exercise={selectedAnimationEx}
+          easier={selectedAnimationEx?.easier ? getExercise(selectedAnimationEx.easier) : undefined}
+          harder={selectedAnimationEx?.harder ? getExercise(selectedAnimationEx.harder) : undefined}
           lang={lang}
           onLanguageChange={setLang}
-          accessCode={accessCode}
-          onClose={() => setShowDietSheet(false)}
-        />
-      </div>
-    );
-  }
-
-  if (!ready) {
-    return (
-      <main className="flex min-h-screen items-center justify-center text-sm text-zinc-500" aria-busy="true">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading
-      </main>
-    );
-  }
-
-  const plan = session?.plan;
-  const elapsedMin = session?.startedAt ? Math.max(0, Math.round((nowTick - session.startedAt) / 60000)) : null;
-
-  return (
-    <div className="min-h-screen bg-[#020510] text-zinc-100 flex">
-      {/* ======================================================== */}
-      {/* 1. Desktop Left Navigation Asidebar (<aside>)            */}
-      {/* ======================================================== */}
-      <aside
-        id="desktop-navigation-sidebar"
-        aria-label="Desktop Navigation Sidebar"
-        className={`hidden lg:flex flex-col justify-between shrink-0 sticky top-0 h-screen border-r border-cyan-500/30 bg-[#030713]/95 backdrop-blur-xl z-30 transition-all duration-300 overflow-y-auto ${
-          sidebarCollapsed ? "w-20 p-3" : "w-64 p-4"
-        }`}
-      >
-        {/* Top: Brand Crest & Collapse Toggle */}
-        <div className="space-y-4">
-          <div
-            className={`border-b border-cyan-500/20 pb-3 flex ${
-              sidebarCollapsed ? "flex-col items-center gap-2.5" : "items-center justify-between gap-2"
-            }`}
-          >
-            <button
-              type="button"
-              id="sidebar-crest-btn"
-              onClick={() => {
-                playSound("system-alert");
-                vibrate(15);
-                setActiveTab("status");
-              }}
-              title="Open Solo Leveling System Status"
-              className={`flex items-center text-left group cursor-pointer focus:outline-none ${
-                sidebarCollapsed ? "justify-center" : "gap-2.5 overflow-hidden"
-              }`}
-            >
-              <div className="relative h-10 w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
-                <Image
-                  src="/images/solo-leveling/system-crest-icon.jpg"
-                  alt="Solo Leveling System Crest"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {!sidebarCollapsed && (
-                <div className="shrink-0 overflow-hidden">
-                  <div className="flex items-center gap-1.5 text-sm font-black tracking-wide text-white whitespace-nowrap">
-                    ARISE
-                    <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1 py-0.2 text-[9px] font-mono uppercase tracking-widest text-cyan-300">
-                      [ SYSTEM ]
-                    </span>
-                  </div>
-                  <div className="text-[10px] font-mono text-cyan-400/80 whitespace-nowrap">
-                    Lv.{playerStats.level} · <span className="text-purple-300 font-bold">{playerStats.rank}-RANK</span>
-                  </div>
-                </div>
-              )}
-            </button>
-
-            <button
-              type="button"
-              id="btn-sidebar-collapse"
-              onClick={() => {
-                playSound("system-click");
-                setSidebarCollapsed((prev) => {
-                  const next = !prev;
-                  try {
-                    localStorage.setItem("arise_sidebar_collapsed", String(next));
-                  } catch {}
-                  return next;
-                });
-              }}
-              aria-label={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-              title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-500/30 bg-black/40 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-950/60 transition-all shrink-0 cursor-pointer"
-            >
-              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </button>
-          </div>
-
-          {/* Navigation Tabs List */}
-          <nav aria-label="Sidebar Primary Navigation" className={`space-y-1.5 ${sidebarCollapsed ? "flex flex-col items-center" : ""}`}>
-            {!sidebarCollapsed && (
-              <div className="px-2 text-[9px] font-mono font-bold uppercase tracking-widest text-cyan-400/70">
-                [ {lang === "bn" ? "প্রধান মেনু" : "CORE MODULES"} ]
-              </div>
-            )}
-
-            {/* Quests Tab */}
-            <button
-              type="button"
-              id="sidebar-nav-home"
-              onClick={() => {
-                playSound("system-click");
-                vibrate(15);
-                setActiveTab("home");
-              }}
-              title={lang === "bn" ? "কোয়েস্ট ও ডানজন" : "Daily Quests & Dungeons"}
-              className={`flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
-              } ${
-                activeTab === "home"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
-                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
-              }`}
-            >
-              <Home className="h-4 w-4 text-cyan-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ কোয়েস্ট ]" : "[ QUESTS ]"}</span>
-              )}
-            </button>
-
-            {/* Statistics Tab */}
-            <button
-              type="button"
-              id="sidebar-nav-stats"
-              onClick={() => {
-                playSound("system-click");
-                vibrate(15);
-                setActiveTab("stats");
-              }}
-              title={lang === "bn" ? "পরিসংখ্যান ও রেকর্ড" : "Statistics & Logs"}
-              className={`flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
-              } ${
-                activeTab === "stats"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
-                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
-              }`}
-            >
-              <Activity className="h-4 w-4 text-cyan-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ পরিসংখ্যান ]" : "[ STATISTICS ]"}</span>
-              )}
-            </button>
-
-            {/* Inventory Tab */}
-            <button
-              type="button"
-              id="sidebar-nav-inventory"
-              onClick={() => {
-                playSound("system-click");
-                vibrate(15);
-                setActiveTab("inventory");
-              }}
-              title={lang === "bn" ? "ইনভেন্টরি ও গিয়ার" : "Inventory & Arsenal"}
-              className={`flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
-              } ${
-                activeTab === "inventory"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
-                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
-              }`}
-            >
-              <Package className="h-4 w-4 text-cyan-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ ইনভেন্টরি ]" : "[ INVENTORY ]"}</span>
-              )}
-            </button>
-
-            {/* Status Tab */}
-            <button
-              type="button"
-              id="sidebar-nav-status"
-              onClick={() => {
-                playSound("system-click");
-                vibrate(15);
-                setActiveTab("status");
-              }}
-              title={lang === "bn" ? "খেলোয়াড়ের স্ট্যাটাস" : "Hunter Status & Stats"}
-              className={`relative flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-bold"
-              } ${
-                activeTab === "status"
-                  ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.35)]"
-                  : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5 border border-transparent"
-              }`}
-            >
-              <UserIcon className="h-4 w-4 text-cyan-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap uppercase tracking-wider">{lang === "bn" ? "[ স্ট্যাটাস ]" : "[ STATUS ]"}</span>
-              )}
-              {playerStats.unallocatedPoints > 0 && (
-                <span className={sidebarCollapsed ? "absolute top-1.5 right-1.5 flex h-2 w-2" : "ml-auto relative flex h-2 w-2"}>
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
-                </span>
-              )}
-            </button>
-
-            {/* System Directives Section */}
-            {!sidebarCollapsed && (
-              <div className="pt-3 px-2 text-[9px] font-mono font-bold uppercase tracking-widest text-cyan-400/70">
-                [ {lang === "bn" ? "সিস্টেম অপারেশন" : "DIRECTIVES"} ]
-              </div>
-            )}
-
-            {/* ARISE Awakening Button */}
-            <button
-              type="button"
-              id="sidebar-btn-arise"
-              onClick={() => {
-                playSound("arise");
-                vibrate([40, 80, 40]);
-                setAriseModalText({
-                  title: lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN",
-                  subtitle: lang === "bn" ? "শ্যাডো মনার্ক জাগ্রত হচ্ছে" : "THE SHADOW MONARCH AWAKENS",
-                });
-                setShowAriseModal(true);
-              }}
-              title="Trigger Arise Awakening"
-              className={`flex items-center gap-3 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-900/50 via-indigo-950/60 to-purple-950/50 text-purple-200 hover:border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.25)] active:scale-95 transition-all cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2.5 text-xs font-mono font-black"
-              }`}
-            >
-              <Sparkles className="h-4 w-4 text-purple-400 animate-pulse shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap tracking-wider">{lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN"}</span>
-              )}
-            </button>
-
-            {/* Exercise Arsenal Shortcut */}
-            <button
-              type="button"
-              id="sidebar-btn-arsenal"
-              onClick={() => {
-                playSound("system-click");
-                setShowLibraryModal(true);
-              }}
-              title="Open Exercise Arsenal"
-              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-white hover:bg-white/5 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
-              }`}
-            >
-              <Dumbbell className="h-4 w-4 text-cyan-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap">{lang === "bn" ? "অস্ত্রাগার (Arsenal)" : "Exercise Arsenal"}</span>
-              )}
-            </button>
-
-            {/* Nutrition Rations Shortcut */}
-            <button
-              type="button"
-              id="sidebar-btn-rations"
-              onClick={() => {
-                playSound("system-click");
-                setShowDietSheet(true);
-              }}
-              title="Open Nutrition Rations"
-              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-emerald-300 hover:bg-emerald-950/20 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
-              }`}
-            >
-              <Utensils className="h-4 w-4 text-emerald-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap">{lang === "bn" ? "ডায়েট চার্ট (Rations)" : "Nutrition Rations"}</span>
-              )}
-            </button>
-
-            {/* Hunter Guilds Hub */}
-            <button
-              type="button"
-              id="sidebar-btn-guilds"
-              onClick={() => {
-                playSound("system-click");
-                setShowGuildHubModal(true);
-              }}
-              title="Open Hunter Guilds"
-              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-purple-300 hover:bg-purple-950/20 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
-              }`}
-            >
-              <Users className="h-4 w-4 text-purple-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap">{lang === "bn" ? "হান্টার গিল্ড (Guilds)" : "Hunter Guilds"}</span>
-              )}
-            </button>
-
-            {/* Hall of Feats (Achievements) */}
-            <button
-              type="button"
-              id="sidebar-btn-achievements"
-              onClick={() => {
-                playSound("system-click");
-                setShowAchievementsModal(true);
-              }}
-              title="Hall of Feats & Achievements"
-              className={`flex items-center gap-3 rounded-xl text-zinc-300 hover:text-amber-300 hover:bg-amber-950/20 border border-transparent transition-colors cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto justify-center" : "w-full px-3 py-2 text-xs font-semibold"
-              }`}
-            >
-              <Trophy className="h-4 w-4 text-amber-400 shrink-0" />
-              {!sidebarCollapsed && (
-                <span className="whitespace-nowrap">{lang === "bn" ? "কৃতিত্ব (Feats)" : "Hall of Feats"}</span>
-              )}
-            </button>
-          </nav>
-        </div>
-
-        {/* Bottom / Footer of Sidebar */}
-        <div className="space-y-3 pt-3 border-t border-cyan-500/20">
-          {!sidebarCollapsed && (
-            <div className="rounded-xl border border-cyan-500/30 bg-black/60 p-2.5 flex items-center justify-between shadow-inner">
-              <div className="overflow-hidden">
-                <div className="text-[11px] font-mono font-black text-white truncate">{playerStats.name || "Sung Jin-Woo"}</div>
-                <div className="text-[9px] font-mono text-cyan-400/80">🪙 {playerStats.coins ?? 1450} Gold</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowWelcomeOnboarding(true)}
-                title="Calibrate Hunter Profile"
-                className="text-[10px] font-mono font-bold text-cyan-300 bg-cyan-950/80 border border-cyan-400/40 px-2 py-1 rounded hover:bg-cyan-900 transition-colors cursor-pointer"
-              >
-                EDIT
-              </button>
-            </div>
-          )}
-
-          {/* Utility row: Language, Sound, Menu Drawer */}
-          <div className={`flex items-center gap-2 ${sidebarCollapsed ? "flex-col justify-center" : "justify-between"}`}>
-            {sidebarCollapsed ? (
-              <button
-                type="button"
-                id="sidebar-lang-switcher"
-                onClick={() => {
-                  playSound("system-click");
-                  const nextLang = lang === "bn" ? "en" : "bn";
-                  setLang(nextLang);
-                  addSystemToast(
-                    nextLang === "bn" ? "[ ভাষা পরিবর্তন : বাংলা ]" : "[ LANGUAGE : ENGLISH ]",
-                    nextLang === "bn" ? "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।" : "System interface set to English."
-                  );
-                }}
-                aria-label="Switch Language"
-                title={lang === "bn" ? "Switch to English" : "বাংলায় পরিবর্তন করুন"}
-                className="h-10 w-10 mx-auto flex items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-950/40 font-mono font-bold text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/40 transition-colors shrink-0 cursor-pointer"
-              >
-                <span className="text-[11px] font-black">{lang === "bn" ? "বাং" : "EN"}</span>
-              </button>
-            ) : (
-              <div
-                id="sidebar-lang-switcher"
-                role="group"
-                aria-label="Language selection"
-                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)] shrink-0"
-              >
-                <button
-                  type="button"
-                  id="sidebar-lang-bn"
-                  onClick={() => {
-                    if (lang !== "bn") {
-                      playSound("system-click");
-                      setLang("bn");
-                      addSystemToast(
-                        "[ ভাষা পরিবর্তন : বাংলা ]",
-                        "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।"
-                      );
-                    }
-                  }}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
-                    lang === "bn"
-                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
-                  }`}
-                  aria-pressed={lang === "bn"}
-                >
-                  বাংলা
-                </button>
-                <button
-                  type="button"
-                  id="sidebar-lang-en"
-                  onClick={() => {
-                    if (lang !== "en") {
-                      playSound("system-click");
-                      setLang("en");
-                      addSystemToast(
-                        "[ LANGUAGE : ENGLISH ]",
-                        "System interface set to English."
-                      );
-                    }
-                  }}
-                  className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
-                    lang === "en"
-                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
-                  }`}
-                  aria-pressed={lang === "en"}
-                >
-                  EN
-                </button>
-              </div>
-            )}
-
-            <button
-              type="button"
-              id="sidebar-sound-toggle"
-              onClick={() => {
-                const next = !soundOn;
-                setSoundOn(next);
-                if (next) playSound("system-click");
-              }}
-              aria-label={soundOn ? "Mute Audio" : "Unmute Audio"}
-              title={soundOn ? "Sound: ON" : "Sound: MUTED"}
-              className={`flex items-center justify-center rounded-xl border border-zinc-700/60 bg-zinc-800/60 text-zinc-300 hover:border-cyan-500/40 hover:text-white transition-colors shrink-0 cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto" : "h-9 w-9"
-              }`}
-            >
-              {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
-            </button>
-
-            <button
-              type="button"
-              id="sidebar-menu-btn"
-              onClick={() => {
-                playSound("system-click");
-                setShowSettingsDrawer(true);
-              }}
-              aria-label="System Settings & Hub"
-              title="System Settings & Hub"
-              className={`flex items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_10px_rgba(6,182,212,0.25)] transition-colors shrink-0 cursor-pointer ${
-                sidebarCollapsed ? "h-10 w-10 mx-auto" : "h-9 w-9"
-              }`}
-            >
-              <Menu className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* ======================================================== */}
-      {/* 2. Main Content Viewport & Header                        */}
-      {/* ======================================================== */}
-      <div className="flex-1 min-w-0 flex flex-col pb-28 sm:pb-32 md:pb-12 lg:pb-16">
-        <header className="sticky top-0 z-20 border-b border-cyan-500/30 bg-[#040817]/90 px-3 sm:px-4 py-2.5 sm:py-3 backdrop-blur-md shadow-[0_4px_25px_rgba(6,182,212,0.15)]">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-3">
-            {/* Left: Mobile Brand Logo & Solo Leveling System Title (< lg) */}
-            <div className="flex lg:hidden items-center gap-2 sm:gap-3 shrink-0">
-              <button
-                type="button"
-                id="btn-header-crest"
-                onClick={() => {
-                  playSound("system-alert");
-                  vibrate(20);
-                  setActiveTab("status");
-                }}
-                title="Open Solo Leveling System Status Window"
-                className="flex items-center gap-1.5 sm:gap-2.5 group cursor-pointer text-left focus:outline-none shrink-0 whitespace-nowrap"
-              >
-                <div className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-xl overflow-hidden border-2 border-cyan-400 shadow-md shadow-cyan-500/30 group-hover:scale-105 transition-transform shrink-0">
-                  <Image
-                    src="/images/solo-leveling/system-crest-icon.jpg"
-                    alt="Solo Leveling System Crest"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="shrink-0">
-                  <h1 className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-base font-black tracking-wide text-white whitespace-nowrap">
-                    ARISE
-                    <span className="rounded border border-cyan-400/50 bg-cyan-950/80 px-1 py-0.2 sm:px-1.5 sm:py-0.5 text-[8px] sm:text-[10px] font-mono uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)] shrink-0 whitespace-nowrap">
-                      [ SYSTEM ]
-                    </span>
-                  </h1>
-                  <p className="text-[9px] sm:text-[11px] font-mono text-cyan-400/80 flex items-center gap-1 whitespace-nowrap">
-                    <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"} : Lv.{playerStats.level}</span>
-                    <span className="text-zinc-600">·</span>
-                    <span className="text-purple-300 font-bold">{playerStats.rank}-RANK</span>
-                  </p>
-                </div>
-              </button>
-            </div>
-
-            {/* Left / Center on Desktop (lg+): Active System Directive Breadcrumb */}
-            <div className="hidden lg:flex items-center gap-2.5">
-              <div className="h-2.5 w-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse shrink-0" />
-              <span className="font-mono text-xs font-black text-cyan-300 tracking-wider uppercase">
-                [ SYSTEM ONLINE ] //{" "}
-                {activeTab === "home"
-                  ? lang === "bn"
-                    ? "দৈনিক কোয়েস্ট ও ডানজন"
-                    : "DAILY QUESTS & DUNGEON GATES"
-                  : activeTab === "stats"
-                  ? lang === "bn"
-                    ? "পরিসংখ্যান ও রেকর্ড"
-                    : "HUNTER STATISTICS & LOGS"
-                  : activeTab === "inventory"
-                  ? lang === "bn"
-                    ? "ইনভেন্টরি ও গিয়ার"
-                    : "INVENTORY & EQUIPMENT"
-                  : lang === "bn"
-                  ? "খেলোয়াড়ের স্ট্যাটাস"
-                  : "HUNTER STATUS WINDOW"}
-              </span>
-              <span className="text-zinc-600">·</span>
-              <span className="font-mono text-[11px] text-zinc-400 font-semibold">{headerDateString}</span>
-            </div>
-
-            {/* Center: Tablet Navigation Tabs (Shown only on tablet between 768px and 1024px) */}
-            <nav
-              aria-label="Tablet Tab Navigation"
-              className="hidden md:flex lg:hidden items-center gap-0.5 rounded-2xl border border-cyan-500/30 bg-[#030712]/80 p-1 backdrop-blur-md shadow-[0_0_20px_rgba(6,182,212,0.15)] shrink-0"
-            >
-              <button
-                type="button"
-                id="tablet-nav-home"
-                onClick={() => {
-                  playSound("system-click");
-                  vibrate(15);
-                  setActiveTab("home");
-                }}
-                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
-                  activeTab === "home"
-                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                }`}
-              >
-                <Home className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                <span>{lang === "bn" ? "কোয়েস্ট" : "QUESTS"}</span>
-              </button>
-
-              <button
-                type="button"
-                id="tablet-nav-stats"
-                onClick={() => {
-                  playSound("system-click");
-                  vibrate(15);
-                  setActiveTab("stats");
-                }}
-                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
-                  activeTab === "stats"
-                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                }`}
-              >
-                <Activity className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                <span>{lang === "bn" ? "রেকর্ড" : "STATS"}</span>
-              </button>
-
-              <button
-                type="button"
-                id="tablet-nav-inventory"
-                onClick={() => {
-                  playSound("system-click");
-                  vibrate(15);
-                  setActiveTab("inventory");
-                }}
-                className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
-                  activeTab === "inventory"
-                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                }`}
-              >
-                <Package className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                <span>{lang === "bn" ? "গিয়ার" : "ITEMS"}</span>
-              </button>
-
-              <button
-                type="button"
-                id="tablet-nav-status"
-                onClick={() => {
-                  playSound("system-click");
-                  vibrate(15);
-                  setActiveTab("status");
-                }}
-                className={`relative flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase whitespace-nowrap transition-all duration-200 ${
-                  activeTab === "status"
-                    ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                }`}
-              >
-                <UserIcon className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                <span>{lang === "bn" ? "স্ট্যাটাস" : "STATUS"}</span>
-                {playerStats.unallocatedPoints > 0 && (
-                  <span className="relative flex h-2 w-2 ml-0.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
-                  </span>
-                )}
-              </button>
-            </nav>
-
-            {/* Right: Quick Action Controls */}
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              {/* Desktop Awakening Trigger */}
-              <button
-                id="btn-desktop-arise"
-                type="button"
-                onClick={() => {
-                  playSound("arise");
-                  vibrate([40, 80, 40]);
-                  setAriseModalText({
-                    title: lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN",
-                    subtitle: lang === "bn" ? "শ্যাডো মনার্ক জাগ্রত হচ্ছে" : "THE SHADOW MONARCH AWAKENS",
-                  });
-                  setShowAriseModal(true);
-                }}
-                aria-label="Trigger Arise Awakening"
-                title="Trigger Arise Awakening"
-                className="hidden sm:flex lg:hidden xl:flex btn btn-xs sm:btn-sm btn-secondary gap-1.5 text-xs font-black tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.3)] shrink-0"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-purple-200 animate-pulse" />
-                <span>ARISE</span>
-              </button>
-
-              {/* Language Switcher: Dual Segmented Bangla / English */}
-              <div
-                id="btn-lang-switcher"
-                role="group"
-                aria-label="Language selection"
-                className="flex items-center rounded-xl border border-cyan-500/40 bg-[#020512] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)] shrink-0"
-              >
-                <button
-                  type="button"
-                  id="btn-switch-lang-bn"
-                  onClick={() => {
-                    if (lang !== "bn") {
-                      playSound("system-click");
-                      setLang("bn");
-                      addSystemToast(
-                        "[ ভাষা পরিবর্তন : বাংলা ]",
-                        "সিস্টেম ইন্টারফেস বাংলায় রূপান্তরিত হয়েছে।"
-                      );
-                    }
-                  }}
-                  className={`rounded-lg px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-black transition-all cursor-pointer ${
-                    lang === "bn"
-                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
-                  }`}
-                  aria-pressed={lang === "bn"}
-                >
-                  বাংলা
-                </button>
-                <button
-                  type="button"
-                  id="btn-switch-lang-en"
-                  onClick={() => {
-                    if (lang !== "en") {
-                      playSound("system-click");
-                      setLang("en");
-                      addSystemToast(
-                        "[ LANGUAGE : ENGLISH ]",
-                        "System interface set to English."
-                      );
-                    }
-                  }}
-                  className={`rounded-lg px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-black transition-all cursor-pointer ${
-                    lang === "en"
-                      ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
-                      : "text-cyan-400/70 hover:text-cyan-200"
-                  }`}
-                  aria-pressed={lang === "en"}
-                >
-                  EN
-                </button>
-              </div>
-
-              {/* Audio Toggle */}
-              <button
-                id="btn-sound-toggle"
-                type="button"
-                onClick={() => {
-                  const next = !soundOn;
-                  setSoundOn(next);
-                  if (next) playSound("system-click");
-                }}
-                aria-label={soundOn ? "Mute System Audio" : "Unmute System Audio"}
-                title={soundOn ? "Sound: ON" : "Sound: MUTED"}
-                className="hidden sm:flex btn btn-xs sm:btn-sm btn-square btn-ghost text-zinc-300 hover:text-white shrink-0"
-              >
-                {soundOn ? <Volume2 className="h-4 w-4 text-cyan-400" /> : <VolumeX className="h-4 w-4 text-zinc-500" />}
-              </button>
-
-              {/* Bell System Notification */}
-              <button
-                type="button"
-                id="btn-leveling-bell"
-                onClick={() => {
-                  playSound("system-alert");
-                  vibrate(25);
-                  addSystemToast(
-                    lang === "bn" ? "[ সিস্টেম স্ট্যাটাস : সক্রিয় ]" : "[ SYSTEM STATUS : ACTIVE ]",
-                    lang === "bn"
-                      ? `খেলোয়াড় ${playerStats.name}: কোনো বকেয়া পেনাল্টি নেই। দৈনিক অগ্রগতি সর্বোত্তম।`
-                      : `Player ${playerStats.name}: No pending penalties. Progression optimal.`
-                  );
-                }}
-                aria-label="System Notifications"
-                title="System Notifications"
-                className="relative btn btn-xs sm:btn-sm btn-square btn-ghost text-cyan-400 shrink-0"
-              >
-                <Bell className="h-4 w-4" />
-                <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.9)] animate-pulse" />
-              </button>
-
-              {/* Menu Drawer button */}
-              <button
-                type="button"
-                id="btn-leveling-menu"
-                onClick={() => {
-                  playSound("system-click");
-                  setShowSettingsDrawer(true);
-                }}
-                aria-label="Settings and System Menu"
-                title="System Settings & Hub"
-                className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl border border-cyan-500/30 bg-gradient-to-b from-cyan-950/60 to-[#040817] text-cyan-300 hover:border-cyan-400 hover:text-cyan-100 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all cursor-pointer shrink-0"
-              >
-                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Active workout progress indicator */}
-          {activeTab === "home" && session && t && (
-            <div className="mx-auto mt-2 max-w-7xl">
-              <div className="mb-1 flex items-center justify-between text-[11px] font-medium text-cyan-300/80">
-                <span className="flex items-center gap-1 font-mono">
-                  <Activity className="h-3.5 w-3.5 text-cyan-400 animate-pulse" /> {tr.sessionProgress}
-                  {elapsedMin !== null && <span className="text-zinc-500">· {elapsedMin} {tr.minIn}</span>}
-                </span>
-                <span className="font-mono font-bold text-cyan-300">
-                  {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}% ({t.setsDone}/{t.setsTotal} {tr.sets})
-                </span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-slate-900 border border-cyan-500/30">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 transition-[width] duration-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
-                  style={{ width: `${t.setsTotal ? (t.setsDone / t.setsTotal) * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-          )}
-        </header>
-
-        <main className="mx-auto max-w-7xl space-y-6 px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-        {error && (
-          <div role="alert" className="rounded-2xl border border-red-900/60 bg-red-950/40 p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-              <div className="flex-1 text-sm text-red-100">
-                {error}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    onClick={() => void generate(activeProfile)}
-                    disabled={busy}
-                    className="min-h-[44px] rounded-xl bg-red-500/20 px-4 text-sm font-semibold text-red-100 hover:bg-red-500/30 disabled:opacity-50"
-                  >
-                    Try again
-                  </button>
-                  <button
-                    onClick={() => void generate(activeProfile, { offline: true })}
-                    disabled={busy}
-                    className="flex min-h-[44px] items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-4 text-sm text-zinc-100 hover:bg-zinc-700 disabled:opacity-50"
-                  >
-                    <WifiOff className="h-4 w-4" /> Build an offline plan instead
-                  </button>
-                </div>
-              </div>
-              <button onClick={() => setError(null)} aria-label="Dismiss" className="text-red-300 hover:text-white">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* 1. Statistics Tab */}
-        {activeTab === "stats" && (
-          <div className="max-w-5xl mx-auto space-y-6">
-            <LevelingStatisticsView
-              lang={lang}
-              history={history}
-              profile={activeProfile}
-              onOpenAchievements={() => setShowAchievementsModal(true)}
-              workoutDurationMinutes={history.reduce((acc, h) => acc + (h.minutes || 0), 0)}
-              xpEarnedToday={playerStats.exp}
-              distanceKmToday={dailyQuest.objectives.runKm.current}
-              caloriesBurnedToday={history.reduce((acc, h) => acc + (h.kcalEstimate || 0), 0)}
-            />
-          </div>
-        )}
-
-        {/* 2. Inventory & Gear Tab */}
-        {activeTab === "inventory" && (
-          <div className="max-w-5xl mx-auto space-y-6">
-            <LevelingInventoryView
-              lang={lang}
-              goldCount={playerStats.coins ?? 1450}
-              keysCount={playerStats.keys ?? 3}
-              gemsCount={playerStats.gems ?? 25}
-              unlockedEquipment={activeProfile.equipment}
-              onEquipChange={(eq) => quickPatch({ equipment: eq })}
-              onOpenArsenal={() => setShowLibraryModal(true)}
-            />
-          </div>
-        )}
-
-        {/* 3. Player Status Tab */}
-        {activeTab === "status" && (
-          <div className="max-w-4xl mx-auto space-y-6">
-            <LevelingStatusView
-              lang={lang}
-              stats={playerStats}
-              onUpdateStats={(updated) => {
-                setPlayerStats(updated);
-                savePlayerStats(updated);
-                if (isSupabaseConfigured()) {
-                  void syncPlayerStatsToSupabase(updated, activeUser?.id ?? "default");
+          onClose={() => setSelectedAnimationEx(null)}
+          onSwap={
+            session && selectedAnimationEx
+              ? (newId) => {
+                  const pe = session.plan.exercises.find((e) => e.exerciseId === selectedAnimationEx.id);
+                  if (pe) swapExercise(pe.uid, newId);
+                  setSelectedAnimationEx(getExercise(newId) ?? null);
                 }
-              }}
-              onTriggerArise={() => {
-                playSound("arise");
-                vibrate([40, 80, 40]);
-                setAriseModalText({
-                  title: lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN",
-                  subtitle: lang === "bn" ? "শ্যাডো মনার্ক জাগ্রত হচ্ছে" : "THE SHADOW MONARCH AWAKENS",
-                });
-                setShowAriseModal(true);
-              }}
-              onOpenCalibration={() => setShowWelcomeOnboarding(true)}
-              goldCount={playerStats.coins ?? 1450}
-              keysCount={playerStats.keys ?? 3}
-            />
-          </div>
-        )}
+              : undefined
+          }
+        />
 
-        {/* 4. Home / Quests & Dungeon Tab */}
-        {activeTab === "home" && (
-          <>
-            {!plan || !session ? (
-              // ---------------- Responsive 2-Column Dashboard ----------------
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start max-w-3xl lg:max-w-none mx-auto">
-                {/* Left Column (8 cols): Quests, Schedule & Dungeon Gate */}
-                <div className="lg:col-span-8 space-y-6">
-                  {saved && (
-                    <div role="status" className="flex items-center gap-2 rounded-2xl border border-cyan-500/30 bg-cyan-950/40 p-3 text-sm text-cyan-200">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-cyan-400" /> {saved}
-                    </div>
-                  )}
+        <PlateCalculatorModal
+          open={Boolean(plateCalcTarget?.open)}
+          initialWeightKg={plateCalcTarget?.weight || 60}
+          lang={lang}
+          onApplyWeight={(w) => {
+            if (plateCalcTarget?.uid && session) {
+              setSession((s) => {
+                if (!s) return null;
+                const curSets = s.sets[plateCalcTarget.uid!] ?? [];
+                const updated = curSets.map((set) => (set.done ? set : { ...set, weightKg: w }));
+                return { ...s, sets: { ...s.sets, [plateCalcTarget.uid!]: updated } };
+              });
+            }
+          }}
+          onClose={() => setPlateCalcTarget(null)}
+        />
 
-                  {/* Leveling Quest Carousel (Daily, Focus, Urgent, Custom) */}
-                  <LevelingQuestCarouselCard
-                    dailyQuest={dailyQuest}
-                    onUpdateDailyQuest={setDailyQuest}
-                    onClaimDailyQuest={handleClaimDailyQuest}
-                    focusPlan={plan}
-                    onStartFocusWorkout={() => {
-                      if (!session) {
-                        void generate(activeProfile);
-                      } else {
-                        startWorkout();
-                      }
-                    }}
-                    onOpenExerciseAnimation={(ex) => setSelectedAnimationEx(ex)}
-                    lang={lang}
-                  />
-
-                  {/* Weekly Schedule & Smart Split Bar */}
-                  <WeeklyScheduleBar
-                    workoutDays={activeProfile.workoutDays ?? [1, 3, 5]}
-                    lang={lang}
-                    onToggleDay={(dayIndex) => {
-                      const cur = new Set(activeProfile.workoutDays ?? [1, 3, 5]);
-                      if (cur.has(dayIndex)) {
-                        if (cur.size > 1) cur.delete(dayIndex);
-                      } else {
-                        cur.add(dayIndex);
-                      }
-                      quickPatch({ workoutDays: Array.from(cur).sort((a, b) => a - b) });
-                    }}
-                    onSetDays={(days) => quickPatch({ workoutDays: days })}
-                    onApplyTodayFocus={(focusId) => quickPatch({ focus: focusId })}
-                  />
-
-                  {/* Solo Leveling Dungeon Gate Generation Card */}
-                  <div className="relative overflow-hidden rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-b from-[#050e24]/90 via-[#071330]/80 to-[#040814]/95 p-5 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-                    {/* Dungeon Portal Banner */}
-                    <div className="relative h-36 sm:h-48 w-full rounded-xl overflow-hidden border border-cyan-400/50 mb-4 shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-                      <Image
-                        src="/images/solo-leveling/system-monarch-banner.jpg"
-                        alt="Solo Leveling System Gate"
-                        fill
-                        className="object-cover object-top"
-                        priority
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-3 sm:p-4">
-                        <span className="text-[10px] sm:text-xs font-mono font-black text-cyan-300 uppercase tracking-widest">[ DUNGEON GATE : SYSTEM PORTAL ]</span>
-                        <span className="text-sm sm:text-base font-black text-white">DEFEAT WEAKNESS · CLAIM STAT POINTS</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between gap-2">
-                      <h2 className="text-xl sm:text-2xl font-black tracking-wide text-white uppercase">[ DUNGEON MISSION : {tr.readyTitle} ]</h2>
-                      <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-black bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm">
-                        {playerStats.rank}-RANK
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs sm:text-sm text-zinc-400">
-                      {tr.readySubtitle}
-                    </p>
-
-                    <div className="mt-4">
-                      <span className="mb-1.5 block text-xs font-mono font-bold text-cyan-400/90">{tr.focusLabel}</span>
-                      <div className="flex flex-wrap gap-2">
-                        {FOCUSES.map((f) => (
-                          <Chip key={f.id} selected={activeProfile.focus === f.id} onClick={() => quickPatch({ focus: f.id })}>
-                            {FOCUS_LABELS_I18N[lang]?.[f.id] ?? f.label}
-                          </Chip>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <span className="mb-1.5 block text-xs font-mono font-bold text-cyan-400/90">{tr.timeLabel}</span>
-                      <div className="flex flex-wrap gap-2">
-                        {([20, 30, 45, 60] as const).map((m) => (
-                          <Chip key={m} selected={activeProfile.minutes === m} onClick={() => quickPatch({ minutes: m })}>
-                            {m} {lang === "bn" ? "মি." : "min"}
-                          </Chip>
-                        ))}
-                      </div>
-                    </div>
-
-                    <button
-                      id="btn-generate-ai"
-                      onClick={() => {
-                        unlockAudio();
-                        playSound("system-click");
-                        void generate(activeProfile);
-                      }}
-                      disabled={busy || !profile}
-                      className="mt-5 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 font-black text-sm uppercase tracking-wider text-black shadow-lg shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 cursor-pointer"
-                    >
-                      {busy ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin text-black" /> {tr.buildingSessionBtn}
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-4 w-4 stroke-[2.5] text-black animate-pulse" /> [ ENTER DUNGEON : {tr.generateWorkoutBtn} ]
-                        </>
-                      )}
-                    </button>
-                    <button
-                      id="btn-generate-offline"
-                      onClick={() => void generate(activeProfile, { offline: true })}
-                      disabled={busy || !profile}
-                      className="mt-2 min-h-[44px] w-full text-xs text-zinc-400 underline-offset-2 hover:text-zinc-200 hover:underline disabled:opacity-50"
-                    >
-                      {tr.offlineBuildBtn}
-                    </button>
-
-                    {history[0] && (
-                      <p className="mt-3 text-center text-xs text-zinc-500 border-t border-zinc-800/80 pt-3">
-                        {tr.lastSessionFelt(history[0].title, history[0].difficulty)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Column (4 cols): Hunter Vitality HUD, BMI & Rations, Gear Vault */}
-                <div className="lg:col-span-4 space-y-6">
-                  {/* 1. Hunter Vitality HUD Card */}
-                  <div className="rounded-2xl border-2 border-cyan-500/30 bg-[#060b18]/90 p-4 shadow-[0_4px_25px_rgba(6,182,212,0.12)] space-y-3.5 backdrop-blur-md">
-                    <div className="flex items-center justify-between border-b border-cyan-500/20 pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-lg overflow-hidden border border-cyan-400/60 relative">
-                          <Image src="/images/solo-leveling/system-crest-icon.jpg" alt="Hunter" fill className="object-cover" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-mono font-black text-white">{playerStats.name || "Sung Jin-Woo"}</div>
-                          <div className="text-[10px] font-mono text-purple-300 font-semibold">{playerStats.title || "Shadow Monarch"}</div>
-                        </div>
-                      </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-cyan-950/80 text-cyan-300 border border-cyan-400/40">
-                        {playerStats.rank}-RANK
-                      </span>
-                    </div>
-
-                    {/* Level & Exp */}
-                    <div>
-                      <div className="flex justify-between text-[11px] font-mono mb-1">
-                        <span className="text-cyan-300 font-bold">LEVEL {playerStats.level}</span>
-                        <span className="text-zinc-400">{playerStats.exp} / {playerStats.expToNext || 500} EXP</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-slate-900 border border-cyan-500/30 overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300"
-                          style={{ width: `${Math.min(100, Math.round((playerStats.exp / (playerStats.expToNext || 500)) * 100))}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* HP & MP gauges */}
-                    <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                      <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-2">
-                        <div className="flex justify-between text-red-300 font-bold mb-1">
-                          <span>HP</span>
-                          <span>{playerStats.hp?.current ?? 100}/{playerStats.hp?.max ?? 100}</span>
-                        </div>
-                        <div className="h-1 bg-zinc-900 rounded-full overflow-hidden">
-                          <div className="h-full bg-red-500 w-full" />
-                        </div>
-                      </div>
-                      <div className="bg-cyan-950/30 border border-cyan-500/30 rounded-xl p-2">
-                        <div className="flex justify-between text-cyan-300 font-bold mb-1">
-                          <span>MP</span>
-                          <span>{playerStats.mp?.current ?? 100}/{playerStats.mp?.max ?? 100}</span>
-                        </div>
-                        <div className="h-1 bg-zinc-900 rounded-full overflow-hidden">
-                          <div className="h-full bg-cyan-400 w-full" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Unallocated Stat Points Banner */}
-                    {playerStats.unallocatedPoints > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          playSound("system-click");
-                          setActiveTab("status");
-                        }}
-                        className="w-full py-2 px-3 rounded-xl border border-amber-400/60 bg-gradient-to-r from-amber-500/20 to-yellow-500/10 text-amber-300 text-xs font-mono font-bold flex items-center justify-between hover:bg-amber-500/30 transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)] animate-pulse"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                          <span>+{playerStats.unallocatedPoints} STAT POINTS AVAILABLE</span>
-                        </span>
-                        <span className="text-[10px] underline">ASSIGN &gt;</span>
-                      </button>
-                    )}
-
-                    {/* Quick Attributes Row */}
-                    <div className="grid grid-cols-5 gap-1 text-center font-mono text-[10px]">
-                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
-                        <span className="text-zinc-500 block text-[9px]">STR</span>
-                        <strong className="text-red-400 font-bold">{playerStats.attributes?.str ?? 10}</strong>
-                      </div>
-                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
-                        <span className="text-zinc-500 block text-[9px]">AGI</span>
-                        <strong className="text-emerald-400 font-bold">{playerStats.attributes?.agi ?? 10}</strong>
-                      </div>
-                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
-                        <span className="text-zinc-500 block text-[9px]">VIT</span>
-                        <strong className="text-amber-400 font-bold">{playerStats.attributes?.vit ?? 10}</strong>
-                      </div>
-                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
-                        <span className="text-zinc-500 block text-[9px]">INT</span>
-                        <strong className="text-blue-400 font-bold">{playerStats.attributes?.int ?? 10}</strong>
-                      </div>
-                      <div className="bg-slate-900/80 p-1.5 rounded-lg border border-slate-800">
-                        <span className="text-zinc-500 block text-[9px]">PER</span>
-                        <strong className="text-purple-400 font-bold">{playerStats.attributes?.per ?? 10}</strong>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playSound("system-click");
-                        setActiveTab("status");
-                      }}
-                      className="w-full py-2 text-center text-xs font-mono font-bold text-cyan-300 hover:text-cyan-100 hover:underline border border-cyan-500/20 rounded-xl bg-cyan-950/20 transition-colors"
-                    >
-                      [ {lang === "bn" ? "পূর্ণাঙ্গ স্ট্যাটাস ও স্কিল দেখুন" : "VIEW FULL STATUS & SKILLS"} ]
-                    </button>
-                  </div>
-
-                  {/* 2. Visual BMI Gauge & Energy / Macro Split Card */}
-                  <div className="rounded-2xl border border-zinc-800 bg-[#060b18]/90 p-4 space-y-3.5 shadow-md backdrop-blur-md">
-                    <BmiGauge bmi={stats.bmi} category={stats.bmiCategory} />
-
-                    <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-zinc-800/60">
-                      <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
-                        <div className="text-[10px] text-zinc-400">{tr.restingBmr}</div>
-                        <div className="text-base font-bold text-white font-mono">{stats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
-                      </div>
-                      <div className="rounded-xl bg-zinc-950/70 p-2.5 border border-zinc-800/50">
-                        <div className="text-[10px] text-zinc-400">{tr.dailyTdee}</div>
-                        <div className="text-base font-bold text-emerald-400 font-mono">{stats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span></div>
-                      </div>
-                    </div>
-
-                    {nutrition && (
-                      <div className="rounded-xl bg-zinc-950/80 p-3 border border-zinc-800 text-center space-y-1.5">
-                        <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
-                          <span>{tr.targetCalories(activeProfile.goal)}</span>
-                          <strong className="text-white font-mono">{nutrition.targetCalories} kcal/day</strong>
-                        </div>
-                        <div className="grid grid-cols-3 gap-1.5 text-xs">
-                          <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                            <span className="text-emerald-400 font-semibold block text-[10px]">{tr.proteinLabel}</span>
-                            <strong className="text-white font-mono">{nutrition.proteinGrams}g</strong>
-                          </div>
-                          <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                            <span className="text-teal-400 font-semibold block text-[10px]">{tr.carbsLabel}</span>
-                            <strong className="text-white font-mono">{nutrition.carbGrams}g</strong>
-                          </div>
-                          <div className="bg-zinc-900/90 p-2 rounded-lg border border-zinc-800">
-                            <span className="text-amber-400 font-semibold block text-[10px]">{tr.fatsLabel}</span>
-                            <strong className="text-white font-mono">{nutrition.fatGrams}g</strong>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => setShowDietSheet(true)}
-                      className="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2.5 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-500/20 transition-colors shadow-sm"
-                    >
-                      <Utensils className="h-4 w-4" />
-                      <span>{tr.viewDietChartBtn}</span>
-                    </button>
-                  </div>
-
-                  {/* 3. Hunter Vault & Arsenal Preview */}
-                  <div className="rounded-2xl border border-cyan-500/20 bg-[#060b18]/90 p-4 space-y-3 backdrop-blur-md">
-                    <div className="flex items-center justify-between text-xs font-mono font-bold text-zinc-400">
-                      <span className="flex items-center gap-1.5 text-cyan-300">
-                        <Package className="h-3.5 w-3.5" /> [ HUNTER VAULT ]
-                      </span>
-                      <span className="text-amber-400 font-mono">🪙 {playerStats.coins ?? 1450}</span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-2 text-center font-mono text-[11px]">
-                      <div className="bg-zinc-950/70 p-2 rounded-xl border border-zinc-800/80">
-                        <span className="text-zinc-500 block text-[9px]">GOLD</span>
-                        <strong className="text-amber-400">{playerStats.coins ?? 1450}</strong>
-                      </div>
-                      <div className="bg-zinc-950/70 p-2 rounded-xl border border-zinc-800/80">
-                        <span className="text-zinc-500 block text-[9px]">DUNGEON KEYS</span>
-                        <strong className="text-cyan-400">{playerStats.keys ?? 3}</strong>
-                      </div>
-                      <div className="bg-zinc-950/70 p-2 rounded-xl border border-zinc-800/80">
-                        <span className="text-zinc-500 block text-[9px]">MANA GEMS</span>
-                        <strong className="text-purple-400">{playerStats.gems ?? 25}</strong>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playSound("system-click");
-                        setActiveTab("inventory");
-                      }}
-                      className="w-full py-2 text-center text-xs font-mono font-bold text-cyan-300 hover:text-cyan-100 hover:underline border border-cyan-500/20 rounded-xl bg-cyan-950/20 transition-colors"
-                    >
-                      [ {lang === "bn" ? "ইনভেন্টরি ও গিয়ার সজ্জিত করুন" : "MANAGE GEAR & ARSENAL"} ]
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-          // ---------------- active workout ----------------
-          <>
-            <section className="relative overflow-hidden rounded-2xl border-2 border-cyan-400/80 bg-gradient-to-b from-[#05112e]/95 via-[#07153a]/90 to-[#030818]/95 p-5 shadow-[0_0_40px_rgba(6,182,212,0.35)] system-scanlines system-grid-bg">
-              {/* Corner Luminous Diamonds (Manhwa Accurate) */}
-              <div className="absolute top-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
-              <div className="absolute top-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
-              <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
-              <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-xs font-mono select-none drop-shadow-[0_0_8px_rgba(6,182,212,0.9)]">◆</div>
-
-              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-cyan-500/15 blur-3xl" />
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-black uppercase bg-cyan-400 text-black shadow-md">
-                    {lang === "bn" ? "[ DUNGEON RAID : ডানজন রেইড ]" : "[ DUNGEON RAID : ACTIVE ]"}
-                  </span>
-                  {plan.source === "ai" ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-950/80 px-2.5 py-0.5 text-xs font-mono font-bold text-cyan-300">
-                      <Sparkles className="h-3 w-3 text-cyan-400 animate-pulse" /> {tr.aiCoachBadge}
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-600 bg-zinc-900 px-2.5 py-0.5 text-xs font-mono font-bold text-zinc-300">
-                      <WifiOff className="h-3 w-3" /> {tr.offlineBadge}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black border border-purple-400/50 bg-purple-950/80 text-purple-300">
-                    {playerStats.rank}-RANK
-                  </span>
-                  <span className="flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-black/70 px-2.5 py-1 text-xs font-mono text-zinc-300">
-                    <HeartPulse className="h-3.5 w-3.5 text-rose-400" /> {tr.bmiLabel} <strong className="text-white font-mono">{session.meta.bmi}</strong>
-                  </span>
-                </div>
-              </div>
-
-              <h2 className="mb-2 text-2xl font-black tracking-wide text-white md:text-3xl uppercase text-glow-cyan">
-                {plan.title}
-              </h2>
-              <div className="mb-4 flex flex-wrap items-center gap-4 text-xs text-zinc-300 md:text-sm font-mono">
-                <span className="flex items-center gap-1.5">
-                  <Dumbbell className="h-4 w-4 text-cyan-400" />
-                  <span className="text-cyan-200 font-bold">{FOCUS_LABELS_I18N[lang]?.[plan.focus] ?? focusLabel(plan.focus)}</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-cyan-400" /> ~{estimateMinutes(plan)} {lang === "bn" ? "মি." : "min"}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Activity className="h-4 w-4 text-cyan-400" /> {tr.movementsCount(plan.exercises.length)}
-                </span>
-              </div>
-
-              {plan.coachNote && (
-                <div className="flex items-start gap-3 rounded-xl border border-cyan-500/40 bg-black/60 p-3.5 font-mono">
-                  <div className="mt-0.5 shrink-0 rounded-lg bg-cyan-500/20 p-1.5 text-cyan-400">
-                    <Info className="h-4 w-4" />
-                  </div>
-                  <p className="text-xs leading-relaxed text-zinc-300 md:text-sm">
-                    <strong className="font-bold text-cyan-400 uppercase">[ SYSTEM DIRECTIVE ] </strong>
-                    {plan.coachNote}
-                  </p>
-                </div>
-              )}
-
-              {plan.consensus && (
-                <div className="mt-3 overflow-hidden rounded-xl border border-teal-500/40 bg-teal-950/30 p-3.5 backdrop-blur-sm font-mono">
-                  <div className="flex items-center justify-between gap-2 border-b border-teal-500/30 pb-2">
-                    <span className="flex items-center gap-1.5 text-xs font-black text-teal-300 uppercase">
-                      <Sparkles className="h-3.5 w-3.5 text-teal-400" />
-                      {plan.consensus.verifiedBy}
-                    </span>
-                    {plan.consensus.safetyScore && (
-                      <span className="rounded bg-teal-950 border border-teal-400/50 px-2 py-0.5 text-[10px] font-mono font-bold text-teal-200">
-                        {plan.consensus.safetyScore}% Biomechanical Match
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-2 text-xs text-zinc-300 leading-relaxed">
-                    {plan.consensus.summary}
-                  </p>
-                  {plan.consensus.notes && plan.consensus.notes.length > 0 && (
-                    <ul className="mt-2 space-y-1 text-[11px] text-zinc-400">
-                      {plan.consensus.notes.map((note, idx) => (
-                        <li key={idx} className="flex items-start gap-1.5">
-                          <CheckCircle2 className="h-3 w-3 text-teal-400 mt-0.5 shrink-0" />
-                          <span>{note}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-
-              {!session.startedAt && (
-                <button
-                  onClick={() => {
-                    playSound("arise");
-                    vibrate([50, 100, 50]);
-                    startWorkout();
-                  }}
-                  className="system-btn-chamfer mt-4 flex min-h-[50px] w-full items-center justify-center gap-2 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 font-black text-xs uppercase tracking-widest text-black shadow-[0_0_25px_rgba(6,182,212,0.7)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
-                >
-                  <Play className="h-4 w-4 fill-current stroke-none" /> [ ENGAGE DUNGEON MISSION : {tr.startWorkoutBtn} ]
-                </button>
-              )}
-            </section>
-
-            {notice && (
-              <div role="status" className="flex items-start gap-2 rounded-xl border border-amber-700/40 bg-amber-950/30 p-3 text-xs text-amber-100">
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
-                <span className="flex-1">{notice}</span>
-                <button onClick={() => setNotice(null)} aria-label="Dismiss notice" className="text-amber-300 hover:text-white">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-
-            <section className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
-              <button
-                onClick={() => setWarmupOpen(!warmupOpen)}
-                aria-expanded={warmupOpen}
-                className="flex min-h-[64px] w-full items-center justify-between p-4 text-left hover:bg-zinc-800/40"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-teal-500/20 bg-teal-500/10 text-teal-400">
-                    <Flame className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">{tr.warmupTitle}</h3>
-                    <p className="text-xs text-zinc-400">
-                      {plan.warmup.filter((w) => session.warmupDone[w.moveId]).length} of {plan.warmup.length} done
-                    </p>
-                  </div>
-                </div>
-                {warmupOpen ? <ChevronUp className="h-4 w-4 text-zinc-400" /> : <ChevronDown className="h-4 w-4 text-zinc-400" />}
-              </button>
-              {warmupOpen && (
-                <ul className="space-y-2 border-t border-zinc-800/50 p-4 pt-3">
-                  {plan.warmup.map((w) => {
-                    const move = WARMUP_MAP[w.moveId];
-                    if (!move) return null;
-                    const done = !!session.warmupDone[w.moveId];
-                    return (
-                      <li
-                        key={w.moveId}
-                        className={`flex items-start gap-3 rounded-xl border p-3 ${done ? "border-emerald-500/30 bg-zinc-950/60 opacity-70" : "border-zinc-800 bg-zinc-900/90"}`}
-                      >
-                        <button
-                          onClick={() => toggleWarmup(w.moveId)}
-                          aria-pressed={done}
-                          aria-label={`Mark ${move.name} ${done ? "not done" : "done"}`}
-                          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${done ? "bg-emerald-500 text-black" : "border border-zinc-600 bg-zinc-800/50"}`}
-                        >
-                          {done && <CheckCircle2 className="h-4 w-4 stroke-[3]" />}
-                        </button>
-                        <div className="min-w-0 flex-1">
-                          <div className={`text-sm font-medium ${done ? "text-zinc-400 line-through" : "text-zinc-100"}`}>{move.name}</div>
-                          <p className="mt-0.5 text-xs leading-snug text-zinc-400">{move.notes}</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            unlockAudio();
-                            timer.start(w.seconds, `Warm-up: ${move.name}`);
-                          }}
-                          className="flex min-h-[40px] shrink-0 items-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 text-xs text-zinc-200 hover:bg-zinc-700"
-                        >
-                          <Timer className="h-3.5 w-3.5" /> {w.seconds}s
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </section>
-
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 text-lg font-bold tracking-tight text-white">
-                  <Dumbbell className="h-5 w-5 text-emerald-400" /> {tr.mainWorkTitle(plan.exercises.length)}
-                </h3>
-                <button onClick={discard} className="flex min-h-[40px] items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200">
-                  <RotateCcw className="h-3 w-3" /> {tr.discardBtn}
-                </button>
-              </div>
-
-              {plan.exercises.map((pe, i) => {
-                const ex = getExercise(pe.exerciseId);
-                if (!ex) return null;
-                const owned = activeProfile.equipment;
-                const easier = ex.easier ? getExercise(ex.easier) : undefined;
-                const harder = ex.harder ? getExercise(ex.harder) : undefined;
-                const inPlan = plan.exercises.map((x) => x.exerciseId);
-                return (
-                  <ExerciseCard
-                    key={pe.uid}
-                    index={i}
-                    planExercise={pe}
-                    exercise={ex}
-                    sets={session.sets[pe.uid] ?? []}
-                    lastWeightKg={weights[ex.id]}
-                    easier={easier && hasEquipment(easier, owned) && !inPlan.includes(easier.id) ? easier : undefined}
-                    harder={harder && hasEquipment(harder, owned) && !inPlan.includes(harder.id) ? harder : undefined}
-                    alternatives={alternativesFor(ex.id, activeProfile, inPlan)}
-                    unitSystem={unitSystem}
-                    lang={lang}
-                    onToggleSet={(idx) => toggleSet(pe.uid, idx)}
-                    onChangeSet={(idx, patch) => changeSet(pe.uid, idx, patch)}
-                    onSwap={(id) => swapExercise(pe.uid, id)}
-                    onStartHold={(secs, label) => {
-                      unlockAudio();
-                      timer.start(secs, `Hold: ${label}`);
-                    }}
-                    onOpenAnimation={() => setSelectedAnimationEx(ex)}
-                  />
-                );
-              })}
-            </section>
-
-            <section className={`rounded-2xl border p-4 ${allDone ? "border-emerald-500/40 bg-emerald-500/10" : "border-zinc-800 bg-zinc-900/60"}`}>
-              <p className="mb-3 text-sm text-zinc-300">
-                {allDone
-                  ? (lang === "bn" ? "সবগুলো সেট সম্পন্ন হয়েছে! সেশনটি কেমন লেগেছে রেট করে সেভ করুন।" : "All sets done. Log how it felt so your next session adapts.")
-                  : (lang === "bn" ? "তাড়াতাড়ি শেষ করতে চান? যেকোনো সময় ফিনিশ করে সেশন সেভ করতে পারেন।" : "Done early or short on time? You can finish any time and still log it.")}
-              </p>
-              <button
-                onClick={() => setShowFinish(true)}
-                className={`min-h-[48px] w-full rounded-xl font-bold ${allDone ? "bg-gradient-to-r from-emerald-500 to-teal-400 text-zinc-950" : "border border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700"}`}
-              >
-                {tr.finishWorkoutBtn}
-              </button>
-              {session.startedAt && t && (
-                <p className="mt-2 text-center text-[11px] text-zinc-500">{tr.estimateKcalBurn(kcalEstimate(activeProfile.weightKg, Math.max(1, elapsedMin ?? 0)))}</p>
-              )}
-            </section>
-          </>
-        )}
-      </>
-    )}
-
-        <p className="pb-4 text-center text-[11px] leading-relaxed text-zinc-600">
-          {tr.medicalDisclaimer}
-        </p>
-      </main>
-      </div>
-
-      <RestTimer
-        state={timer.state}
-        seconds={timer.seconds}
-        label={timer.label}
-        progress={timer.progress}
-        lang={lang}
-        onPause={timer.pause}
-        onResume={timer.resume}
-        onAdjust={timer.adjust}
-        onStop={timer.stop}
-      />
-
-      {(showProfile || (needsSetup && !showWelcomeOnboarding)) && (
-        <ProfileSheet
-          open
-          firstRun={needsSetup}
-          profile={activeProfile}
-          accessCode={accessCode}
-          unitSystem={unitSystem}
+        <ExerciseLibraryModal
+          open={showLibraryModal}
           lang={lang}
           onLanguageChange={setLang}
-          onSave={saveProfile}
-          onClose={() => setShowProfile(false)}
+          onSelectExercise={(ex) => setSelectedAnimationEx(ex)}
+          onClose={() => setShowLibraryModal(false)}
         />
-      )}
-
-      {/* Solo Leveling Welcome & Hunter Calibration Wizard */}
-      <SoloLevelingWelcomeOnboarding
-        open={showWelcomeOnboarding}
-        initialProfile={activeProfile}
-        initialName={activeUser?.name || playerStats.name}
-        lang={lang}
-        onLanguageChange={setLang}
-        onComplete={handleCompleteWelcomeOnboarding}
-        onClose={() => setShowWelcomeOnboarding(false)}
-      />
-
-      {/* Solo Leveling Welcome Back Returning Hunter Briefing Modal */}
-      <SoloLevelingWelcomeBackModal
-        open={showWelcomeBackModal}
-        stats={playerStats}
-        quest={dailyQuest}
-        isWorkoutDay={todaySchedule.isWorkoutDay}
-        focusTitle={lang === "bn" ? `${todaySchedule.bengaliName} · ${todaySchedule.sessionTitle}` : `${todaySchedule.dayName} · ${todaySchedule.sessionTitle}`}
-        lang={lang}
-        onLanguageChange={setLang}
-        onStartWorkout={() => {
-          setShowWelcomeBackModal(false);
-          setView("today");
-          if (!session) {
-            void generate(activeProfile);
-          }
-        }}
-        onOpenQuest={() => {
-          setShowWelcomeBackModal(false);
-          setView("today");
-          const el = document.getElementById("daily-quest-card");
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
-        onOpenStatus={() => {
-          setShowWelcomeBackModal(false);
-          setShowStatusModal(true);
-        }}
-        onClose={() => setShowWelcomeBackModal(false)}
-      />
-
-      {showFinish && session && (
-        <FinishSheet open session={session} weightKg={activeProfile.weightKg} lang={lang} onLanguageChange={setLang} onSave={finish} onClose={() => setShowFinish(false)} />
-      )}
-
-      <DietSheet
-        open={showDietSheet}
-        weightKg={activeProfile.weightKg}
-        heightCm={activeProfile.heightCm}
-        bmi={stats.bmi}
-        bmiCategory={stats.bmiCategory}
-        tdee={stats.tdee}
-        initialGoal={activeProfile.dietGoal ?? (activeProfile.goal === "muscle" ? "muscle" : "recomp")}
-        lang={lang}
-        onLanguageChange={setLang}
-        accessCode={accessCode}
-        onClose={() => setShowDietSheet(false)}
-      />
-
-      <HunterAuthModal
-        open={showAuthModal}
-        lang={lang}
-        onLanguageChange={setLang}
-        activeAccount={activeUser}
-        accounts={accounts}
-        onSelectAccount={(acc) => {
-          setActiveUser(acc);
-          if (acc?.profile) setProfile(acc.profile);
-        }}
-        onCreateAccount={(name, pin) => {
-          const newAcc: UserAccount = {
-            id: `acc_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-            name,
-            pin,
-            createdAt: Date.now(),
-            lastActive: Date.now(),
-            profile: activeProfile,
-          };
-          setAccounts((prev) => [...prev, newAcc]);
-          setActiveUser(newAcc);
-        }}
-        onSyncCloud={handleForceCloudSync}
-        onClose={() => setShowAuthModal(false)}
-      />
-
-      <ExerciseAnimationModal
-        exercise={selectedAnimationEx}
-        easier={selectedAnimationEx?.easier ? getExercise(selectedAnimationEx.easier) : undefined}
-        harder={selectedAnimationEx?.harder ? getExercise(selectedAnimationEx.harder) : undefined}
-        lang={lang}
-        onLanguageChange={setLang}
-        onClose={() => setSelectedAnimationEx(null)}
-        onSwap={
-          session && selectedAnimationEx
-            ? (newId) => {
-                const pe = session.plan.exercises.find((e) => e.exerciseId === selectedAnimationEx.id);
-                if (pe) swapExercise(pe.uid, newId);
-                setSelectedAnimationEx(getExercise(newId) ?? null);
-              }
-            : undefined
-        }
-      />
-
-      <ExerciseLibraryModal
-        open={showLibraryModal}
-        lang={lang}
-        onLanguageChange={setLang}
-        onSelectExercise={(ex) => {
-          setSelectedAnimationEx(ex);
-        }}
-        onClose={() => setShowLibraryModal(false)}
-      />
-
-
-
-      {/* Solo Leveling System Status Window Modal */}
-      <SoloLevelingStatusModal
-        isOpen={showStatusModal}
-        onClose={() => setShowStatusModal(false)}
-        stats={playerStats}
-        onUpdateStats={setPlayerStats}
-        lang={lang}
-        onLanguageChange={setLang}
-        onOpenCalibration={() => {
-          setShowStatusModal(false);
-          setShowWelcomeOnboarding(true);
-        }}
-        onTriggerArise={() => {
-          setAriseModalText({
-            title: lang === "bn" ? "ARISE : জাগ্রত হও" : "ARISE : AWAKEN",
-            subtitle: lang === "bn" ? "শ্যাডো মনার্ক জাগ্রত হচ্ছে" : "THE SHADOW MONARCH AWAKENS",
-          });
-          setShowAriseModal(true);
-        }}
-      />
-
-      {/* Solo Leveling Arise & Level-Up Awakening Overlay */}
-      <AriseAwakeningOverlay
-        isOpen={showAriseModal}
-        onClose={() => setShowAriseModal(false)}
-        title={ariseModalText.title}
-        subtitle={ariseModalText.subtitle}
-        level={playerStats.level}
-        lang={lang}
-      />
-
-      {/* Solo Leveling Floating Holographic System Toasts */}
-      <SystemNotificationToast
-        toasts={toasts}
-        onDismiss={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))}
-      />
-
-      {/* Leveling Achievements Modal */}
-      <AchievementsModal
-        open={showAchievementsModal}
-        onClose={() => setShowAchievementsModal(false)}
-        lang={lang}
-        onLanguageChange={setLang}
-        questsCompletedCount={playerStats.totalWorkoutsCleared || 0}
-        totalRepsCount={playerStats.totalSetsCompleted || 0}
-        totalTimeHours={Math.round((history.reduce((acc, h) => acc + (h.minutes || 0), 0) / 60) * 10) / 10}
-        onClaim={({ xp, coins: c, gems: g }) => {
-          const expResult = addPlayerExp(playerStats, xp);
-          const updated: PlayerStats = {
-            ...expResult.stats,
-            coins: (expResult.stats.coins ?? 1450) + c,
-            gems: (expResult.stats.gems ?? 25) + (g ?? 0),
-          };
-          savePlayerStats(updated);
-          setPlayerStats(updated);
-          addSystemToast(
-            lang === "bn" ? "[ অর্জন পুরষ্কার : সম্পন্ন ]" : "[ ACHIEVEMENT CLAIMED ]",
-            lang === "bn"
-              ? `+${xp} EXP এবং +${c} গোল্ড আপনার অ্যাকাউন্টে জমা হয়েছে!`
-              : `+${xp} EXP and +${c} Gold acquired!`
-          );
-        }}
-      />
-
-      {/* Leveling Guild Hub Modal */}
-      <GuildHubModal
-        open={showGuildHubModal}
-        onClose={() => setShowGuildHubModal(false)}
-        lang={lang}
-        onLanguageChange={setLang}
-      />
-
-      {/* Leveling Settings Drawer */}
-      <LevelingSettingsDrawer
-        open={showSettingsDrawer}
-        onClose={() => setShowSettingsDrawer(false)}
-        lang={lang}
-        onLanguageChange={setLang}
-        soundOn={soundOn}
-        onToggleSound={() => {
-          unlockAudio();
-          setSoundOn(!soundOn);
-        }}
-        hapticsOn={hapticsOn}
-        onToggleHaptics={() => setHapticsOn(!hapticsOn)}
-        playerStats={playerStats}
-        activeAccount={activeUser}
-        profile={activeProfile}
-        onOpenAuth={() => setShowAuthModal(true)}
-        onOpenDiet={() => setShowDietSheet(true)}
-        onOpenArsenal={() => setShowLibraryModal(true)}
-        onOpenAchievements={() => setShowAchievementsModal(true)}
-        onOpenGuildHub={() => setShowGuildHubModal(true)}
-        onExportData={exportData}
-        onResetData={() => {
-          if (confirm(lang === "bn" ? "স্থানীয় ডাটা রিসেট করবেন?" : "Reset local data?")) {
-            localStorage.clear();
-            window.location.reload();
-          }
-        }}
-      />
-
-      {/* Active Workout Sticky Action Bar */}
-      {activeTab === "home" && session && t && (
-        <aside
-          aria-label="Active session controls"
-          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] inset-x-3 z-30 mx-auto max-w-lg leveling-card p-2.5 backdrop-blur-xl flex items-center justify-between gap-2 transition-all animate-in slide-in-from-bottom-4 shadow-[0_0_25px_rgba(6,182,212,0.3)]"
-        >
-          <div className="flex items-center gap-2 pl-1.5">
-            <span className="badge badge-primary font-bold text-xs font-mono h-8 px-2 shadow-[0_0_10px_rgba(6,182,212,0.4)]">
-              {t.setsTotal ? Math.round((t.setsDone / t.setsTotal) * 100) : 0}%
-            </span>
-            <div className="text-[11px] leading-tight font-mono">
-              <span className="text-white font-bold block">{t.setsDone}/{t.setsTotal} {tr.sets}</span>
-              <span className="text-cyan-400">{t.volumeKg} kg {lang === "bn" ? "ভলিউম" : "vol"}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {!session.startedAt ? (
-              <button
-                type="button"
-                onClick={startWorkout}
-                className="btn btn-primary min-h-[42px] gap-1.5 text-xs font-mono font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]"
-              >
-                <Play className="h-3.5 w-3.5 fill-current" />
-                <span>{tr.startWorkoutBtn}</span>
-              </button>
-            ) : allDone ? (
-              <button
-                type="button"
-                onClick={() => setShowFinish(true)}
-                className="btn btn-primary min-h-[42px] gap-1.5 text-xs font-mono font-black shadow-[0_0_20px_rgba(6,182,212,0.5)] animate-pulse"
-              >
-                <CheckCircle2 className="h-4 w-4 stroke-[3]" />
-                <span>{tr.finishWorkoutBtn}</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowFinish(true)}
-                className="btn btn-outline btn-primary min-h-[42px] gap-1 text-xs font-mono font-semibold"
-              >
-                <span>{tr.finishWorkoutBtn}</span>
-              </button>
-            )}
-          </div>
-        </aside>
-      )}
-
-      {/* Floating Bottom Navigation Dock (Leveling Dock - Mobile Only) */}
-      <nav
-        aria-label="Main Navigation Dock"
-        className="md:hidden fixed bottom-3 sm:bottom-4 inset-x-0 z-40 flex justify-center pointer-events-none px-4 pb-[max(0.25rem,env(safe-area-inset-bottom))]"
-      >
-        <div className="leveling-dock pointer-events-auto flex items-center justify-between gap-1 px-3 py-2 w-full max-w-xs sm:max-w-sm backdrop-blur-xl bg-[#030712]/90 border border-cyan-500/40 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.8),0_0_20px_rgba(6,182,212,0.25)]">
-          {/* 1. Home / Quests & Dungeon */}
-          <button
-            type="button"
-            id="nav-tab-home"
-            onClick={() => {
-              playSound("system-click");
-              vibrate(15);
-              setActiveTab("home");
-            }}
-            aria-label="Quests & Workout"
-            title={lang === "bn" ? "কোয়েস্ট ও ডানজন" : "Quests & Workout"}
-            className={`flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
-              activeTab === "home"
-                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
-                : "text-zinc-400 hover:text-cyan-200"
-            }`}
-          >
-            <Home className="h-5 w-5" />
-          </button>
-
-          {/* 2. Statistics / Activities */}
-          <button
-            type="button"
-            id="nav-tab-stats"
-            onClick={() => {
-              playSound("system-click");
-              vibrate(15);
-              setActiveTab("stats");
-            }}
-            aria-label="Statistics & Activities"
-            title={lang === "bn" ? "পরিসংখ্যান ও রেকর্ড" : "Statistics & Activities"}
-            className={`flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
-              activeTab === "stats"
-                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
-                : "text-zinc-400 hover:text-cyan-200"
-            }`}
-          >
-            <Activity className="h-5 w-5" />
-          </button>
-
-          {/* 3. Inventory & Gear */}
-          <button
-            type="button"
-            id="nav-tab-inventory"
-            onClick={() => {
-              playSound("system-click");
-              vibrate(15);
-              setActiveTab("inventory");
-            }}
-            aria-label="Inventory & Shop"
-            title={lang === "bn" ? "ইনভেন্টরি ও শপ" : "Inventory & Shop"}
-            className={`flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
-              activeTab === "inventory"
-                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
-                : "text-zinc-400 hover:text-cyan-200"
-            }`}
-          >
-            <Package className="h-5 w-5" />
-          </button>
-
-          {/* 4. Player Status */}
-          <button
-            type="button"
-            id="nav-tab-status"
-            onClick={() => {
-              playSound("system-click");
-              vibrate(15);
-              setActiveTab("status");
-            }}
-            aria-label="Player Status"
-            title={lang === "bn" ? "খেলোয়াড়ের স্ট্যাটাস" : "Player Status"}
-            className={`relative flex flex-col items-center justify-center h-11 w-11 sm:h-12 sm:w-12 rounded-xl transition-all duration-300 active:scale-90 ${
-              activeTab === "status"
-                ? "bg-gradient-to-r from-cyan-500/30 via-blue-500/25 to-indigo-500/30 text-cyan-200 border border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
-                : "text-zinc-400 hover:text-cyan-200"
-            }`}
-          >
-            <UserIcon className="h-5 w-5" />
-            {playerStats.unallocatedPoints > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
-              </span>
-            )}
-          </button>
-        </div>
-      </nav>
+      </div>
     </div>
   );
 }

@@ -15,14 +15,11 @@ import {
   Cloud,
   RefreshCw,
   Plus,
-  ArrowRight,
-  ShieldCheck,
-  Check,
   X,
 } from "lucide-react";
 import type { HistoryEntry, Profile, UserGoal, ProgressEvaluation } from "@/lib/types";
 import type { Language } from "@/lib/i18n";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isCloudConfigured } from "@/lib/mongodb-sync";
 import { playSound } from "@/lib/audio";
 
 interface Props {
@@ -32,7 +29,7 @@ interface Props {
   profile: Profile;
   lang?: Language;
   onSyncCloud: () => Promise<void>;
-  onOpenSupabaseConfig: () => void;
+  onOpenCloudConfig?: () => void;
   onAddCustomGoal: (goal: Omit<UserGoal, "id" | "createdAt" | "currentValue" | "status">) => void;
 }
 
@@ -43,11 +40,11 @@ export function GoalsProgressView({
   profile,
   lang = "bn",
   onSyncCloud,
-  onOpenSupabaseConfig,
+  onOpenCloudConfig,
   onAddCustomGoal,
 }: Props) {
   const isBn = lang === "bn";
-  const isConnected = isSupabaseConfigured();
+  const isConnected = isCloudConfigured();
   const [syncing, setSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -85,43 +82,38 @@ export function GoalsProgressView({
   const completedGoals = goals.filter((g) => g.status === "completed");
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300 font-mono text-zinc-100">
-      {/* 1. Supabase Cloud Core Connection Banner */}
-      <div className="relative rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-r from-cyan-950/80 via-black to-purple-950/70 p-4 shadow-[0_0_25px_rgba(6,182,212,0.25)] flex flex-wrap items-center justify-between gap-3 system-scanlines system-grid-bg">
-        <div className="absolute top-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-        <div className="absolute top-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-        <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-        <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-
+    <div className="space-y-6 text-zinc-100">
+      {/* 1. Cloud Sync Banner */}
+      <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-3">
           <span
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
               isConnected
-                ? "border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                : "border-purple-500/30 bg-purple-950/40 text-purple-300"
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                : "border-zinc-700 bg-zinc-800/60 text-zinc-400"
             }`}
           >
             <Database className="h-5 w-5" />
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-white uppercase tracking-wider text-glow-cyan">
-                {isConnected ? "[ SUPABASE CLOUD CORE : CONNECTED ]" : "[ LOCAL SYSTEM MEMORY ]"}
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
+                {isConnected ? "Cloud Sync: Connected" : "Local Device Storage"}
               </span>
               <span
                 className={`h-2 w-2 rounded-full ${
-                  isConnected ? "bg-cyan-400 animate-pulse shadow-sm shadow-cyan-400" : "bg-purple-400"
+                  isConnected ? "bg-emerald-400 shadow-sm shadow-emerald-400" : "bg-amber-400"
                 }`}
               />
             </div>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
+            <p className="text-xs text-zinc-400 mt-0.5">
               {isConnected
                 ? isBn
-                  ? "সমস্ত ওয়ার্কআউট, ব্যায়াম ডাটা ও প্রগ্রেস ক্লাউডে সিঙ্ক হচ্ছে"
-                  : "All hunter quests, logs, and progression synced to cloud database"
+                  ? "সমস্ত ওয়ার্কআউট ও লক্ষ্য ডাটাবেসে সুরক্ষিতভাবে সিঙ্ক হচ্ছে"
+                  : "All workout history and goals are automatically synced to the cloud"
                 : isBn
-                ? "লোকাল মেমোরিতে সেভ আছে। ক্লাউড সিঙ্ক করতে Supabase কানেক্ট করুন"
-                : "Saved offline. Connect Supabase to sync Hunter biometrics across all devices"}
+                  ? "লোকাল মেমোরিতে সেভ আছে। ক্লাউড ব্যাকআপের জন্য একাউন্ট কানেক্ট করুন"
+                  : "Saved offline. Connect an account to sync your fitness records across devices"}
             </p>
           </div>
         </div>
@@ -129,124 +121,110 @@ export function GoalsProgressView({
         <div className="flex items-center gap-2">
           {isConnected && (
             <button
+              type="button"
               onClick={() => {
-                playSound("system-click");
+                playSound("click");
                 void handleSync();
               }}
               disabled={syncing}
-              className="btn btn-sm btn-primary gap-1.5 uppercase font-mono shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition-all cursor-pointer"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} />
-              <span>{syncSuccess ? "SYNCED!" : syncing ? "SYNCING..." : "SYNC NOW"}</span>
+              <span>{syncSuccess ? "SYNCED" : syncing ? "SYNCING..." : "SYNC NOW"}</span>
             </button>
           )}
 
           <button
+            type="button"
             onClick={() => {
-              playSound("system-click");
-              onOpenSupabaseConfig();
+              playSound("click");
+              if (onOpenCloudConfig) onOpenCloudConfig();
             }}
-            className="btn btn-sm btn-outline btn-neutral text-zinc-300 hover:text-white hover:border-primary gap-1.5 uppercase font-mono"
+            className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white transition-all cursor-pointer"
           >
-            <Cloud className="h-3.5 w-3.5 text-primary" />
-            <span>{isBn ? "ডাটাবেস সেটিংস" : "DATABASE CONFIG"}</span>
+            <Cloud className="h-3.5 w-3.5 text-zinc-400" />
+            <span>{isBn ? "ক্লাউড একাউন্ট" : "Cloud Account"}</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Continuous Biometric & Performance Evaluation Snapshot */}
+      {/* 2. Fitness Progress Evaluation */}
       {evaluation && (
-        <section className="relative overflow-hidden rounded-2xl border-2 border-cyan-400/70 bg-gradient-to-b from-[#05112e]/95 via-[#07153a]/90 to-[#030818]/95 p-5 shadow-[0_0_35px_rgba(6,182,212,0.3)] space-y-4 system-scanlines system-grid-bg">
-          <div className="absolute top-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-          <div className="absolute top-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-          <div className="absolute bottom-1.5 left-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-          <div className="absolute bottom-1.5 right-1.5 text-cyan-400 text-[10px] select-none">◆</div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-cyan-500/30 pb-4">
+        <section className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-sm space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/20 text-cyan-400 border border-cyan-400/40">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
                   <Activity className="h-4 w-4" />
                 </span>
-                <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-glow-cyan">
-                  {isBn ? "[ হান্টার বায়োমেট্রিক মূল্যায়ন : CONTINUOUS EVALUATION ]" : "[ HUNTER COMBAT EVALUATION : PROGRESS ANALYSIS ]"}
+                <h3 className="text-base font-bold text-white">
+                  {isBn ? "প্রগ্রেস ও পারফরম্যান্স মূল্যায়ন" : "Performance & Consistency Score"}
                 </h3>
               </div>
               <p className="text-xs text-zinc-400 mt-0.5">
                 {isBn
-                  ? "আপনার সাম্প্রতিক সেশন, ভলিউম ও রিকভারির স্বয়ংক্রিয় মূল্যায়ন"
-                  : "Continuous analysis of progressive overload, consistency, and volume trends"}
+                  ? "আপনার সাম্প্রতিক সেশন, ভলিউম ও ধারাবাহিকতার স্বয়ংক্রিয় বিশ্লেষণ"
+                  : "Real-time evaluation of progressive overload, consistency, and training load"}
               </p>
             </div>
 
-            {/* Overall Score Badge */}
-            <div className="flex items-center gap-3 bg-black/80 border-2 border-cyan-400/60 rounded-xl px-4 py-2 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-              <div className="text-right">
-                <span className="text-[9px] text-cyan-300 uppercase tracking-widest block font-black">
-                  {isBn ? "যুদ্ধের প্রস্তুতি" : "COMBAT READINESS"}
-                </span>
-                <span className="text-xl font-black text-white font-mono text-glow-cyan">
-                  {evaluation.overallScore}
-                  <span className="text-xs text-zinc-500"> / 100</span>
-                </span>
-              </div>
+            <div className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-2">
+              <span className="text-xs font-medium text-zinc-400">Overall Readiness:</span>
+              <span className="text-lg font-bold text-emerald-400 font-mono">
+                {evaluation.overallScore}
+                <span className="text-xs text-zinc-500 font-normal"> / 100</span>
+              </span>
             </div>
           </div>
 
-          {/* 3 DaisyUI Stat Cards */}
-          <div className="stats stats-vertical sm:stats-horizontal shadow bg-base-300/80 border border-cyan-500/30 w-full">
-            <div className="stat p-3.5">
-              <div className="stat-figure text-cyan-400">
-                <TrendingUp className="h-5 w-5" />
+          {/* 3 Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5">
+              <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
+                <span>Strength Index</span>
+                <TrendingUp className="h-4 w-4 text-emerald-400" />
               </div>
-              <div className="stat-title text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                {isBn ? "শক্তি সূচক (STRENGTH INDEX)" : "STRENGTH INDEX"}
-              </div>
-              <div className="stat-value text-2xl font-black text-cyan-400 font-mono text-glow-cyan">
+              <div className="mt-1 text-2xl font-bold text-white font-mono">
                 {evaluation.strengthScore}%
               </div>
-              <div className="stat-desc text-[10px] text-cyan-400 font-bold uppercase mt-0.5">
-                {isBn ? "প্রগ্রেসিভ ওভারলোড সক্রিয়" : "Progressive Overload Active"}
+              <div className="text-[11px] text-emerald-400/90 font-medium mt-0.5">
+                {isBn ? "প্রগ্রেসিভ ওভারলোড সক্রিয়" : "Progressive overload active"}
               </div>
             </div>
 
-            <div className="stat p-3.5">
-              <div className="stat-figure text-purple-400">
-                <Calendar className="h-5 w-5" />
+            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5">
+              <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
+                <span>7-Day Consistency</span>
+                <Calendar className="h-4 w-4 text-sky-400" />
               </div>
-              <div className="stat-title text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                {isBn ? "ধারাবাহিকতা (CONSISTENCY)" : "7D CONSISTENCY"}
-              </div>
-              <div className="stat-value text-2xl font-black text-purple-300 font-mono text-glow-purple">
+              <div className="mt-1 text-2xl font-bold text-sky-400 font-mono">
                 {evaluation.consistencyScore}%
               </div>
-              <div className="stat-desc text-[10px] text-zinc-400 font-bold mt-0.5">
-                {evaluation.sessions7d} {isBn ? "টি সেশন সম্পন্ন" : "raids completed"}
+              <div className="text-[11px] text-zinc-400 font-medium mt-0.5">
+                {evaluation.sessions7d} {isBn ? "টি সেশন সম্পন্ন" : "workouts this week"}
               </div>
             </div>
 
-            <div className="stat p-3.5">
-              <div className="stat-figure text-amber-400">
-                <Flame className="h-5 w-5" />
+            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5">
+              <div className="flex items-center justify-between text-xs text-zinc-400 font-medium">
+                <span>7-Day Volume Load</span>
+                <Flame className="h-4 w-4 text-amber-400" />
               </div>
-              <div className="stat-title text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                {isBn ? "৭ দিনের মোট ভলিউম (TOTAL LOAD)" : "7D TOTAL LOAD"}
+              <div className="mt-1 text-2xl font-bold text-amber-400 font-mono">
+                {evaluation.volume7dKg.toLocaleString()} <span className="text-xs text-zinc-500 font-normal">kg</span>
               </div>
-              <div className="stat-value text-2xl font-black text-amber-400 font-mono text-glow-amber">
-                {evaluation.volume7dKg.toLocaleString()} <span className="text-xs font-normal text-zinc-500">kg</span>
-              </div>
-              <div className="stat-desc text-[10px] text-zinc-400 font-bold mt-0.5">
-                {isBn ? "সফলভাবে ভার বহন" : "Mechanical load sustained"}
+              <div className="text-[11px] text-zinc-400 font-medium mt-0.5">
+                {isBn ? "মোট উত্তোলিত ওজন" : "Total mechanical volume"}
               </div>
             </div>
           </div>
 
           {/* AI Coach Summary Verdict */}
-          <div className="rounded-xl border border-cyan-400/40 bg-black/70 p-3.5 text-xs text-zinc-200 leading-relaxed flex items-start gap-2.5 shadow-inner">
-            <Sparkles className="h-4 w-4 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-3.5 text-xs text-zinc-300 leading-relaxed flex items-start gap-2.5">
+            <Sparkles className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-cyan-300 block mb-0.5 font-black uppercase tracking-wider">
-                {isBn ? "[ সিস্টেম নির্দেশিকা ও মূল্যায়ন : SYSTEM DIRECTIVE ]" : "[ SYSTEM DIRECTIVE ANALYSIS : AI EVALUATION ]"}
+              <strong className="text-emerald-400 block mb-0.5 font-semibold">
+                {isBn ? "কোচের বিশ্লেষণ:" : "AI Coach Assessment:"}
               </strong>
               {evaluation.aiSummary}
             </div>
@@ -254,25 +232,26 @@ export function GoalsProgressView({
         </section>
       )}
 
-      {/* 3. Adaptive Goals Section */}
-      <section className="space-y-3.5">
-        <div className="flex items-center justify-between border-b border-cyan-500/30 pb-2">
+      {/* 3. Goals Section */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
           <div className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-cyan-400" />
-            <h3 className="text-sm sm:text-base font-black text-white uppercase tracking-wider text-glow-cyan">
-              {isBn ? "[ হান্টার কোয়েস্ট বোর্ড : QUEST BOARD ]" : "[ HUNTER QUEST BOARD : ACTIVE MILESTONES ]"}
+            <Target className="h-5 w-5 text-emerald-400" />
+            <h3 className="text-base font-bold text-white">
+              {isBn ? "ফিটনেস গোল ও মাইলফলক" : "Fitness Goals & Milestones"}
             </h3>
           </div>
 
           <button
+            type="button"
             onClick={() => {
-              playSound("system-click");
+              playSound("click");
               setShowAddModal(true);
             }}
-            className="btn btn-sm btn-primary gap-1.5 uppercase font-mono shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+            className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition-all"
           >
-            <Plus className="h-3.5 w-3.5 stroke-[3]" />
-            <span>{isBn ? "নতুন লক্ষ্য যোগ করুন" : "ADD NEW QUEST"}</span>
+            <Plus className="h-3.5 w-3.5" />
+            <span>{isBn ? "নতুন লক্ষ্য যোগ করুন" : "Add New Goal"}</span>
           </button>
         </div>
 
@@ -284,30 +263,32 @@ export function GoalsProgressView({
             return (
               <div
                 key={goal.id}
-                className="card bg-base-300/90 border border-cyan-500/30 p-4 shadow-md space-y-3 transition-all hover:border-cyan-400/60"
+                className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="badge badge-outline badge-primary text-[9px] font-black uppercase tracking-widest mb-1.5">
-                      {goal.category} QUEST
+                    <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 mb-1.5 inline-block">
+                      {goal.category}
                     </span>
-                    <h4 className="text-sm font-black text-white uppercase tracking-tight">{goal.title}</h4>
+                    <h4 className="text-sm font-bold text-white">{goal.title}</h4>
                     {goal.description && <p className="text-xs text-zinc-400 mt-0.5">{goal.description}</p>}
                   </div>
-                  <span className="badge badge-primary font-mono font-black text-xs shrink-0">{percent}%</span>
+                  <span className="rounded-lg bg-emerald-500/10 px-2 py-1 text-xs font-bold text-emerald-400 font-mono shrink-0">
+                    {percent}%
+                  </span>
                 </div>
 
-                {/* Progress bar */}
                 <div>
-                  <div className="flex items-center justify-between text-[10px] text-zinc-400 mb-1 font-mono font-bold">
-                    <span>CURRENT: {goal.currentValue.toLocaleString()} {goal.unit}</span>
-                    <span>TARGET: {goal.targetValue.toLocaleString()} {goal.unit}</span>
+                  <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-1">
+                    <span>Current: {goal.currentValue.toLocaleString()} {goal.unit}</span>
+                    <span>Target: {goal.targetValue.toLocaleString()} {goal.unit}</span>
                   </div>
-                  <progress
-                    className="progress progress-primary w-full h-2.5"
-                    value={percent}
-                    max={100}
-                  />
+                  <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             );
@@ -316,24 +297,24 @@ export function GoalsProgressView({
 
         {/* Completed Goals Showcase */}
         {completedGoals.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-cyan-500/30 space-y-2">
-            <h4 className="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-1.5">
-              <Trophy className="h-3.5 w-3.5 text-amber-400" />
-              {isBn ? "[ সম্পন্ন হওয়া মাইলফলকসমূহ : CONQUERED MILESTONES ]" : "[ CONQUERED HUNTER MILESTONES ]"}
+          <div className="mt-4 pt-3 border-t border-zinc-800 space-y-2">
+            <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Trophy className="h-4 w-4 text-amber-400" />
+              {isBn ? "সম্পন্ন হওয়া লক্ষ্যসমূহ" : "Completed Milestones"}
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {completedGoals.map((cg) => (
                 <div
                   key={cg.id}
-                  className="card bg-base-200/90 border border-success/40 p-3 flex-row items-center justify-between gap-2 text-xs"
+                  className="rounded-xl border border-emerald-500/30 bg-emerald-950/15 p-3 flex items-center justify-between gap-2 text-xs"
                 >
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                    <span className="font-bold text-zinc-200 line-through opacity-85 uppercase">{cg.title}</span>
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span className="font-semibold text-zinc-200 line-through opacity-80">{cg.title}</span>
                   </div>
-                  <span className="badge badge-success badge-outline text-[9px] font-mono font-black shrink-0">
-                    {isBn ? "সম্পন্ন (CONQUERED)" : "CONQUERED"}
+                  <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 shrink-0">
+                    COMPLETED
                   </span>
                 </div>
               ))}
@@ -342,77 +323,80 @@ export function GoalsProgressView({
         )}
       </section>
 
-      {/* Add Custom Goal Modal (DaisyUI modal) */}
+      {/* Add Custom Goal Modal */}
       {showAddModal && (
         <div
           role="dialog"
           aria-modal="true"
-          className="modal modal-open backdrop-blur-xl font-mono"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
         >
-          <div className="modal-box max-w-md border-2 border-cyan-400/80 bg-[#03081a]/95 p-6 shadow-[0_0_50px_rgba(6,182,212,0.4)] space-y-4 text-zinc-100 system-scanlines system-grid-bg">
-            <div className="flex items-center justify-between border-b-2 border-cyan-500/40 pb-3">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-[#111726] p-6 shadow-xl space-y-4 text-zinc-100">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div>
-                <span className="text-[10px] text-cyan-400 uppercase font-black tracking-widest block">[ NEW MISSION ]</span>
-                <h3 className="text-base font-black text-white uppercase text-glow-cyan">REGISTER SYSTEM QUEST</h3>
+                <h3 className="text-base font-bold text-white">
+                  {isBn ? "নতুন ফিটনেস লক্ষ্য নির্ধারণ করুন" : "Set New Fitness Goal"}
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="btn btn-sm btn-circle btn-ghost text-zinc-400 hover:text-white"
+                className="rounded-lg p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateGoal} className="space-y-3.5 text-xs">
+            <form onSubmit={handleCreateGoal} className="space-y-4 text-xs">
               <div>
-                <label className="block text-zinc-300 font-bold uppercase mb-1">Quest Title / Objective</label>
+                <label className="block text-zinc-300 font-semibold mb-1">
+                  {isBn ? "লক্ষ্যের নাম" : "Goal Title / Target"}
+                </label>
                 <input
                   type="text"
-                  placeholder="e.g. Conquer 25 continuous push-ups"
+                  placeholder="e.g. Bench press 100 kg or 20 pull-ups"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="input input-bordered input-primary w-full bg-black/80 text-white font-mono"
+                  className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 text-sm text-white focus:border-emerald-500 focus:outline-none"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-zinc-300 font-bold uppercase mb-1">Category</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Category</label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
-                    className="select select-bordered select-primary w-full bg-black/80 text-white font-mono"
+                    className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800/80 px-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
                   >
                     <option value="strength">Strength</option>
                     <option value="volume">Volume</option>
                     <option value="consistency">Consistency</option>
-                    <option value="exercise">Exercise Skill</option>
+                    <option value="exercise">Exercise Technique</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-zinc-300 font-bold uppercase mb-1">Target Number</label>
+                  <label className="block text-zinc-300 font-semibold mb-1">Target Value</label>
                   <input
                     type="number"
                     min="1"
                     value={newTarget}
                     onChange={(e) => setNewTarget(Number(e.target.value))}
-                    className="input input-bordered input-primary w-full bg-black/80 text-white font-mono"
+                    className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800/80 px-3 text-sm font-bold text-white focus:border-emerald-500 focus:outline-none"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-zinc-300 font-bold uppercase mb-1">
+                <label className="block text-zinc-300 font-semibold mb-1">
                   {isBn ? "পরিমাপের একক" : "Measurement Unit"}
                 </label>
                 <select
                   value={newUnit}
                   onChange={(e) => setNewUnit(e.target.value as any)}
-                  className="select select-bordered select-primary w-full bg-black/80 text-white font-mono"
+                  className="h-10 w-full rounded-lg border border-zinc-700 bg-zinc-800/80 px-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
                 >
                   <option value="reps">{isBn ? "রেপস (Reps)" : "Reps"}</option>
                   <option value="kg">{isBn ? "কেজি ওজন (kg lifted)" : "kg lifted"}</option>
@@ -423,9 +407,9 @@ export function GoalsProgressView({
 
               <button
                 type="submit"
-                className="btn btn-primary w-full font-black uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.6)]"
+                className="w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-sm font-bold text-black shadow-md hover:brightness-105 transition-all"
               >
-                {isBn ? "কোয়েস্ট নিশ্চিত করুন (CONFIRM)" : "REGISTER QUEST & CONFIRM"}
+                {isBn ? "লক্ষ্য সংরক্ষণ করুন" : "Save Fitness Goal"}
               </button>
             </form>
           </div>
@@ -434,4 +418,3 @@ export function GoalsProgressView({
     </div>
   );
 }
-

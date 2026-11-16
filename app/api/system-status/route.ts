@@ -28,10 +28,6 @@ export async function GET() {
     }
   }
 
-  const supabaseConfigured = Boolean(
-    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  );
-
   return NextResponse.json({
     ok: true,
     geminiConfigured,
@@ -39,7 +35,6 @@ export async function GET() {
     mongodbConfigured,
     mongodbConnected,
     mongodbPingMs,
-    supabaseConfigured,
     activeModelChain: getModelChain(),
     accessCodeRequired: Boolean(process.env.ACCESS_CODE),
     serverRuntime: "nodejs",

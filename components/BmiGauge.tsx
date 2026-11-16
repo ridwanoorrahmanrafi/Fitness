@@ -15,10 +15,10 @@ export function BmiGauge({ bmi, category, compact = false }: Props) {
     bmi < 18.5
       ? "badge-info badge-outline"
       : bmi < 25
-      ? "badge-success"
-      : bmi < 30
-      ? "badge-warning"
-      : "badge-error";
+        ? "badge-success"
+        : bmi < 30
+          ? "badge-warning"
+          : "badge-error";
 
   return (
     <div className={`w-full ${compact ? "space-y-1.5" : "space-y-2.5"}`}>
@@ -50,7 +50,7 @@ export function BmiGauge({ bmi, category, compact = false }: Props) {
             className="absolute -top-1 -ml-1.5 flex flex-col items-center transition-[left] duration-500 ease-out"
             style={{ left: `${percent}%` }}
           >
-            <div className="h-3 w-3 rounded-full border-2 border-white bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.9)] ring-2 ring-black animate-pulse" />
+            <div className="h-3 w-3 rounded-full border-2 border-white bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.8)] ring-2 ring-black" />
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Calendar, Dumbbell, Moon, Sparkles, ChevronRight, Swords } from "lucide-react";
+import { Calendar, Dumbbell, Moon, Sparkles, ChevronRight } from "lucide-react";
 import { DAYS_OF_WEEK, getWeeklySplit, getTodaySchedule } from "@/lib/schedule";
 import { TRANSLATIONS, type Language } from "@/lib/i18n";
 import type { FocusId } from "@/lib/types";
@@ -20,7 +20,10 @@ export function WeeklyScheduleBar({
   onSetDays,
   onApplyTodayFocus,
 }: Props) {
-  const activeDays = workoutDays && workoutDays.length > 0 ? workoutDays : [1, 3, 5];
+  const activeDays = useMemo(
+    () => (workoutDays && workoutDays.length > 0 ? workoutDays : [1, 3, 5]),
+    [workoutDays]
+  );
   const weeklySplit = useMemo(() => getWeeklySplit(activeDays), [activeDays]);
   const todaySchedule = useMemo(() => getTodaySchedule(activeDays), [activeDays]);
   const todayIndex = new Date().getDay();
@@ -35,17 +38,13 @@ export function WeeklyScheduleBar({
   else if (count >= 6) splitName = lang === "bn" ? "হাই ফ্রিকোয়েন্সি PPL x ২" : "High Frequency PPL x 2";
 
   return (
-    <div className="relative rounded-2xl border-2 border-cyan-500/40 bg-gradient-to-b from-[#05112e]/90 via-[#07153a]/80 to-[#030818]/95 p-4 shadow-[0_0_30px_rgba(6,182,212,0.25)] text-zinc-100 space-y-3.5 font-mono system-scanlines system-grid-bg">
-      {/* Corner Luminous Diamonds */}
-      <div className="absolute top-1.5 left-1.5 text-cyan-400 text-[10px] select-none drop-shadow-[0_0_6px_rgba(6,182,212,0.9)]">◆</div>
-      <div className="absolute top-1.5 right-1.5 text-cyan-400 text-[10px] select-none drop-shadow-[0_0_6px_rgba(6,182,212,0.9)]">◆</div>
-
+    <div className="relative rounded-2xl border border-slate-800 bg-[#111726]/80 p-4 text-slate-100 space-y-4 font-sans shadow-lg">
       {/* Header and preset shortcuts */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-cyan-500/30 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-cyan-400" />
-          <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider text-glow-cyan">
-            {lang === "bn" ? "[ WEEKLY SCHEDULE : সাপ্তাহিক রুটিন ]" : "[ WEEKLY SCHEDULE : DEPLOYMENT ]"}
+          <Calendar className="h-4 w-4 text-emerald-400" />
+          <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
+            {lang === "bn" ? "সাপ্তাহিক শিডিউল" : "Weekly Schedule"}
           </h3>
         </div>
         <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-xs">
@@ -58,13 +57,13 @@ export function WeeklyScheduleBar({
               key={idx}
               type="button"
               onClick={() => {
-                playSound("system-click");
+                playSound("click");
                 onSetDays(preset.days);
               }}
-              className={`btn btn-xs uppercase tracking-wider font-mono ${
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                 preset.active
-                  ? "btn-primary text-black font-black shadow-[0_0_12px_rgba(6,182,212,0.7)]"
-                  : "btn-outline btn-neutral text-zinc-400 hover:text-white"
+                  ? "bg-emerald-500 text-slate-950 font-bold"
+                  : "border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700"
               }`}
             >
               {preset.label}
@@ -84,31 +83,31 @@ export function WeeklyScheduleBar({
               key={d.dayIndex}
               type="button"
               onClick={() => {
-                playSound("system-click");
+                playSound("click");
                 onToggleDay(d.dayIndex);
               }}
-              className={`system-btn-chamfer relative flex flex-col items-center justify-between p-1 sm:p-2 min-h-[60px] sm:min-h-[72px] border transition-all cursor-pointer ${
+              className={`relative flex flex-col items-center justify-between p-1.5 sm:p-2 min-h-[64px] sm:min-h-[72px] rounded-xl border transition-all cursor-pointer ${
                 isSelected
-                  ? "border-cyan-400/80 bg-cyan-950/60 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.35)] scale-102"
-                  : "border-zinc-800 bg-black/60 text-zinc-500 hover:border-cyan-500/40 hover:text-zinc-300"
-              } ${isToday ? "ring-2 ring-cyan-400 ring-offset-2 ring-offset-black" : ""}`}
+                  ? "border-emerald-500/80 bg-emerald-500/10 text-emerald-300 font-semibold shadow-sm"
+                  : "border-slate-800/80 bg-slate-900/50 text-slate-500 hover:border-slate-700 hover:text-slate-300"
+              } ${isToday ? "ring-2 ring-emerald-400 ring-offset-2 ring-offset-[#090d16]" : ""}`}
             >
               {isToday && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded bg-cyan-400 px-1 py-0.2 text-[7px] sm:text-[8px] font-black uppercase text-black tracking-wider shadow-sm">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-1 py-0.2 text-[7px] sm:text-[8px] font-bold uppercase text-slate-950 tracking-wider">
                   {t.todayLabel}
                 </span>
               )}
 
-              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">{d.short}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">{d.short}</span>
               <span className="text-[9px] sm:text-[10px] opacity-75">
                 {lang === "bn" ? d.bengaliName.slice(0, 3) : d.name.slice(0, 3)}
               </span>
 
               <div className="mt-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full">
                 {isSelected ? (
-                  <Swords className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-cyan-400" />
+                  <Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-400" />
                 ) : (
-                  <Moon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-zinc-600" />
+                  <Moon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-slate-600" />
                 )}
               </div>
             </button>
@@ -117,33 +116,33 @@ export function WeeklyScheduleBar({
       </div>
 
       {/* Today's Scheduled Status Card */}
-      <div className="rounded-xl border border-cyan-500/30 bg-black/70 p-3 flex flex-wrap items-center justify-between gap-3 shadow-inner">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
               todaySchedule.isWorkoutDay
-                ? "border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                : "border-purple-500/40 bg-purple-950/40 text-purple-300"
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                : "border-slate-700 bg-slate-800/60 text-slate-400"
             }`}
           >
-            {todaySchedule.isWorkoutDay ? <Swords className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {todaySchedule.isWorkoutDay ? <Dumbbell className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black text-white uppercase tracking-wide text-glow-cyan">
+              <span className="text-xs font-bold text-white tracking-wide">
                 {todaySchedule.isWorkoutDay ? t.todayTarget : t.todayRest} : {todaySchedule.focusLabel}
               </span>
               <span
-                className={`badge badge-sm font-black uppercase tracking-wider ${
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                   todaySchedule.isWorkoutDay
-                    ? "badge-info badge-outline"
-                    : "badge-secondary badge-outline"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-slate-800 text-slate-400 border border-slate-700"
                 }`}
               >
-                {todaySchedule.isWorkoutDay ? "[ RAID DAY ]" : "[ REST & RECOVERY ]"}
+                {todaySchedule.isWorkoutDay ? (lang === "bn" ? "ওয়ার্কআউট দিন" : "Workout Day") : (lang === "bn" ? "বিশ্রাম ও রিকভারি" : "Rest & Recovery")}
               </span>
             </div>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
+            <p className="text-[11px] text-slate-400 mt-0.5">
               {todaySchedule.isWorkoutDay
                 ? `${t.programLabel} ${todaySchedule.sessionTitle}`
                 : t.restDesc}
@@ -155,12 +154,12 @@ export function WeeklyScheduleBar({
           <button
             type="button"
             onClick={() => {
-              playSound("system-click");
+              playSound("click");
               onApplyTodayFocus(todaySchedule.focusId);
             }}
-            className="btn btn-sm btn-primary gap-1.5 font-black uppercase text-black shadow-[0_0_15px_rgba(6,182,212,0.6)]"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
           >
-            <Sparkles className="h-3.5 w-3.5 text-black" />
+            <Sparkles className="h-3.5 w-3.5 text-slate-950" />
             <span>{t.applyFocusBtn}</span>
             <ChevronRight className="h-3 w-3 stroke-[3]" />
           </button>
@@ -168,9 +167,9 @@ export function WeeklyScheduleBar({
       </div>
 
       {/* Routine summary footer */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 font-mono">
+      <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
         <span>{t.workoutDaysCount(count, 7 - count)}</span>
-        <span className="text-cyan-400 font-bold">{splitName}</span>
+        <span className="text-emerald-400 font-semibold">{splitName}</span>
       </div>
     </div>
   );

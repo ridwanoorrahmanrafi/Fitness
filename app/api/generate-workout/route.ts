@@ -4,128 +4,194 @@ import { generatePlan, type GenerateOutput } from "@/lib/server/generate";
 import { createGeminiCaller, getModelChain } from "@/lib/server/gemini";
 import { createOpenAICaller, getOpenAIModelChain } from "@/lib/server/openai";
 import { crossCheckWorkout } from "@/lib/server/consensus";
-import { clientKey, codesMatch, rateLimited } from "@/lib/server/guard";
+import { clientKey, codesMatch, rateLimitCheck, withTimeout } from "@/lib/server/guard";
+import { auth } from "@/lib/auth";
 import type { GenerateResponse } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 30;
 
 function json(body: GenerateResponse, status = 200) {
   return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: NextRequest) {
-  // Optional shared secret so a public deployment cannot burn your free quota.
-  const expected = process.env.ACCESS_CODE;
-  if (expected && !codesMatch(req.headers.get("x-access-code"), expected)) {
-    return json({ ok: false, code: "unauthorized", error: "Access code required." }, 401);
+  // 1. Guard against oversized payloads (max 16 KB)
+  const contentLength = Number(req.headers.get("content-length") || 0);
+  if (contentLength > 16384) {
+    return json({ ok: false, code: "bad_request", error: "Request payload exceeds maximum allowed size (16KB)." }, 413);
   }
 
-  if (rateLimited(clientKey(req.headers))) {
-    return json({ ok: false, code: "rate_limited", error: "Too many requests. Try again in a few minutes." }, 429);
-  }
-
-  let parsed;
+  // 2. Authentication check: Determine session & apply tiered rate limiting
+  let session = null;
   try {
-    parsed = GenerateRequestSchema.safeParse(await req.json());
+    session = await auth.api.getSession({ headers: req.headers });
   } catch {
-    return json({ ok: false, code: "bad_request", error: "Request body must be JSON." }, 400);
+    // Unauthenticated or auth service offline; proceed with guest tier
   }
+
+  const expectedAccessCode = process.env.ACCESS_CODE;
+  const providedAccessCode = req.headers.get("x-access-code");
+  const hasValidAccessCode = expectedAccessCode ? codesMatch(providedAccessCode, expectedAccessCode) : false;
+
+  if (session?.user) {
+    // Authenticated Member tier: 20 generations per hour
+    const limit = rateLimitCheck(`user:${session.user.id}`, 20, 60 * 60 * 1000);
+    if (!limit.allowed) {
+      return json(
+        { ok: false, code: "rate_limited", error: "Member hourly quota reached (20/hour). Please wait before generating another workout." },
+        429
+      );
+    }
+  } else if (hasValidAccessCode) {
+    // Verified Access Code tier: 15 generations per hour
+    const limit = rateLimitCheck(`access:${clientKey(req.headers)}`, 15, 60 * 60 * 1000);
+    if (!limit.allowed) {
+      return json(
+        { ok: false, code: "rate_limited", error: "Too many requests with this access code. Try again in a few minutes." },
+        429
+      );
+    }
+  } else {
+    // Guest tier: max 3 generations per 24 hours per IP
+    const guestLimit = rateLimitCheck(`guest:${clientKey(req.headers)}`, 3, 24 * 60 * 60 * 1000);
+    if (!guestLimit.allowed) {
+      return json(
+        {
+          ok: false,
+          code: "rate_limited",
+          error: "Guest daily limit reached (3 plans / 24h). Please log in or sign up to unlock unlimited access!",
+        },
+        429
+      );
+    }
+  }
+
+  // 3. Parse and validate JSON body
+  let rawBody: unknown;
+  try {
+    const text = await req.text();
+    if (text.length > 16384) {
+      return json({ ok: false, code: "bad_request", error: "Payload exceeds 16KB limit." }, 413);
+    }
+    rawBody = JSON.parse(text);
+  } catch {
+    return json({ ok: false, code: "bad_request", error: "Request body must be valid JSON." }, 400);
+  }
+
+  const parsed = GenerateRequestSchema.safeParse(rawBody);
   if (!parsed.success) {
     const first = parsed.error.issues[0];
     return json(
       { ok: false, code: "bad_request", error: `Invalid ${first.path.join(".") || "request"}: ${first.message}` },
-      400,
+      400
     );
   }
 
+  // 4. Generate workout plan with 25s timeout and deterministic fallback
   try {
-    const clientGeminiKey = req.headers.get("x-gemini-api-key")?.trim();
     const geminiKey =
       process.env.GEMINI_API_KEY ||
       process.env.GOOGLE_API_KEY ||
-      process.env.GOOGLE_GENAI_API_KEY ||
-      clientGeminiKey;
+      process.env.GOOGLE_GENAI_API_KEY;
 
-    const clientOpenAiKey = req.headers.get("x-openai-api-key")?.trim();
-    const openaiKey = clientOpenAiKey || process.env.OPENAI_API_KEY;
+    const openaiKey = process.env.OPENAI_API_KEY;
 
     const geminiCaller = createGeminiCaller(geminiKey);
     const openaiCaller = createOpenAICaller(openaiKey);
 
-    let out: GenerateOutput | null = null;
-    let primaryName = "Google Gemini";
-    let reviewerName = "ChatGPT (OpenAI)";
-    let reviewerCaller = openaiCaller;
-    let reviewerModel = getOpenAIModelChain()[0];
+    const result = await withTimeout(
+      (async () => {
+        let out: GenerateOutput | null = null;
+        let primaryName = "Google Gemini";
+        let reviewerName = "ChatGPT (OpenAI)";
+        let reviewerCaller = openaiCaller;
+        let reviewerModel = getOpenAIModelChain()[0];
 
-    // 1. Primary AI attempt: Google Gemini
-    if (geminiCaller) {
-      try {
-        const geminiOut = await generatePlan(parsed.data, {
-          callModel: geminiCaller,
-          models: getModelChain(),
-        });
-        if (geminiOut.plan.source === "ai") {
-          out = geminiOut;
+        // Primary AI attempt: Google Gemini
+        if (geminiCaller) {
+          try {
+            const geminiOut = await generatePlan(parsed.data, {
+              callModel: geminiCaller,
+              models: getModelChain(),
+            });
+            if (geminiOut.plan.source === "ai") {
+              out = geminiOut;
+            }
+          } catch (err) {
+            console.warn("Primary Gemini generation error:", err);
+          }
         }
-      } catch (err) {
-        console.warn("Primary Gemini generation error:", err);
-      }
-    }
 
-    // 2. Secondary AI fallback: OpenAI ChatGPT
-    if ((!out || out.plan.source === "offline") && openaiCaller) {
-      try {
-        const openaiOut = await generatePlan(parsed.data, {
-          callModel: openaiCaller,
-          models: getOpenAIModelChain(),
-        });
-        if (openaiOut.plan.source === "ai") {
-          out = openaiOut;
-          primaryName = "ChatGPT (OpenAI)";
-          reviewerName = "Google Gemini";
-          reviewerCaller = geminiCaller;
-          reviewerModel = getModelChain()[0];
+        // Secondary AI fallback: OpenAI ChatGPT
+        if ((!out || out.plan.source === "offline") && openaiCaller) {
+          try {
+            const openaiOut = await generatePlan(parsed.data, {
+              callModel: openaiCaller,
+              models: getOpenAIModelChain(),
+            });
+            if (openaiOut.plan.source === "ai") {
+              out = openaiOut;
+              primaryName = "ChatGPT (OpenAI)";
+              reviewerName = "Google Gemini";
+              reviewerCaller = geminiCaller;
+              reviewerModel = getModelChain()[0];
+            }
+          } catch (err) {
+            console.warn("Secondary OpenAI fallback generation error:", err);
+          }
         }
-      } catch (err) {
-        console.warn("Secondary OpenAI fallback generation error:", err);
-      }
-    }
 
-    // 3. Fallback to deterministic sports science engine if all AI generation failed
-    if (!out) {
-      out = await generatePlan(parsed.data, {
-        models: [],
-      });
-      primaryName = "Local Sports Science Engine";
-    }
+        // Deterministic sports science fallback if AI services fail or keys missing
+        if (!out) {
+          out = await generatePlan(parsed.data, {
+            models: [],
+          });
+          primaryName = "Local Sports Science Engine";
+        }
 
-    // 4. Cross-Verification: Peer review by the secondary AI
-    const consensus = await crossCheckWorkout(
-      out.plan,
-      parsed.data.profile,
-      parsed.data.feedback,
-      {
-        primaryName,
-        reviewerName,
-        reviewerModel,
-        reviewerCaller,
-      }
+        // Cross-Verification: Peer review by the secondary AI
+        const consensus = await crossCheckWorkout(
+          out.plan,
+          parsed.data.profile,
+          parsed.data.feedback,
+          {
+            primaryName,
+            reviewerName,
+            reviewerModel,
+            reviewerCaller,
+          }
+        );
+
+        out.plan.consensus = consensus;
+
+        return {
+          ok: true as const,
+          plan: out.plan,
+          meta: out.meta,
+          warning: out.warning,
+          consensus,
+        };
+      })(),
+      25000,
+      "AI Coach generation timed out after 25s."
     );
 
-    out.plan.consensus = consensus;
-
-    return json({
-      ok: true,
-      plan: out.plan,
-      meta: out.meta,
-      warning: out.warning,
-      consensus,
-    });
-  } catch (err) {
-    console.error("Workout generation error:", err);
-    return json({ ok: false, code: "server", error: "Failed to generate a workout." }, 500);
+    return json(result);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error("Workout generation error:", errorMsg);
+    const isTimeout = errorMsg.includes("timed out");
+    return json(
+      {
+        ok: false,
+        code: "server",
+        error: isTimeout
+          ? "AI Coach timed out. Please try again or switch to the offline sports science generator."
+          : "Failed to generate workout plan. Please try again.",
+      },
+      isTimeout ? 504 : 500
+    );
   }
 }

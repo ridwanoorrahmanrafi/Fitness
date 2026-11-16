@@ -8,7 +8,7 @@ import {
   isMongoConfigured,
 } from "@/lib/server/mongodb";
 import type { HistoryEntry, Profile, UserGoal, ProgressEvaluation } from "@/lib/types";
-import type { PlayerStats } from "@/lib/systemStats";
+import type { AthleteStats } from "@/lib/athleteStats";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,8 +29,9 @@ export async function GET(req: Request) {
         goals: [],
         evaluations: [],
         profile: null,
+        athleteStats: null,
         playerStats: null,
-        name: "Hunter",
+        name: "Athlete",
         warning: "MongoDB is not configured on server",
       });
     }
@@ -118,24 +119,17 @@ export async function GET(req: Request) {
       };
     }
 
-    let playerStats: PlayerStats | null = null;
+    let athleteStats: AthleteStats | null = null;
     if (statsDoc) {
-      playerStats = {
-        name: statsDoc.name,
-        job: statsDoc.job,
-        title: statsDoc.title,
-        level: statsDoc.level,
-        exp: statsDoc.exp,
-        expToNext: statsDoc.expToNext,
-        rank: statsDoc.rank as any,
-        hp: statsDoc.hp,
-        mp: statsDoc.mp,
-        fatigue: statsDoc.fatigue,
-        attributes: statsDoc.attributes,
-        unallocatedPoints: statsDoc.unallocatedPoints,
-        shadowArmyUnlocked: statsDoc.shadowArmyUnlocked,
-        totalWorkoutsCleared: statsDoc.totalWorkoutsCleared,
-        totalSetsCompleted: statsDoc.totalSetsCompleted,
+      athleteStats = {
+        totalWorkouts: statsDoc.totalWorkouts ?? statsDoc.totalWorkoutsCleared ?? 0,
+        totalVolumeKg: statsDoc.totalVolumeKg ?? 0,
+        totalSets: statsDoc.totalSets ?? statsDoc.totalSetsCompleted ?? 0,
+        currentStreak: statsDoc.currentStreak ?? 0,
+        bestStreak: statsDoc.bestStreak ?? 0,
+        lastWorkoutDate: statsDoc.lastWorkoutDate,
+        personalRecords: statsDoc.personalRecords ?? {},
+        fitnessLevel: (statsDoc.fitnessLevel as any) ?? "beginner",
       };
     }
 
@@ -145,8 +139,9 @@ export async function GET(req: Request) {
       goals,
       evaluations,
       profile,
-      playerStats,
-      name: profileDoc?.name || statsDoc?.name || "Hunter",
+      athleteStats,
+      playerStats: athleteStats,
+      name: profileDoc?.name || statsDoc?.name || "Athlete",
     });
   } catch (err) {
     console.error("MongoDB cloud pull error:", err);

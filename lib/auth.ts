@@ -22,7 +22,9 @@ export const auth = betterAuth({
   ],
   secret:
     process.env.BETTER_AUTH_SECRET ||
-    "arise_solo_leveling_better_auth_secret_hunter_system_key_2026_x99",
+    (process.env.NODE_ENV === "production"
+      ? ""
+      : "arise_fitness_dev_secret_key_2026_32chars_min"),
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
@@ -31,16 +33,16 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      hunterRank: {
+      fitnessLevel: {
         type: "string",
         required: false,
-        defaultValue: "E-RANK",
+        defaultValue: "beginner",
         input: true,
       },
-      hunterTitle: {
+      fitnessGoal: {
         type: "string",
         required: false,
-        defaultValue: "The Awakened",
+        defaultValue: "hypertrophy",
         input: true,
       },
     },

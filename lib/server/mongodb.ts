@@ -148,32 +148,42 @@ export interface MongoEvaluationDoc {
   createdAt: string;
 }
 
-export interface MongoPlayerStatsDoc {
+export interface MongoAthleteStatsDoc {
   _id: string; // "stats_<userId>"
   userId: string;
-  name: string;
-  job: string;
-  title: string;
-  level: number;
-  exp: number;
-  expToNext: number;
-  rank: string;
-  hp: { current: number; max: number };
-  mp: { current: number; max: number };
-  fatigue: number;
-  attributes: {
+  totalWorkouts?: number;
+  totalVolumeKg?: number;
+  totalSets?: number;
+  currentStreak?: number;
+  bestStreak?: number;
+  lastWorkoutDate?: string;
+  personalRecords?: Record<string, any>;
+  fitnessLevel?: string;
+  name?: string;
+  job?: string;
+  title?: string;
+  level?: number;
+  exp?: number;
+  expToNext?: number;
+  rank?: string;
+  hp?: { current: number; max: number };
+  mp?: { current: number; max: number };
+  fatigue?: number;
+  attributes?: {
     str: number;
     agi: number;
     vit: number;
     int: number;
     per: number;
   };
-  unallocatedPoints: number;
-  shadowArmyUnlocked: boolean;
-  totalWorkoutsCleared: number;
-  totalSetsCompleted: number;
+  unallocatedPoints?: number;
+  shadowArmyUnlocked?: boolean;
+  totalWorkoutsCleared?: number;
+  totalSetsCompleted?: number;
   updatedAt: string;
 }
+
+export type MongoPlayerStatsDoc = MongoAthleteStatsDoc;
 
 export function getProfilesCollection(): Collection<MongoProfileDoc> {
   return mongoDb.collection<MongoProfileDoc>("profiles");

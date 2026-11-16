@@ -1,4 +1,7 @@
 import type { Config } from "tailwindcss";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
 
 const config: Config = {
   content: [
@@ -10,11 +13,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        brand: {
+          50: "#f0fdf4",
+          100: "#dcfce7",
+          500: "#10b981",
+          600: "#059669",
+          900: "#064e3b",
+          dark: "#090d16",
+          card: "#111726",
+          surface: "#182032",
+          accent: "#0ea5e9",
+        },
+        // Retain hunter color tokens as aliases so any auxiliary classes don't break
         hunter: {
-          dark: "#020510",
-          card: "#060d1f",
-          blue: "#00d2ff",
-          purple: "#7928ca",
+          dark: "#090d16",
+          card: "#111726",
+          blue: "#0ea5e9",
+          purple: "#8b5cf6",
           gold: "#f59e0b",
         },
       },
@@ -26,22 +41,19 @@ const config: Config = {
       {
         dark: {
           ...require("daisyui/src/theming/themes")["dark"],
-          primary: "#06b6d4",
-          secondary: "#3b82f6",
+          primary: "#10b981",
+          secondary: "#0ea5e9",
           accent: "#8b5cf6",
-          neutral: "#090d1a",
-          "base-100": "#020510",
-          "base-200": "#080e22",
-          "base-300": "#0f1738",
+          neutral: "#18181b",
+          "base-100": "#090d16",
+          "base-200": "#111726",
+          "base-300": "#182032",
           info: "#38bdf8",
           success: "#10b981",
           warning: "#f59e0b",
           error: "#ef4444",
         },
       },
-      "night",
-      "synthwave",
-      "cyberpunk",
     ],
     darkTheme: "dark",
     base: true,

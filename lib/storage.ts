@@ -15,9 +15,11 @@ export const KEYS = {
   accounts: "arise.v1.accounts",
   aiDietPlan: "arise.v1.ai_diet_plan",
   hasVisited: "arise.v1.has_visited",
-  supabaseConfig: "arise.v1.supabase_config",
+  cloudConfig: "arise.v1.cloud_config",
   userGoals: "arise.v1.user_goals",
   evaluations: "arise.v1.evaluations",
+  athleteStats: "arise.v1.athlete_stats",
+  playerStats: "arise.v1.athlete_stats",
   lastSyncAt: "arise.v1.last_sync_at",
 } as const;
 

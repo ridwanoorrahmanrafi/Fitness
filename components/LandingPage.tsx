@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import {
   Flame,
   Sparkles,
@@ -17,16 +16,22 @@ import {
   HeartPulse,
   Activity,
   Zap,
-  Sword,
-  Crown,
-  Terminal,
-  Radio,
 } from "lucide-react";
 import { playSound } from "@/lib/audio";
 import { type Language, TRANSLATIONS, GOAL_LABELS_I18N } from "@/lib/i18n";
 import { type Goal, type Gender } from "@/lib/types";
-import { bmiCategory, profileStats, macroTargets } from "@/lib/calc";
+import {
+  profileStats,
+  macroTargets,
+  AGE_OPTIONS,
+  HEIGHT_CM_OPTIONS,
+  WEIGHT_KG_OPTIONS,
+  formatAgeOption,
+  formatHeightCmOption,
+  formatWeightKgOption,
+} from "@/lib/calc";
 import { BmiGauge } from "./BmiGauge";
+import { CyberDropdown } from "./CyberDropdown";
 
 interface Props {
   lang: Language;
@@ -70,95 +75,88 @@ export function LandingPage({
 
   const faqs = [
     {
-      q: isBn ? "[ QUEST COST ] এটি কি সত্যিই আজীবন সম্পূর্ণ বিনামূল্যে?" : "[ QUEST COST ] Is ARISE System genuinely 100% free?",
+      q: isBn ? "এটি কি সম্পূর্ণ বিনামূল্যে ব্যবহার করা যায়?" : "Is Arise Fitness Coach completely free?",
       a: isBn
-        ? "হ্যাঁ! এটি কোনো সাবস্ক্রিপশন, লুকানো ফি বা বিজ্ঞাপন ছাড়া একটি ওপেন সোর্স হান্টার ট্রেনিং সিস্টেম। কোনো ইন্টারনেট ছাড়াই সম্পূর্ণ অফলাইনেও কাজ করে।"
-        : "Yes! The System operates with zero subscription paywalls, no ads, and no premium gates. It runs locally and functions fully offline.",
+        ? "হ্যাঁ! এটি কোনো সাবস্ক্রিপশন ফি বা লুকানো খরচ ছাড়াই সম্পূর্ণ বিনামূল্যে ব্যবহার করা যায়। কোনো ইন্টারনেট সংযোগ ছাড়াই অফলাইনেও এটি পূর্ণাঙ্গভাবে কাজ করে।"
+        : "Yes! Arise Fitness operates with zero subscription paywalls, no ads, and no premium tiers. It runs locally and functions fully offline.",
     },
     {
-      q: isBn ? "[ AI ARCHITECT ] জেমিনাই এআই কীভাবে আমার ট্রেনিং ও ডায়েট ক্যালিব্রেট করে?" : "[ AI ARCHITECT ] How does the Dual-AI System adapt my raids and nutrition?",
+      q: isBn ? "এআই কোচ কীভাবে আমার ওয়ার্কআউট এবং ডায়েট নির্ধারণ করে?" : "How does the AI Coach tailor my workouts and nutrition?",
       a: isBn
-        ? "গুগলের Gemini 2.5 Flash ও ChatGPT আপনার সরঞ্জাম, ক্লান্তি ও রিকভারি ডাটা বিশ্লেষণ করে অভিযোজিত ব্যায়াম তৈরি করে এবং দেশীয় রুই, কাতলা, ডিম ও মুরগির নিখুঁত পুষ্টি তালিকা দেয়।"
-        : "Gemini 2.5 Flash and ChatGPT analyze your recovery fatigue, available equipment, and biometrics to generate tailored dungeon workouts and local Bangladeshi nutrition.",
+        ? "গুগলের Gemini AI আপনার শারীরিক মাপ, উপলব্ধ সরঞ্জাম এবং আগের সেশনের ক্লান্তি বিশ্লেষণ করে সঠিক ব্যায়াম সাজায় এবং দেশীয় সহজলভ্য খাবারের পুষ্টি তালিকা দেয়।"
+        : "Gemini AI analyzes your equipment, recovery feedback, and body biometrics to construct tailored training sessions and personalized Bangladeshi meal schedules.",
     },
     {
-      q: isBn ? "[ RATIONS ] বাঙালি ডায়েট চার্টে কী ধরনের দেশীয় খাবার অন্তর্ভুক্ত থাকে?" : "[ RATIONS ] What rations are prescribed in the Bangladeshi nutrition archives?",
+      q: isBn ? "বাঙালি ডায়েট চার্টে কী ধরনের দেশীয় খাবার অন্তর্ভুক্ত থাকে?" : "What foods are included in the localized nutrition guide?",
       a: isBn
-        ? "সহজলভ্য দেশি রুই/কাতলা মাছ, দেশি মুরগি, ডিম, লাল চালের ভাত, আটার রুটি, মুগ ও মসুর ডাল, ছোলা, বাদাম, শাকসবজি ও টকদই — প্রতিটি আপনার BMI ও ওজন অনুযায়ী পরিমাপকৃত।"
-        : "Affordable local powerfoods: Rui/Katla fish, eggs, chicken breast/thighs, brown rice, whole wheat ruti, lentils (dal), chana, seasonal vegetables, and sour yogurt.",
+        ? "সহজলভ্য দেশি রুই ও কাতলা মাছ, দেশি মুরগি, ডিম, লাল চালের ভাত, আটার রুটি, মুগ ও মসুর ডাল, ছোলা, বাদাম, শাকসবজি ও টকদই — প্রতিটি আপনার ওজন ও লক্ষ্য অনুযায়ী পরিমাপকৃত।"
+        : "Realistic, affordable powerfoods: Rui and Katla fish, eggs, chicken, whole wheat ruti, brown rice, lentils (dal), chana, seasonal vegetables, and sour yogurt.",
     },
     {
-      q: isBn ? "[ DATA SECURITY ] আমার শারীরিক বায়োমেট্রিক ও প্রগ্রেস ডাটা কি সম্পূর্ণ নিরাপদ?" : "[ DATA SECURITY ] Is my biometric hunter telemetry private and secure?",
+      q: isBn ? "আমার শারীরিক তথ্য ও প্রগ্রেস কি নিরাপদ?" : "Is my fitness and biometric data private?",
       a: isBn
-        ? "১০০% নিরাপদ। আপনার শারীরিক মাপ, ওয়ার্কআউট ইতিহাস ও নোটস আপনার ব্রাউজারের স্থানীয় মেমরিতে বা আপনার ব্যক্তিগত Supabase ডাটাবেসে এনক্রিপ্ট হয়ে থাকে।"
-        : "100% private. All biometrics, quest logs, and personal statistics remain encrypted on your device or in your personal Supabase cloud instance.",
+        ? "সম্পূর্ণ নিরাপদ। আপনার শারীরিক মাপ ও ওয়ার্কআউট হিস্ট্রি আপনার ডিভাইসের ব্রাউজারে সুরক্ষিতভাবে সংরক্ষিত থাকে। চাইলে আপনি ক্লাউড ব্যাকআপ সিঙ্ক করতে পারেন।"
+        : "100% private. All biometrics and workout logs remain secured on your device or in your personal cloud database.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#020510] text-cyan-100 flex flex-col selection:bg-cyan-500 selection:text-black system-grid-bg relative overflow-x-hidden font-sans">
-      {/* Ambient Cybernetic Neon Orbs */}
-      <div className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 h-[550px] w-[900px] rounded-full bg-cyan-600/15 blur-[160px] -z-10" />
-      <div className="pointer-events-none fixed top-1/3 -right-40 h-[450px] w-[550px] rounded-full bg-purple-700/15 blur-[160px] -z-10" />
-      <div className="pointer-events-none fixed bottom-10 -left-40 h-[450px] w-[550px] rounded-full bg-blue-800/15 blur-[160px] -z-10" />
+    <div className="min-h-screen bg-[#090d16] text-zinc-100 flex flex-col selection:bg-emerald-500 selection:text-black relative overflow-x-hidden">
+      {/* Subtle Ambient Glows */}
+      <div className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-emerald-600/10 blur-[150px] -z-10" />
+      <div className="pointer-events-none fixed top-1/3 -right-40 h-[400px] w-[500px] rounded-full bg-sky-600/10 blur-[150px] -z-10" />
 
-      {/* Sticky Top System HUD Header */}
-      <header className="sticky top-0 z-40 border-b border-cyan-500/30 bg-[#03081a]/90 px-4 py-3 backdrop-blur-xl shadow-[0_4px_30px_rgba(3,8,24,0.85)]">
+      {/* Sticky Top Header */}
+      <header className="sticky top-0 z-40 border-b border-zinc-800 bg-[#090d16]/90 px-4 py-3.5 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          {/* Logo & System Title */}
+          {/* Logo & Brand */}
           <div
             className="flex items-center gap-3 cursor-pointer group"
             onClick={() => {
-              playSound("system-click");
+              playSound("click");
               onLaunchApp();
             }}
           >
-            <div className="relative h-11 w-11 system-btn-chamfer overflow-hidden border-2 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.55)] group-hover:scale-105 transition-transform shrink-0">
-              <Image
-                src="/images/solo-leveling/system-crest-icon.jpg"
-                alt="System Crest"
-                fill
-                className="object-cover"
-                priority
-              />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-black shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform shrink-0">
+              <Activity className="h-5 w-5 stroke-[2.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-base sm:text-lg font-black tracking-wider text-white text-glow-cyan uppercase">
+                <span className="text-base sm:text-lg font-extrabold tracking-tight text-white uppercase">
                   ARISE
                 </span>
-                <span className="system-btn-chamfer border border-cyan-400/50 bg-cyan-950/80 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.4)]">
-                  SYSTEM
+                <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 text-[10px] font-bold text-emerald-400">
+                  FITNESS
                 </span>
               </div>
-              <p className="font-mono text-[10px] text-cyan-400/80 hidden sm:block tracking-wide">
-                {isBn ? "[ THE SYSTEM : সোলো লেভেলিং • ফিটনেস জাগরণ ]" : "[ THE SYSTEM : SOLO LEVELING • FITNESS AWAKENING ]"}
+              <p className="text-[11px] text-zinc-400 hidden sm:block">
+                {isBn ? "স্মার্ট এআই ওয়ার্কআউট কোচ ও পুষ্টি" : "Smart AI Workout & Nutrition Coach"}
               </p>
             </div>
           </div>
 
-          {/* Action HUD Buttons */}
-          <div className="flex items-center gap-2">
-            {/* Language Switcher: Dual Segmented Bangla / English */}
+          {/* Action Header Controls */}
+          <div className="flex items-center gap-2.5">
+            {/* Language Switcher */}
             <div
               id="landing-lang-toggle"
               role="group"
               aria-label="Language selection"
-              className="flex items-center rounded-xl border border-cyan-500/40 bg-[#03081a] p-0.5 font-mono text-xs shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+              className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900 p-0.5 text-xs"
             >
               <button
                 type="button"
                 id="landing-lang-bn"
                 onClick={() => {
                   if (lang !== "bn") {
-                    playSound("system-click");
+                    playSound("click");
                     onLanguageToggle();
                   }
                 }}
-                className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                   lang === "bn"
-                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
-                    : "text-cyan-400/70 hover:text-cyan-200"
+                    ? "bg-emerald-500 text-black font-bold"
+                    : "text-zinc-400 hover:text-white"
                 }`}
                 aria-pressed={lang === "bn"}
               >
@@ -169,14 +167,14 @@ export function LandingPage({
                 id="landing-lang-en"
                 onClick={() => {
                   if (lang !== "en") {
-                    playSound("system-click");
+                    playSound("click");
                     onLanguageToggle();
                   }
                 }}
-                className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
+                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                   lang === "en"
-                    ? "bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.7)]"
-                    : "text-cyan-400/70 hover:text-cyan-200"
+                    ? "bg-emerald-500 text-black font-bold"
+                    : "text-zinc-400 hover:text-white"
                 }`}
                 aria-pressed={lang === "en"}
               >
@@ -184,269 +182,243 @@ export function LandingPage({
               </button>
             </div>
 
-            {/* Hunter Auth / Profile Selector */}
+            {/* Auth Button */}
             <button
               onClick={onOpenAuth}
               type="button"
-              className="btn btn-sm btn-outline btn-neutral gap-1.5 font-mono text-xs text-cyan-300 hover:text-white"
+              className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition-all"
             >
-              <User className="h-4 w-4 text-cyan-400" />
-              <span className="hidden sm:inline">{userName ? `[ ${userName} ]` : t.navLogin}</span>
+              <User className="h-3.5 w-3.5 text-zinc-400" />
+              <span className="hidden sm:inline">{userName ? userName : t.navLogin}</span>
             </button>
 
             {/* Launch App Primary CTA */}
             <button
               id="btn-landing-launch-header"
               onClick={() => {
-                playSound("system-alert");
+                playSound("click");
                 onLaunchApp();
               }}
               type="button"
-              className="btn btn-sm btn-primary gap-2 font-mono text-xs font-black uppercase text-white shadow-[0_0_20px_rgba(6,182,212,0.45)]"
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3.5 py-1.5 text-xs font-bold text-black shadow-md hover:bg-emerald-400 active:scale-95 transition-all"
             >
               <span>{t.landingLaunchApp}</span>
-              <ArrowRight className="h-3.5 w-3.5 stroke-[2.5]" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section: System Awakening Notice */}
-      <section className="relative overflow-hidden pt-10 pb-16 px-4 md:pt-16 md:pb-24">
-        <div className="mx-auto max-w-5xl text-center relative z-10 space-y-6">
-          {/* Manhwa Holographic Badge */}
-          <div className="inline-flex items-center gap-2 system-btn-chamfer border border-cyan-400/60 bg-[#03081a]/90 px-4 py-1.5 font-mono text-xs font-black text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.4)] backdrop-blur-md">
-            <Sparkles className="h-3.5 w-3.5 animate-spin text-cyan-400" />
-            <span>{isBn ? "[ জরুরি সিস্টেম কোয়েস্ট : আপনি নির্বাচিত হয়েছেন ]" : "[ EMERGENCY SYSTEM QUEST : YOU HAVE BEEN CHOSEN ]"}</span>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-12 pb-16 px-4 md:pt-20 md:pb-24">
+        <div className="mx-auto max-w-4xl text-center relative z-10 space-y-6">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-300 shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+            <span>{isBn ? "স্মার্ট এআই ওয়ার্কআউট ও দেশীয় পুষ্টিবিজ্ঞান" : "Adaptive AI Fitness & Localized Sports Nutrition"}</span>
           </div>
 
-          <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl md:text-6xl md:leading-[1.12] uppercase font-mono [text-shadow:0_0_25px_rgba(6,182,212,0.4)]">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl md:leading-[1.15]">
             {isBn ? (
               <>
-                সোলো লেভেলিং সিস্টেমের মতো <br />
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  আপনার শরীর ও ফিটনেস লেভেল আপ করুন
+                আপনার ব্যক্তিগত <br />
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
+                  স্মার্ট এআই ওয়ার্কআউট ও পুষ্টি কোচ
                 </span>
               </>
             ) : (
               <>
-                LEVEL UP YOUR PHYSIQUE WITH <br />
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  THE SHADOW MONARCH SYSTEM
+                YOUR PERSONAL <br />
+                <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-400 bg-clip-text text-transparent">
+                  SMART AI WORKOUT & NUTRITION COACH
                 </span>
               </>
             )}
           </h1>
 
-          <p className="mx-auto max-w-2xl font-mono text-sm sm:text-base text-cyan-200/80 leading-relaxed">
+          <p className="mx-auto max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
             {isBn
-              ? "আইকনিক ডেইলি কোয়েস্ট (১০০ পুশ-আপ, ১০০ সিট-আপ, ১০০ স্কোয়াট, ১০ কিমি রান), স্ট্যাটাস উইন্ডো (STR/AGI/VIT), শ্যাডো আর্মি আনলক এবং দেশীয় খাঁটি বাঙালি পুষ্টিবিজ্ঞান।"
-              : "Execute the legendary Daily Quest, allocate stat points to STR/AGI/VIT, ascend from E-Rank Weakest to S-Rank Shadow Monarch, and fuel your physique with calibrated local nutrition."}
+              ? "অভিযোজিত ওয়ার্কআউট প্ল্যান, সম্পূর্ণ ব্যায়ামের অ্যানিমেটেড গাইড, পাওয়ারলিফটিং ক্যালকুলেটর এবং দেশীয় সুষম পুষ্টি। ১০০% ফ্রি এবং অফলাইনেও সম্পূর্ণ কার্যকর।"
+              : "Intelligent workout splits tailored to your equipment, animated exercise form guides, strength & powerlifting calculators, and localized nutrition. 100% free with offline capabilities."}
           </p>
 
-          {/* Cinematic Solo Leveling Banner Frame with Corner Pins */}
-          <div className="relative mx-auto max-w-3xl h-60 sm:h-88 w-full system-window rounded-2xl overflow-hidden border-2 border-cyan-400/70 shadow-[0_0_45px_rgba(6,182,212,0.4)] group">
-            <Image
-              src="/images/solo-leveling/system-monarch-banner.jpg"
-              alt="Solo Leveling System Interface"
-              fill
-              className="object-cover object-center group-hover:scale-105 transition-transform duration-700"
-              priority
-            />
-            {/* Holographic Overlay with Korean & English System Text */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#020510] via-[#020510]/50 to-transparent flex flex-col justify-end p-5 sm:p-7 text-left">
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="system-btn-chamfer px-2.5 py-0.5 font-mono text-[10px] font-black bg-cyan-500 text-black shadow-[0_0_10px_rgba(6,182,212,0.8)]">
-                  PLAYER STATUS
-                </span>
-                <span className="font-mono text-xs text-cyan-300 font-bold tracking-wider">
-                  {isBn ? "S-RANK • শ্যাডো মনার্ক (SHADOW MONARCH)" : "S-RANK • SHADOW MONARCH"}
-                </span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white font-mono uppercase tracking-wide text-glow-cyan">
-                [ DAILY QUEST : PREPARATIONS TO BECOME STRONG ]
-              </h3>
-              <p className="font-mono text-xs text-cyan-300/80 mt-1">
-                {isBn
-                  ? "সতর্কতা: দৈনিক কোয়েস্ট সম্পন্ন করতে ব্যর্থ হলে শাস্তিমূলক পেনাল্টি জোনে স্থানান্তরিত হবেন।"
-                  : "Warning: Failure to complete daily objectives will trigger a punitive teleportation to the Penalty Zone."}
-              </p>
-            </div>
-
-            {/* Corner Diamond Runes */}
-            <span className="absolute top-2 left-2 font-mono text-xs text-cyan-400/80 select-none">◆</span>
-            <span className="absolute top-2 right-2 font-mono text-xs text-cyan-400/80 select-none">◆</span>
-            <span className="absolute bottom-2 left-2 font-mono text-xs text-cyan-400/80 select-none">◆</span>
-            <span className="absolute bottom-2 right-2 font-mono text-xs text-cyan-400/80 select-none">◆</span>
-          </div>
-
-          {/* Action Button Row */}
+          {/* Action CTA Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
             <button
               id="btn-landing-cta"
               onClick={() => {
-                playSound("arise");
+                playSound("click");
                 onLaunchApp();
               }}
               type="button"
-              className="btn btn-primary min-h-[54px] px-8 font-mono text-sm font-black uppercase text-white shadow-[0_0_25px_rgba(6,182,212,0.5)] tracking-wider gap-2.5 cursor-pointer"
+              className="flex min-h-[50px] items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-8 text-sm font-bold text-black shadow-lg shadow-emerald-500/25 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
             >
-              <Play className="h-4 w-4 fill-current stroke-none" />
-              <span>{isBn ? "◆ সিস্টেমে প্রবেশ করুন (ARISE) ◆" : "◆ ENTER THE SYSTEM (ARISE) ◆"}</span>
+              <Play className="h-4 w-4 fill-current" />
+              <span>{isBn ? "ওয়ার্কআউট শুরু করুন" : "Start Working Out"}</span>
             </button>
 
             <button
               onClick={() => {
-                playSound("system-click");
+                playSound("click");
                 onOpenDiet();
               }}
               type="button"
-              className="btn btn-outline btn-primary min-h-[54px] px-6 font-mono text-sm font-bold gap-2 text-cyan-300"
+              className="flex min-h-[50px] items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-6 text-sm font-semibold text-zinc-200 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
             >
-              <Utensils className="h-4 w-4 text-cyan-400" />
-              <span>{isBn ? "[ হান্টার পুষ্টি : বাঙালি ডায়েট ]" : "[ HUNTER NUTRITION ARCHIVES ]"}</span>
+              <Utensils className="h-4 w-4 text-emerald-400" />
+              <span>{isBn ? "বাঙালি ডায়েট প্ল্যান" : "Bangladeshi Nutrition"}</span>
             </button>
 
             {onOpenExercises && (
               <button
                 onClick={() => {
-                  playSound("system-click");
+                  playSound("click");
                   onOpenExercises();
                 }}
                 type="button"
-                className="btn btn-outline btn-secondary min-h-[54px] px-6 font-mono text-sm font-bold gap-2 text-purple-300"
+                className="flex min-h-[50px] items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-6 text-sm font-semibold text-zinc-200 hover:text-white hover:bg-zinc-800 transition-all cursor-pointer"
               >
-                <Dumbbell className="h-4 w-4 text-purple-400" />
-                <span>{isBn ? "[ কমব্যাট কোডেক্স : ১০০+ মুভমেন্ট ]" : "[ COMBAT CODEX : 93+ MOVEMENTS ]"}</span>
+                <Dumbbell className="h-4 w-4 text-sky-400" />
+                <span>{isBn ? "ব্যায়াম লাইব্রেরি (১০০+ মুভ)" : "Exercise Library (93+ Moves)"}</span>
               </button>
             )}
           </div>
 
-          {/* Key Value Badges */}
-          <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
-            <div className="system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/80 p-3.5 shadow-[0_0_15px_rgba(6,182,212,0.08)]">
-              <div className="text-cyan-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5 uppercase">
-                <Zap className="h-3.5 w-3.5" /> [ AI ARCHITECT ]
+          {/* 4 Feature Highlights */}
+          <div className="pt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
+            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
+              <div className="text-emerald-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
+                <Zap className="h-3.5 w-3.5" /> AI Adaptive
               </div>
-              <div className="font-mono text-[11px] text-cyan-300/70 leading-snug">
-                Gemini 2.5 Flash & ChatGPT combat telemetry, or 100% deterministic offline engine.
-              </div>
-            </div>
-
-            <div className="system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/80 p-3.5 shadow-[0_0_15px_rgba(6,182,212,0.08)]">
-              <div className="text-cyan-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5 uppercase">
-                <Utensils className="h-3.5 w-3.5" /> [ RATIONS ]
-              </div>
-              <div className="font-mono text-[11px] text-cyan-300/70 leading-snug">
-                Rui fish, chicken, eggs, lentils, and rice calibrated to your exact BMI target.
+              <div className="text-xs text-zinc-400 leading-snug">
+                {isBn ? "ক্লান্তি ও সরঞ্জাম অনুযায়ী স্বয়ংক্রিয় ওয়ার্কআউট তৈরি।" : "Custom workouts adapting to your fatigue and equipment."}
               </div>
             </div>
 
-            <div className="system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/80 p-3.5 shadow-[0_0_15px_rgba(6,182,212,0.08)]">
-              <div className="text-purple-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5 uppercase">
-                <Play className="h-3.5 w-3.5" /> [ TEMPO LOOPS ]
+            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
+              <div className="text-teal-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
+                <Utensils className="h-3.5 w-3.5" /> Local Nutrition
               </div>
-              <div className="font-mono text-[11px] text-purple-300/70 leading-snug">
-                Biomechanical cadence with 3s eccentric lowering and muscle highlight loops.
+              <div className="text-xs text-zinc-400 leading-snug">
+                {isBn ? "রুই মাছ, ডিম, মুরগি ও ডাল দিয়ে সুষম পুষ্টি তালিকা।" : "Balanced macros with affordable local fish, eggs, and chicken."}
               </div>
             </div>
 
-            <div className="system-btn-chamfer border border-cyan-500/30 bg-[#03081a]/80 p-3.5 shadow-[0_0_15px_rgba(6,182,212,0.08)]">
-              <div className="text-cyan-400 text-xs font-mono font-bold mb-1 flex items-center gap-1.5 uppercase">
-                <ShieldCheck className="h-3.5 w-3.5" /> [ CLASSIFIED ]
+            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
+              <div className="text-sky-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
+                <Play className="h-3.5 w-3.5" /> Form Guides
               </div>
-              <div className="font-mono text-[11px] text-cyan-300/70 leading-snug">
-                All biometric stats remain on your local hardware. Zero tracking, free forever.
+              <div className="text-xs text-zinc-400 leading-snug">
+                {isBn ? "সঠিক ফর্ম, বায়োমেকানিক্স ও অ্যানিমেটেড গাইড।" : "Biomechanical tempo cues and animated demonstration guides."}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
+              <div className="text-emerald-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
+                <ShieldCheck className="h-3.5 w-3.5" /> 100% Private
+              </div>
+              <div className="text-xs text-zinc-400 leading-snug">
+                {isBn ? "ডাটা ডিভাইসে সুরক্ষিত থাকে। কোনো বিজ্ঞাপন নেই।" : "All metrics stored securely on device. Zero tracking."}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive Hunter Biometric Telemetry Scanner (Live Calibrator) */}
-      <section className="px-4 py-14 border-y border-cyan-500/25 bg-[#03081a]/70">
+      {/* Interactive Biometric Calculator Section */}
+      <section className="px-4 py-16 border-y border-zinc-800 bg-[#0d121f]">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="text-center space-y-1.5">
-            <span className="font-mono text-xs font-black tracking-widest text-cyan-400 uppercase">
-              ◆ {isBn ? "[ বায়োমেট্রিক স্ক্যানার : হান্টার পরিমাপ ]" : "[ BIOMETRIC TELEMETRY SCANNER ]"} ◆
+            <span className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+              {isBn ? "তাৎক্ষণিক ক্যালকুলেটর" : "Instant Calorie & Macro Calculator"}
             </span>
-            <h2 className="text-2xl font-black text-white sm:text-3xl font-mono uppercase text-glow-cyan">
+            <h2 className="text-2xl font-bold text-white sm:text-3xl">
               {t.landingCalculatorTitle}
             </h2>
-            <p className="font-mono text-xs text-cyan-400/80 max-w-xl mx-auto">
+            <p className="text-xs text-zinc-400 max-w-xl mx-auto">
               {t.landingCalculatorSubtitle}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 items-center system-window rounded-2xl border-1.5 border-cyan-500/50 bg-[#03081a]/95 p-6 shadow-[0_0_35px_rgba(6,182,212,0.3)]">
+          <div className="grid md:grid-cols-2 gap-6 items-center rounded-2xl border border-zinc-800 bg-[#111726] p-6 shadow-md">
             {/* Input Controls */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block font-mono text-xs font-semibold tracking-wider text-cyan-400/80 uppercase">
-                    {t.sexLabel}
-                  </label>
-                  <select
-                    className="select select-bordered select-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
-                    value={calcGender}
-                    onChange={(e) => setCalcGender(e.target.value as Gender)}
-                  >
-                    <option value="male">{t.maleOption}</option>
-                    <option value="female">{t.femaleOption}</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block font-mono text-xs font-semibold tracking-wider text-cyan-400/80 uppercase">
-                    {t.ageLabel}
-                  </label>
-                  <input
-                    type="number"
-                    className="input input-bordered input-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
-                    value={calcAge}
-                    onChange={(e) => setCalcAge(Number(e.target.value) || 20)}
-                  />
-                </div>
+                <CyberDropdown
+                  id="calc-gender"
+                  label={t.sexLabel}
+                  value={calcGender}
+                  options={[
+                    { value: "male", label: t.maleOption },
+                    { value: "female", label: t.femaleOption },
+                  ]}
+                  onChange={(val) => setCalcGender(val as Gender)}
+                  searchable={false}
+                />
+                <CyberDropdown
+                  id="calc-age"
+                  label={t.ageLabel}
+                  value={calcAge}
+                  options={
+                    !AGE_OPTIONS.includes(calcAge)
+                      ? [
+                          { value: calcAge, label: `${calcAge} (Custom)` },
+                          ...AGE_OPTIONS.map((a) => ({ value: a, label: formatAgeOption(a, lang) })),
+                        ]
+                      : AGE_OPTIONS.map((a) => ({ value: a, label: formatAgeOption(a, lang) }))
+                  }
+                  onChange={(val) => setCalcAge(Number(val) || 20)}
+                  searchable
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block font-mono text-xs font-semibold tracking-wider text-cyan-400/80 uppercase">
-                    {t.heightLabelMetric}
-                  </label>
-                  <input
-                    type="number"
-                    className="input input-bordered input-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
-                    value={calcHeight}
-                    onChange={(e) => setCalcHeight(Number(e.target.value) || 160)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block font-mono text-xs font-semibold tracking-wider text-cyan-400/80 uppercase">
-                    {t.weightLabelMetric}
-                  </label>
-                  <input
-                    type="number"
-                    className="input input-bordered input-primary w-full min-h-[44px] system-btn-chamfer bg-[#020512] px-3 font-mono text-sm text-cyan-100 focus:border-cyan-400 focus:shadow-[0_0_12px_rgba(6,182,212,0.35)] focus:outline-none"
-                    value={calcWeight}
-                    onChange={(e) => setCalcWeight(Number(e.target.value) || 60)}
-                  />
-                </div>
+                <CyberDropdown
+                  id="calc-height"
+                  label={t.heightLabelMetric}
+                  value={calcHeight}
+                  options={
+                    !HEIGHT_CM_OPTIONS.includes(calcHeight)
+                      ? [
+                          { value: calcHeight, label: `${calcHeight} cm (Custom)` },
+                          ...HEIGHT_CM_OPTIONS.map((c) => ({ value: c, label: formatHeightCmOption(c, lang) })),
+                        ]
+                      : HEIGHT_CM_OPTIONS.map((c) => ({ value: c, label: formatHeightCmOption(c, lang) }))
+                  }
+                  onChange={(val) => setCalcHeight(Number(val) || 160)}
+                  searchable
+                />
+                <CyberDropdown
+                  id="calc-weight"
+                  label={t.weightLabelMetric}
+                  value={calcWeight}
+                  options={
+                    !WEIGHT_KG_OPTIONS.includes(calcWeight)
+                      ? [
+                          { value: calcWeight, label: `${calcWeight} kg (Custom)` },
+                          ...WEIGHT_KG_OPTIONS.map((k) => ({ value: k, label: formatWeightKgOption(k, lang) })),
+                        ]
+                      : WEIGHT_KG_OPTIONS.map((k) => ({ value: k, label: formatWeightKgOption(k, lang) }))
+                  }
+                  onChange={(val) => setCalcWeight(Number(val) || 60)}
+                  searchable
+                />
               </div>
 
               <div>
-                <label className="mb-1 block font-mono text-xs font-semibold tracking-wider text-cyan-400/80 uppercase">
+                <label className="mb-1.5 block text-xs font-semibold text-zinc-300">
                   {t.goalLabel}
                 </label>
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-3 gap-2">
                   {(["endurance", "muscle", "strength"] as Goal[]).map((g) => (
                     <button
                       key={g}
                       type="button"
                       onClick={() => setCalcGoal(g)}
-                      className={`min-h-[40px] system-btn-chamfer border px-2 font-mono text-xs font-bold tracking-wide transition-all ${
+                      className={`min-h-[40px] rounded-lg border px-2 text-xs font-bold transition-all ${
                         calcGoal === g
-                          ? "border-cyan-400 bg-cyan-500/25 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.4)]"
-                          : "border-cyan-500/20 bg-[#020512] text-cyan-400/60 hover:border-cyan-500/40 hover:text-cyan-200"
+                          ? "border-emerald-500 bg-emerald-500/15 text-emerald-400"
+                          : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-white"
                       }`}
                     >
                       {g === "muscle"
@@ -458,7 +430,7 @@ export function LandingPage({
                             ? "ওজন কমানো"
                             : "Fat Loss"
                           : isBn
-                            ? "শক্তি (STR)"
+                            ? "শক্তি"
                             : "Strength"}
                     </button>
                   ))}
@@ -466,45 +438,45 @@ export function LandingPage({
               </div>
             </div>
 
-            {/* Live Calculation Output Console */}
-            <div className="space-y-4 system-btn-chamfer border border-cyan-500/30 bg-[#020512]/90 p-4">
+            {/* Live Calculation Output Card */}
+            <div className="space-y-4 rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-4">
               <BmiGauge bmi={previewStats.bmi} category={previewStats.bmiCategory} />
 
-              <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t border-cyan-500/25">
-                <div className="system-btn-chamfer bg-[#03081a] p-2.5 border border-cyan-500/25">
-                  <div className="font-mono text-[10px] text-cyan-400/70 uppercase">[ MANA RECOVERY (BMR) ]</div>
+              <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t border-zinc-800">
+                <div className="rounded-lg bg-zinc-900 p-2.5 border border-zinc-800/80">
+                  <div className="text-[10px] text-zinc-400 uppercase">Basal BMR</div>
                   <div className="text-base font-bold text-white font-mono">
-                    {previewStats.bmr} <span className="text-[10px] text-cyan-500 font-normal">kcal</span>
+                    {previewStats.bmr} <span className="text-[10px] text-zinc-500 font-normal">kcal</span>
                   </div>
                 </div>
-                <div className="system-btn-chamfer bg-[#03081a] p-2.5 border border-cyan-500/25">
-                  <div className="font-mono text-[10px] text-cyan-400/70 uppercase">[ COMBAT ENERGY (TDEE) ]</div>
-                  <div className="text-base font-bold text-cyan-300 font-mono text-glow-cyan">
-                    {previewStats.tdee} <span className="text-[10px] text-cyan-500 font-normal">kcal</span>
+                <div className="rounded-lg bg-zinc-900 p-2.5 border border-zinc-800/80">
+                  <div className="text-[10px] text-zinc-400 uppercase">Daily TDEE</div>
+                  <div className="text-base font-bold text-emerald-400 font-mono">
+                    {previewStats.tdee} <span className="text-[10px] text-zinc-500 font-normal">kcal</span>
                   </div>
                 </div>
               </div>
 
               {previewMacros && (
-                <div className="system-btn-chamfer bg-[#03081a] p-3 border border-cyan-500/30 space-y-1.5 text-center">
-                  <div className="flex items-center justify-between font-mono text-xs text-cyan-200 font-medium">
+                <div className="rounded-lg bg-zinc-900 p-3 border border-zinc-800 space-y-2 text-center">
+                  <div className="flex items-center justify-between text-xs text-zinc-300 font-medium">
                     <span>{t.targetCalories(calcGoal)}</span>
-                    <strong className="text-cyan-300 font-mono font-bold text-glow-cyan">
+                    <strong className="text-emerald-400 font-bold font-mono">
                       {previewMacros.targetCalories} kcal/day
                     </strong>
                   </div>
-                  <div className="grid grid-cols-3 gap-1.5 font-mono text-xs">
-                    <div className="bg-[#020512] p-2 system-btn-chamfer border border-cyan-500/25">
-                      <span className="text-cyan-400 font-bold block text-[10px]">PROTEIN (STR)</span>
-                      <strong className="text-white font-mono">{previewMacros.proteinGrams}g</strong>
+                  <div className="grid grid-cols-3 gap-1.5 text-xs font-mono">
+                    <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                      <span className="text-emerald-400 font-semibold block text-[10px]">PROTEIN</span>
+                      <strong className="text-white">{previewMacros.proteinGrams}g</strong>
                     </div>
-                    <div className="bg-[#020512] p-2 system-btn-chamfer border border-cyan-500/25">
-                      <span className="text-blue-400 font-bold block text-[10px]">CARBS (AGI)</span>
-                      <strong className="text-white font-mono">{previewMacros.carbGrams}g</strong>
+                    <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                      <span className="text-sky-400 font-semibold block text-[10px]">CARBS</span>
+                      <strong className="text-white">{previewMacros.carbGrams}g</strong>
                     </div>
-                    <div className="bg-[#020512] p-2 system-btn-chamfer border border-cyan-500/25">
-                      <span className="text-purple-400 font-bold block text-[10px]">FATS (VIT)</span>
-                      <strong className="text-white font-mono">{previewMacros.fatGrams}g</strong>
+                    <div className="bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                      <span className="text-amber-400 font-semibold block text-[10px]">FATS</span>
+                      <strong className="text-white">{previewMacros.fatGrams}g</strong>
                     </div>
                   </div>
                 </div>
@@ -513,12 +485,12 @@ export function LandingPage({
               <button
                 type="button"
                 onClick={() => {
-                  playSound("system-alert");
+                  playSound("click");
                   onLaunchApp();
                 }}
-                className="w-full flex min-h-[46px] items-center justify-center gap-2 system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 font-mono text-xs font-black uppercase text-white shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:brightness-110 active:scale-95 transition-all"
+                className="w-full flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-xs font-bold text-black shadow hover:brightness-105 active:scale-95 transition-all"
               >
-                <span>{isBn ? "◆ এই টার্গেট নিয়ে রেইড শুরু করুন ◆" : "◆ INITIATE RAID WITH THIS PROFILE ◆"}</span>
+                <span>{isBn ? "এই লক্ষ্য নিয়ে ওয়ার্কআউট শুরু করুন" : "Start Workout With These Goals"}</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -526,124 +498,118 @@ export function LandingPage({
         </div>
       </section>
 
-      {/* Feature Showcase Grid: Hunter Capabilities */}
+      {/* Feature Showcase Grid */}
       <section className="px-4 py-16 max-w-6xl mx-auto space-y-10">
         <div className="text-center space-y-2">
-          <span className="font-mono text-xs font-black tracking-widest text-cyan-400 uppercase">
-            ◆ {isBn ? "সিস্টেম সক্ষমতা (CAPABILITIES)" : "SYSTEM CAPABILITIES"} ◆
+          <span className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+            {isBn ? "ফিচারসমূহ" : "Core Capabilities"}
           </span>
-          <h2 className="text-2xl font-black text-white sm:text-4xl font-mono uppercase text-glow-cyan">
+          <h2 className="text-2xl font-bold text-white sm:text-4xl">
             {t.landingFeaturesTitle}
           </h2>
-          <p className="font-mono text-xs text-cyan-400/80 max-w-2xl mx-auto">
+          <p className="text-xs text-zinc-400 max-w-2xl mx-auto">
             {t.landingFeaturesSubtitle}
           </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Card 1 */}
-          <div className="system-window rounded-2xl border border-cyan-500/30 bg-[#03081a]/85 p-5 space-y-3 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all">
-            <div className="flex h-10 w-10 items-center justify-center system-btn-chamfer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h3 className="font-mono text-base font-bold text-white uppercase text-glow-cyan">
-              {isBn ? "[ AI SYSTEM ARCHITECT ]" : "[ DUAL-AI SYSTEM ARCHITECT ]"}
+            <h3 className="text-base font-bold text-white">
+              {isBn ? "স্মার্ট এআই কোচ" : "Adaptive AI Coach"}
             </h3>
-            <p className="font-mono text-xs text-cyan-300/70 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               {isBn
                 ? "ব্যায়ামের ক্লান্তি ও সেশনের অনুভূতির ওপর ভিত্তি করে প্রতি সেশনে লোড নিয়ন্ত্রণ করে। সম্পূর্ণ অফলাইনেও নিখুঁত প্ল্যান তৈরি করতে পারে।"
-                : "Personalized programming that reads your fatigue and muscle soreness. Intelligently cross-verified between Gemini 2.5 Flash and ChatGPT."}
+                : "Intelligent programming that accounts for your fatigue and recovery. Uses Gemini AI or instant offline fallback."}
             </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="system-window rounded-2xl border border-cyan-500/30 bg-[#03081a]/85 p-5 space-y-3 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all">
-            <div className="flex h-10 w-10 items-center justify-center system-btn-chamfer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/15 text-teal-400 border border-teal-500/30">
               <Utensils className="h-5 w-5" />
             </div>
-            <h3 className="font-mono text-base font-bold text-white uppercase text-glow-cyan">
-              {isBn ? "[ 100% LOCAL NUTRITION ]" : "[ 100% LOCAL NUTRITION ]"}
+            <h3 className="text-base font-bold text-white">
+              {isBn ? "বাঙালি ডায়েট ও পুষ্টি" : "100% Localized Nutrition"}
             </h3>
-            <p className="font-mono text-xs text-cyan-300/70 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               {isBn
-                ? "বিদেশি অ্যাভোকাডো বা স্যামনের দরকার নেই! দেশি রুই মাছ, ডিম, মুরগি, ডাল, ছোলা ও লাল চাল দিয়ে তৈরি বৈজ্ঞানিক ৫-বেলা খাবারের চার্ট।"
-                : "No unrealistic imported ingredients. Calibrated around local fish, eggs, chicken, lentils, and seasonal vegetables with exact gram portions."}
+                ? "বিদেশি দামি উপকরণের প্রয়োজন নেই। দেশি রুই মাছ, ডিম, মুরগি, ডাল, ছোলা ও ভাত দিয়ে তৈরি বৈজ্ঞানিক পুষ্টি তালিকা।"
+                : "Practical, culturally authentic meal plans with real local foods: Rui/Katla fish, eggs, chicken, lentils, and seasonal vegetables."}
             </p>
           </div>
 
-          {/* Card 3 */}
-          <div className="system-window rounded-2xl border border-purple-500/30 bg-[#080418]/85 p-5 space-y-3 hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all">
-            <div className="flex h-10 w-10 items-center justify-center system-btn-chamfer bg-purple-500/20 text-purple-300 border border-purple-500/40">
+          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/30">
               <Play className="h-5 w-5" />
             </div>
-            <h3 className="font-mono text-base font-bold text-white uppercase text-glow-purple">
-              {isBn ? "[ CADENCE MOTION TELEMETRY ]" : "[ CADENCE MOTION TELEMETRY ]"}
+            <h3 className="text-base font-bold text-white">
+              {isBn ? "বায়োমেকানিক্যাল ফর্ম গাইড" : "Animated Form Guides"}
             </h3>
-            <p className="font-mono text-xs text-purple-300/70 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               {isBn
-                ? "৩-সেকেন্ড নামা, ১-সেকেন্ড বিরতি ও ওঠার অ্যানিমেটেড লুপ। সাথে কী করবেন ও কী এড়িয়ে চলবেন তার সুস্পষ্ট নির্দেশনা।"
-                : "Interactive loop animation with 3-second eccentric tempo, targeted muscle highlight, step-by-step form cues, and Do's & Don'ts."}
+                ? "৩-সেকেন্ড নামা, ১-সেকেন্ড বিরতি ও ওঠার অ্যানিমেটেড গাইড। সাথে কী করবেন ও কী এড়িয়ে চলবেন তার সুস্পষ্ট নির্দেশনা।"
+                : "Detailed motion guides with cadence tempo, highlighted target muscles, and key Do's & Don'ts for injury prevention."}
             </p>
           </div>
 
-          {/* Card 4 */}
-          <div className="system-window rounded-2xl border border-cyan-500/30 bg-[#03081a]/85 p-5 space-y-3 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all">
-            <div className="flex h-10 w-10 items-center justify-center system-btn-chamfer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <Calendar className="h-5 w-5" />
             </div>
-            <h3 className="font-mono text-base font-bold text-white uppercase text-glow-cyan">
-              {isBn ? "[ WEEKLY RAID SCHEDULE ]" : "[ WEEKLY RAID SCHEDULE ]"}
+            <h3 className="text-base font-bold text-white">
+              {isBn ? "সাপ্তাহিক রুটিন ও স্প্লিট" : "Weekly Workout Schedule"}
             </h3>
-            <p className="font-mono text-xs text-cyan-300/70 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               {isBn
-                ? "সপ্তাহে ৩ দিন (PPL), ৪ দিন বা ৫ দিন রেইডের দিন বেছে নিন। আজকের টার্গেট বা বিশ্রামের দিন সিস্টেম স্বয়ংক্রিয়ভাবে শনাক্ত করে।"
-                : "Select your training days (3D PPL, 4D split, 5D hypertrophy). Today's dungeon target or rest day is automatically scheduled with audio cues."}
+                ? "সপ্তাহে ৩ দিন (PPL), ৪ দিন বা ৫ দিন স্প্লিট বেছে নিন। আজকের টার্গেট বা বিশ্রামের দিন অ্যাপ স্বয়ংক্রিয়ভাবে দেখায়।"
+                : "Customize your training days (3-day PPL, 4-day upper/lower, 5-day split). Active workouts and rest days adapt automatically."}
             </p>
           </div>
 
-          {/* Card 5 */}
-          <div className="system-window rounded-2xl border border-cyan-500/30 bg-[#03081a]/85 p-5 space-y-3 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all">
-            <div className="flex h-10 w-10 items-center justify-center system-btn-chamfer bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
               <Activity className="h-5 w-5" />
             </div>
-            <h3 className="font-mono text-base font-bold text-white uppercase text-glow-cyan">
-              {isBn ? "[ DUAL LINGUISTIC ENGINE ]" : "[ DUAL LINGUISTIC ENGINE ]"}
+            <h3 className="text-base font-bold text-white">
+              {isBn ? "বাংলা ও ইংরেজি ভাষা" : "Bilingual (English & বাংলা)"}
             </h3>
-            <p className="font-mono text-xs text-cyan-300/70 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               {isBn
-                ? "পুরো অ্যাপ্লিকেশন ১ ক্লিকেই সম্পূর্ণ বাংলায় বা ইংরেজিতে পরিবর্তন করা যায়। কোনো রিফ্রেশ বা ডেটা হারানোর ভয় নেই।"
-                : "Instantly toggle between fluent English and Bengali with zero page reloads and complete state preservation."}
+                ? "অ্যাপের প্রতিটি ফিচার ১ ক্লিকেই সম্পূর্ণ বাংলায় বা ইংরেজিতে পরিবর্তন করা যায়। কোনো ডাটা নষ্ট হয় না।"
+                : "Instant 1-click toggle between full English and authentic Bengali with zero page reload or data loss."}
             </p>
           </div>
 
-          {/* Card 6 */}
-          <div className="system-window rounded-2xl border border-purple-500/30 bg-[#080418]/85 p-5 space-y-3 hover:border-purple-400 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all">
-            <div className="flex h-10 w-10 items-center justify-center system-btn-chamfer bg-purple-500/20 text-purple-300 border border-purple-500/40">
+          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <h3 className="font-mono text-base font-bold text-white uppercase text-glow-purple">
-              {isBn ? "[ CLASSIFIED DATA SECURITY ]" : "[ CLASSIFIED DATA SECURITY ]"}
+            <h3 className="text-base font-bold text-white">
+              {isBn ? "নিরাপদ ও অফলাইন" : "Offline & Private"}
             </h3>
-            <p className="font-mono text-xs text-purple-300/70 leading-relaxed">
+            <p className="text-xs text-zinc-400 leading-relaxed">
               {isBn
-                ? "আপনার ওজন, পরিমাপ বা শারীরিক সীমাবদ্ধতা কখনো সার্ভারে আপলোড করা হয় না। ফোনে ইনস্টল করে অ্যাপের মতো ব্যবহার করুন।"
-                : "Zero telemetry tracking. Works 100% offline or syncs with your encrypted Supabase backend. Installable on mobile phones via PWA."}
+                ? "আপনার বায়োমেট্রিক তথ্য ডিভাইসেই থাকে। ইন্টারনেট ছাড়াই সম্পূর্ণ অ্যাপ কাজ করে এবং কোনো পে-ওয়াল নেই।"
+                : "All metrics remain encrypted on your device. Works completely offline with optional cloud database sync."}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Classified System Intel (FAQ) */}
-      <section className="px-4 py-16 border-t border-cyan-500/25 max-w-4xl mx-auto w-full space-y-8">
+      {/* FAQ Section */}
+      <section className="px-4 py-16 border-t border-zinc-800 max-w-4xl mx-auto w-full space-y-6">
         <div className="text-center space-y-1.5">
-          <span className="font-mono text-xs font-black tracking-widest text-cyan-400 uppercase">
-            ◆ {isBn ? "[ গোপনীয় হান্টার ইন্টেল : CLASSIFIED INTEL ]" : "[ CLASSIFIED HUNTER INTEL ]"} ◆
+          <span className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+            FAQ
           </span>
-          <h2 className="text-2xl font-black text-white sm:text-3xl font-mono uppercase text-glow-cyan">
+          <h2 className="text-2xl font-bold text-white sm:text-3xl">
             {t.landingFaqTitle}
           </h2>
-          <p className="font-mono text-xs text-cyan-400/80">
-            {isBn ? "আপনার যেকোনো সাধারণ প্রশ্নের পরিষ্কার উত্তর" : "Official operational briefs for awakening hunters"}
+          <p className="text-xs text-zinc-400">
+            {isBn ? "সাধারণ প্রশ্নের পরিষ্কার উত্তর" : "Answers to common questions about training and nutrition"}
           </p>
         </div>
 
@@ -651,64 +617,64 @@ export function LandingPage({
           {faqs.map((faq, idx) => (
             <div
               key={idx}
-              className="collapse collapse-arrow border border-cyan-500/30 bg-[#03081a]/90 font-mono text-cyan-200"
+              className="rounded-xl border border-zinc-800 bg-[#111726] text-zinc-200 overflow-hidden"
             >
-              <input
-                type="checkbox"
-                checked={openFaqIndex === idx}
-                onChange={() => {
-                  playSound("system-click");
+              <button
+                type="button"
+                onClick={() => {
+                  playSound("click");
                   setOpenFaqIndex(openFaqIndex === idx ? null : idx);
                 }}
-              />
-              <div className="collapse-title text-xs sm:text-sm font-bold text-cyan-200">
-                {faq.q}
-              </div>
-              <div className="collapse-content font-mono text-xs text-cyan-300/80 leading-relaxed border-t border-cyan-500/20 bg-[#020512] pt-3">
-                <p>{faq.a}</p>
-              </div>
+                className="flex w-full items-center justify-between p-4 text-left text-sm font-semibold text-white hover:bg-zinc-800/40 transition-colors"
+              >
+                <span>{faq.q}</span>
+                {openFaqIndex === idx ? (
+                  <ChevronUp className="h-4 w-4 text-emerald-400 shrink-0" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />
+                )}
+              </button>
+              {openFaqIndex === idx && (
+                <div className="border-t border-zinc-800 bg-zinc-900/60 p-4 text-xs text-zinc-300 leading-relaxed">
+                  <p>{faq.a}</p>
+                </div>
+              )}
             </div>
           ))}
         </div>
       </section>
 
-      {/* Bottom Monarch Awakening Banner */}
-      <section className="px-4 py-16 border-t border-cyan-500/30 bg-gradient-to-t from-[#04081c] via-[#020510] to-[#020510] text-center space-y-5">
-        <div className="inline-flex items-center gap-2 system-btn-chamfer border border-cyan-400/60 bg-[#03081a] px-3.5 py-1 font-mono text-[11px] font-black text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.35)]">
-          <Crown className="h-3.5 w-3.5 text-cyan-400" />
-          <span>{isBn ? "আমি একাই লেভেল আপ করব • I ALONE LEVEL UP" : "I ALONE LEVEL UP • SOLO LEVELING"}</span>
-        </div>
-
-        <h2 className="text-2xl sm:text-4xl font-black text-white font-mono uppercase text-glow-cyan">
-          {isBn ? "আজ থেকেই শুরু হোক আপনার সিস্টেম জাগরণ" : "AWAKEN YOUR INNER SHADOW MONARCH TODAY"}
+      {/* Bottom CTA Banner */}
+      <section className="px-4 py-16 border-t border-zinc-800 bg-gradient-to-b from-[#0d121f] to-[#090d16] text-center space-y-4">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+          {isBn ? "আজ থেকেই শুরু করুন আপনার ফিটনেস যাত্রা" : "Start Your Fitness Journey Today"}
         </h2>
 
-        <p className="font-mono text-xs sm:text-sm text-cyan-300/80 max-w-md mx-auto">
+        <p className="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto">
           {isBn
-            ? "কোনো সাবস্ক্রিপশন নেই, কোনো পে-ওয়াল নেই। এখনই আপনার সরঞ্জাম ও টার্গেট বেছে নিয়ে লেভেল আপ করুন।"
-            : "No subscriptions, no fees. Train with your available equipment and conquer your daily hunter limits."}
+            ? "কোনো সাবস্ক্রিপশন নেই, কোনো বিজ্ঞাপন নেই। এখনই আপনার সরঞ্জাম ও লক্ষ্য অনুযায়ী ওয়ার্কআউট শুরু করুন।"
+            : "No subscriptions, no hidden fees. Build sustainable strength and healthy nutrition habits today."}
         </p>
 
         <button
           onClick={() => {
-            playSound("arise");
+            playSound("click");
             onLaunchApp();
           }}
           type="button"
-          className="inline-flex min-h-[52px] items-center gap-2.5 system-btn-chamfer bg-gradient-to-r from-cyan-400 via-blue-600 to-purple-600 px-8 font-mono text-sm font-black uppercase text-white shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:brightness-110 active:scale-95 transition-all"
+          className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 px-8 text-sm font-bold text-black shadow-lg shadow-emerald-500/20 hover:brightness-105 active:scale-95 transition-all cursor-pointer"
         >
-          <Play className="h-4 w-4 fill-current stroke-none" />
-          <span>{isBn ? "◆ সিস্টেম সক্রিয় করুন (ARISE) ◆" : "◆ ARISE : ENTER THE SYSTEM ◆"}</span>
+          <Play className="h-4 w-4 fill-current" />
+          <span>{isBn ? "অ্যাপে প্রবেশ করুন" : "Launch Arise Coach"}</span>
         </button>
       </section>
 
-      {/* Footer HUD */}
-      <footer className="border-t border-cyan-500/25 py-8 px-4 text-center font-mono text-xs text-cyan-600/80 space-y-2 bg-[#020510]">
-        <div className="flex items-center justify-center gap-2 font-bold text-cyan-400">
-          <Terminal className="h-4 w-4 text-cyan-400" />
-          <span>ARISE : THE SYSTEM • SOLO LEVELING FITNESS & BANGLADESHI NUTRITION</span>
+      {/* Footer */}
+      <footer className="border-t border-zinc-800 py-6 px-4 text-center text-xs text-zinc-500 space-y-1.5 bg-[#090d16]">
+        <div className="font-semibold text-zinc-400">
+          ARISE FITNESS · Smart AI Workout Coach & Nutrition
         </div>
-        <p className="text-[11px]">System Protocol Version 2.0 • Autonomous Client Architecture</p>
+        <p className="text-[11px]">Free & Open-Source Fitness Architecture</p>
       </footer>
     </div>
   );

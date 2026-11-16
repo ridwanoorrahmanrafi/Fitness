@@ -1,14 +1,56 @@
 {
-  "name": "Arise Coach",
-  "short_name": "Arise Coach",
-  "description": "Personal AI workout coach",
+  "name": "ARISE : The System · Solo Leveling Workout Coach",
+  "short_name": "ARISE System",
+  "description": "Solo Leveling System-inspired adaptive AI fitness coach with daily hunter quests, dungeon raids, real-time stat evaluations, and custom Bangladeshi nutrition.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#09090b",
+  "orientation": "portrait-primary",
+  "background_color": "#020510",
+  "theme_color": "#020510",
+  "lang": "en",
+  "categories": ["fitness", "health", "sports", "lifestyle"],
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Daily Quest (দৈনিক কোয়েস্ট)",
+      "short_name": "Daily Quest",
+      "description": "Execute your daily Hunter training objectives",
+      "url": "/#today",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Bangladeshi Diet (খাদ্য তালিকা)",
+      "short_name": "Diet Plan",
+      "description": "Access your 5-meal personalized Bangladeshi nutrition chart",
+      "url": "/#diet",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Strength Calculator (শক্তি ক্যালকুলেটর)",
+      "short_name": "1RM & DOTS",
+      "description": "Calculate 1-Rep Max and IPF DOTS strength score",
+      "url": "/#profile",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
