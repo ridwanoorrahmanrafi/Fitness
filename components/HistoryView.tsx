@@ -31,12 +31,12 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
   return (
     <div className="space-y-5 text-zinc-100">
       {/* Header Banner */}
-      <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-sm">
+      <div className="rounded-3xl glass-surface border border-white/10 p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-lime-400/15 text-lime-400">
             <Dumbbell className="h-3.5 w-3.5" />
           </span>
-          <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+          <span className="text-xs font-semibold uppercase tracking-wider text-lime-400">
             {isBn ? "ওয়ার্কআউট ইতিহাস" : "Workout Records"}
           </span>
         </div>
@@ -52,25 +52,25 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
 
       {/* 3 Metric Cards */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 text-center shadow-sm">
+        <div className="rounded-2xl glass-surface border border-white/10 p-4 text-center shadow-sm">
           <div className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
             {isBn ? "গত ৭ দিন" : "Last 7 Days"}
           </div>
           <div className="mt-1 text-2xl font-bold text-white">{week}</div>
           <div className="text-[10px] text-zinc-500">{isBn ? "সেশন" : "sessions"}</div>
         </div>
-        <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 text-center shadow-sm">
+        <div className="rounded-2xl glass-surface border border-white/10 p-4 text-center shadow-sm">
           <div className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
             {isBn ? "মোট সেশন" : "Total Workouts"}
           </div>
-          <div className="mt-1 text-2xl font-bold text-emerald-400">{history.length}</div>
+          <div className="mt-1 text-2xl font-bold text-lime-400">{history.length}</div>
           <div className="text-[10px] text-zinc-500">{isBn ? "সম্পন্ন" : "completed"}</div>
         </div>
-        <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 text-center shadow-sm">
+        <div className="rounded-2xl glass-surface border border-white/10 p-4 text-center shadow-sm">
           <div className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">
             {isBn ? "মোট ভলিউম" : "Volume Lifted"}
           </div>
-          <div className="mt-1 text-2xl font-bold text-sky-400">{totalVolume.toLocaleString()}</div>
+          <div className="mt-1 text-2xl font-bold text-emerald-400">{totalVolume.toLocaleString()}</div>
           <div className="text-[10px] text-zinc-500">kg</div>
         </div>
       </div>
@@ -94,9 +94,9 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
             return (
               <li
                 key={h.id}
-                className={`rounded-xl border transition-all ${expanded
-                    ? "border-emerald-500/50 bg-[#111726] shadow-md"
-                    : "border-zinc-800/80 bg-[#111726]/80 hover:border-zinc-700"
+                className={`rounded-2xl border transition-all ${expanded
+                    ? "border-lime-400/50 glass-surface shadow-md"
+                    : "border-white/10 glass-surface hover:border-white/20"
                   }`}
               >
                 <button
@@ -163,7 +163,7 @@ export function HistoryView({ history, lang = "bn", onExport, onImport, onClear 
       )}
 
       {/* Cloud & Local Backup Card */}
-      <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 space-y-3">
+      <div className="rounded-2xl border border-white/10 glass-surface p-4 space-y-3">
         <p className="text-xs text-zinc-400">
           {isBn
             ? "আপনার বায়োমেট্রিক ও ওয়ার্কআউট ডাটা ব্রাউজারে অফলাইনে সংরক্ষিত থাকে এবং ব্যাকআপ হিসেবে এক্সপোর্ট বা ইমপোর্ট করা যায়।"

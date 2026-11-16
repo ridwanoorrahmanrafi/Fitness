@@ -42,14 +42,14 @@ export function WaterTrackerCard({ lang = "bn" }: Props) {
   const glassesCount = Math.round((waterMl / 250) * 10) / 10;
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-lg font-sans">
+    <div className="rounded-3xl glass-surface border border-white/10 p-5 shadow-lg font-sans">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-400">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-cyan-400/15 text-cyan-400 border border-cyan-400/25">
             <Droplet className="h-4 w-4 fill-current" />
           </span>
           <div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-extrabold text-white">
               {isBn ? "দৈনিক হাইড্রেশন ও পানি ট্র্যাকার" : "Daily Hydration Tracker"}
             </h3>
             <p className="text-xs text-zinc-400">
@@ -66,7 +66,7 @@ export function WaterTrackerCard({ lang = "bn" }: Props) {
             playSound("click");
             setWaterMl(0);
           }}
-          className="text-zinc-500 hover:text-zinc-300 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors"
+          className="text-zinc-500 hover:text-zinc-300 p-2 rounded-xl bg-black/40 border border-white/5 transition-colors"
           title={isBn ? "রিসেট করুন" : "Reset today's water"}
         >
           <RotateCcw className="h-3.5 w-3.5" />
@@ -87,15 +87,15 @@ export function WaterTrackerCard({ lang = "bn" }: Props) {
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-zinc-800 h-2.5 rounded-full mt-3 overflow-hidden">
+          <div className="w-full bg-black/60 h-2.5 rounded-full mt-3 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-sky-500 to-teal-400 h-full rounded-full transition-all duration-500 ease-out"
+              className="bg-gradient-to-r from-cyan-400 to-teal-300 h-full rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
 
           <div className="mt-2 flex items-center justify-between text-xs text-zinc-400">
-            <span className="font-semibold text-sky-400">{progressPercent}% {isBn ? "সম্পন্ন" : "achieved"}</span>
+            <span className="font-bold text-cyan-400">{progressPercent}% {isBn ? "সম্পন্ন" : "achieved"}</span>
             <span>{Math.max(0, targetMl - waterMl)} ml {isBn ? "বাকি" : "remaining"}</span>
           </div>
         </div>
@@ -105,7 +105,7 @@ export function WaterTrackerCard({ lang = "bn" }: Props) {
           <button
             type="button"
             onClick={() => addWater(250)}
-            className="flex-1 py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-bold text-xs shadow-md shadow-sky-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-1 py-2.5 px-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-zinc-950 font-extrabold text-xs shadow-md shadow-cyan-400/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5 stroke-[2.5]" />
             <span>+250 ml ({isBn ? "১ গ্লাস" : "1 Glass"})</span>
@@ -115,7 +115,7 @@ export function WaterTrackerCard({ lang = "bn" }: Props) {
             <button
               type="button"
               onClick={() => addWater(500)}
-              className="flex-1 py-2 px-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-zinc-200 hover:text-white font-bold text-xs active:scale-95 transition-all"
+              className="flex-1 py-2 px-2.5 rounded-xl border border-white/10 bg-black/60 text-zinc-200 hover:text-white font-bold text-xs active:scale-95 transition-all cursor-pointer"
             >
               +500 ml
             </button>
@@ -123,7 +123,7 @@ export function WaterTrackerCard({ lang = "bn" }: Props) {
               type="button"
               onClick={() => addWater(-250)}
               disabled={waterMl <= 0}
-              className="py-2 px-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-zinc-400 hover:text-white disabled:opacity-30 text-xs active:scale-95 transition-all"
+              className="py-2 px-2.5 rounded-xl border border-white/10 bg-black/60 text-zinc-400 hover:text-white disabled:opacity-30 text-xs active:scale-95 transition-all cursor-pointer"
               title="Minus 250ml"
             >
               <Minus className="h-3 w-3" />

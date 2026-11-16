@@ -18,12 +18,20 @@ html {
 }
 
 body {
-  background: #09090B;
+  background: #050507;
   color: #f4f4f5;
   font-family: var(--font-fitness);
   -webkit-tap-highlight-color: transparent;
   padding-bottom: env(safe-area-inset-bottom);
   overflow-x: hidden;
+}
+
+/* Glass Surface v2.0 */
+.glass-surface {
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Hide scrollbar utility */

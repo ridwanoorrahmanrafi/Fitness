@@ -102,7 +102,7 @@ export function StrengthCalculatorCard({
   const rankInfo = getRankBadge(classification);
 
   return (
-    <div className={`fitness-card p-4 sm:p-5 border border-slate-800 rounded-2xl relative overflow-hidden bg-[#111726]/80 backdrop-blur-md ${className}`}>
+    <div className={`rounded-3xl glass-surface border border-white/10 p-4 sm:p-5 relative overflow-hidden shadow-xl ${className}`}>
       {/* Header & Unit Switcher */}
       <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2">

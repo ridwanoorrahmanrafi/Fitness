@@ -84,9 +84,9 @@ export function ExerciseLibraryModal({
       aria-labelledby="exercise-library-title"
       className="modal modal-open backdrop-blur-md z-50 p-0 sm:p-4"
     >
-      <div className="modal-box relative flex max-h-[92vh] w-full max-w-3xl flex-col p-0 rounded-2xl border border-slate-800 bg-[#0d121f] text-slate-100 shadow-2xl overflow-hidden font-sans">
+      <div className="modal-box relative flex max-h-[92vh] w-full max-w-3xl flex-col p-0 rounded-3xl border border-white/10 glass-surface bg-[#050507]/95 text-zinc-100 shadow-2xl overflow-hidden font-sans">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 bg-[#111726] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-white/10 glass-surface bg-[#050507]/90 px-5 py-4">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <Dumbbell className="h-5 w-5" />
@@ -157,7 +157,7 @@ export function ExerciseLibraryModal({
         </div>
 
         {/* Search & Category Filter Bar */}
-        <div className="border-b border-slate-800 bg-[#111726]/60 p-4 space-y-3">
+        <div className="border-b border-white/10 glass-surface bg-[#050507]/80 p-4 space-y-3">
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 z-10 pointer-events-none" />
             <input
@@ -203,7 +203,7 @@ export function ExerciseLibraryModal({
                 <div
                   key={ex.id}
                   onClick={() => onSelectExercise(ex)}
-                  className="group relative flex items-center gap-3.5 p-3 rounded-xl border border-slate-800 bg-[#111726]/80 hover:bg-[#141c2e] hover:border-emerald-500/40 hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.99]"
+                  className="group relative flex items-center gap-3.5 p-3 rounded-2xl border border-white/10 glass-surface hover:border-lime-400/50 hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.99]"
                 >
                   {/* Animated Thumbnail */}
                   <div className="relative shrink-0 h-16 w-16 rounded-xl overflow-hidden border border-slate-800 bg-black">
@@ -247,13 +247,13 @@ export function ExerciseLibraryModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-800 bg-[#111726] px-5 py-3.5 flex items-center justify-between">
-          <span className="text-xs text-slate-400">
+        <div className="border-t border-white/10 glass-surface bg-[#050507] px-5 py-3.5 flex items-center justify-between">
+          <span className="text-xs text-zinc-400">
             {isBn ? "যেকোনো ব্যায়ামে ট্যাপ করে সম্পূর্ণ গাইড ও অ্যানিমেশন দেখুন" : "Select any exercise to view detailed form and execution"}
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-500 hover:from-lime-300 hover:to-emerald-400 text-zinc-950 font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer"
           >
             {t.gotItBtn}
           </button>

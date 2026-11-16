@@ -35,7 +35,7 @@ export function Sheet({ open, title, onClose, children, dismissable = true }: Sh
 
   return (
     <div
-      className="modal modal-open modal-bottom sm:modal-middle fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-md sm:items-center p-0 sm:p-4 animate-in fade-in duration-200"
+      className="modal modal-open modal-bottom sm:modal-middle fixed inset-0 z-50 flex items-end justify-center bg-black/85 backdrop-blur-md sm:items-center p-0 sm:p-4 animate-in fade-in duration-200"
       onMouseDown={(e) => {
         if (dismissable && e.target === e.currentTarget) onClose();
       }}
@@ -46,14 +46,14 @@ export function Sheet({ open, title, onClose, children, dismissable = true }: Sh
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="modal-box relative max-h-[94dvh] sm:max-h-[90vh] w-full overflow-y-auto overscroll-contain rounded-t-3xl sm:rounded-2xl border border-slate-800 bg-[#0d121f] p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl sm:max-w-xl animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-200 text-slate-100 font-sans"
+        className="modal-box relative max-h-[94dvh] sm:max-h-[90vh] w-full overflow-y-auto overscroll-contain rounded-t-[36px] sm:rounded-3xl border border-white/10 glass-surface bg-[#050507]/95 p-4 sm:p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl sm:max-w-xl animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-200 text-zinc-100 font-sans"
       >
         {/* Mobile Swipe Handle Indicator */}
-        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-700/60 sm:hidden" />
+        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-zinc-700/60 sm:hidden" />
 
         {/* Clean Header Bar */}
-        <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
-          <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+        <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+          <h2 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
             {title}
           </h2>
           {dismissable && (
@@ -63,9 +63,9 @@ export function Sheet({ open, title, onClose, children, dismissable = true }: Sh
                 onClose();
               }}
               aria-label="Close"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-xl bg-black/40 text-zinc-400 hover:text-white border border-white/5 transition-colors cursor-pointer"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -96,8 +96,8 @@ export function Chip({
       }}
       className={`min-h-[38px] px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all duration-150 active:scale-95 cursor-pointer ${
         selected
-          ? "border border-emerald-500 bg-emerald-500/10 text-emerald-300 font-bold shadow-sm"
-          : "border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700"
+          ? "border border-lime-400 bg-lime-400/15 text-lime-400 font-extrabold shadow-sm"
+          : "border border-white/10 bg-black/40 text-zinc-400 hover:text-white hover:border-white/20"
       } ${className}`}
     >
       {children}

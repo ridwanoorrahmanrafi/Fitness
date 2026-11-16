@@ -38,11 +38,11 @@ export function WeeklyScheduleBar({
   else if (count >= 6) splitName = lang === "bn" ? "হাই ফ্রিকোয়েন্সি PPL x ২" : "High Frequency PPL x 2";
 
   return (
-    <div className="relative rounded-2xl border border-slate-800 bg-[#111726]/80 p-4 text-slate-100 space-y-4 font-sans shadow-lg">
+    <div className="relative rounded-3xl glass-surface border border-white/10 p-4 text-zinc-100 space-y-4 font-sans shadow-lg">
       {/* Header and preset shortcuts */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-emerald-400" />
+          <Calendar className="h-4 w-4 text-lime-400" />
           <h3 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
             {lang === "bn" ? "সাপ্তাহিক শিডিউল" : "Weekly Schedule"}
           </h3>
@@ -60,10 +60,10 @@ export function WeeklyScheduleBar({
                 playSound("click");
                 onSetDays(preset.days);
               }}
-              className={`rounded-lg px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`rounded-xl px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
                 preset.active
-                  ? "bg-emerald-500 text-slate-950 font-bold"
-                  : "border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700"
+                  ? "bg-lime-400 text-zinc-950 font-bold shadow-sm shadow-lime-400/20"
+                  : "border border-white/10 bg-black/50 text-zinc-400 hover:text-white"
               }`}
             >
               {preset.label}
@@ -86,14 +86,14 @@ export function WeeklyScheduleBar({
                 playSound("click");
                 onToggleDay(d.dayIndex);
               }}
-              className={`relative flex flex-col items-center justify-between p-1.5 sm:p-2 min-h-[64px] sm:min-h-[72px] rounded-xl border transition-all cursor-pointer ${
+              className={`relative flex flex-col items-center justify-between p-1.5 sm:p-2 min-h-[64px] sm:min-h-[72px] rounded-2xl border transition-all cursor-pointer ${
                 isSelected
-                  ? "border-emerald-500/80 bg-emerald-500/10 text-emerald-300 font-semibold shadow-sm"
-                  : "border-slate-800/80 bg-slate-900/50 text-slate-500 hover:border-slate-700 hover:text-slate-300"
-              } ${isToday ? "ring-2 ring-emerald-400 ring-offset-2 ring-offset-[#090d16]" : ""}`}
+                  ? "border-lime-400/80 bg-lime-400/10 text-lime-300 font-semibold shadow-sm"
+                  : "border-white/5 bg-black/40 text-zinc-500 hover:border-white/10 hover:text-zinc-300"
+              } ${isToday ? "ring-2 ring-lime-400 ring-offset-2 ring-offset-[#050507]" : ""}`}
             >
               {isToday && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-1 py-0.2 text-[7px] sm:text-[8px] font-bold uppercase text-slate-950 tracking-wider">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded bg-lime-400 px-1 py-0.2 text-[7px] sm:text-[8px] font-bold uppercase text-zinc-950 tracking-wider">
                   {t.todayLabel}
                 </span>
               )}
@@ -105,9 +105,9 @@ export function WeeklyScheduleBar({
 
               <div className="mt-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full">
                 {isSelected ? (
-                  <Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-400" />
+                  <Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-lime-400" />
                 ) : (
-                  <Moon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-slate-600" />
+                  <Moon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-zinc-600" />
                 )}
               </div>
             </button>
@@ -116,13 +116,13 @@ export function WeeklyScheduleBar({
       </div>
 
       {/* Today's Scheduled Status Card */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3 flex flex-wrap items-center justify-between gap-3">
+      <div className="rounded-2xl border border-white/5 bg-black/50 p-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
               todaySchedule.isWorkoutDay
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                : "border-slate-700 bg-slate-800/60 text-slate-400"
+                ? "border-lime-400/30 bg-lime-400/10 text-lime-400"
+                : "border-white/10 bg-white/5 text-zinc-400"
             }`}
           >
             {todaySchedule.isWorkoutDay ? <Dumbbell className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -135,14 +135,14 @@ export function WeeklyScheduleBar({
               <span
                 className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
                   todaySchedule.isWorkoutDay
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "bg-slate-800 text-slate-400 border border-slate-700"
+                    ? "bg-lime-400/20 text-lime-400 border border-lime-400/30"
+                    : "bg-white/5 text-zinc-400 border border-white/10"
                 }`}
               >
                 {todaySchedule.isWorkoutDay ? (lang === "bn" ? "ওয়ার্কআউট দিন" : "Workout Day") : (lang === "bn" ? "বিশ্রাম ও রিকভারি" : "Rest & Recovery")}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[11px] text-zinc-400 mt-0.5">
               {todaySchedule.isWorkoutDay
                 ? `${t.programLabel} ${todaySchedule.sessionTitle}`
                 : t.restDesc}
@@ -157,9 +157,9 @@ export function WeeklyScheduleBar({
               playSound("click");
               onApplyTodayFocus(todaySchedule.focusId);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lime-400 text-zinc-950 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm shadow-lime-400/20"
           >
-            <Sparkles className="h-3.5 w-3.5 text-slate-950" />
+            <Sparkles className="h-3.5 w-3.5 text-zinc-950" />
             <span>{t.applyFocusBtn}</span>
             <ChevronRight className="h-3 w-3 stroke-[3]" />
           </button>
@@ -167,9 +167,9 @@ export function WeeklyScheduleBar({
       </div>
 
       {/* Routine summary footer */}
-      <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+      <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1">
         <span>{t.workoutDaysCount(count, 7 - count)}</span>
-        <span className="text-emerald-400 font-semibold">{splitName}</span>
+        <span className="text-lime-400 font-semibold">{splitName}</span>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ArrowRight,
   BatteryCharging,
+  BookOpen,
   Bot,
   Calendar,
   Check,
@@ -14,6 +15,8 @@ import {
   ChevronRight,
   ChevronUp,
   Clock,
+  Cloud,
+  CloudOff,
   Dumbbell,
   ExternalLink,
   Flame,
@@ -109,8 +112,8 @@ import {
   type Equipment,
 } from "@/lib/types";
 
-// Supported tabs matching the fitness_workout_tracker design
-type ActiveTab = "today" | "coach" | "exercises" | "nutrition" | "analytics";
+// Supported tabs matching the Obsidian Kinetic v2.0 design
+type ActiveTab = "today" | "coach" | "library" | "nutrition" | "stats" | "exercises" | "analytics";
 type ActiveView = "landing" | "app";
 
 // Preset AI Coach Prompts from the design template
@@ -309,9 +312,9 @@ export default function Page() {
         if (hash === "#coach" || hash === "#ai") {
           setActiveTab("coach");
         } else if (hash === "#exercises" || hash === "#library") {
-          setActiveTab("exercises");
+          setActiveTab("library");
         } else if (hash === "#analytics" || hash === "#stats" || hash === "#progress" || hash === "#history") {
-          setActiveTab("analytics");
+          setActiveTab("stats");
         } else if (hash === "#nutrition" || hash === "#diet") {
           setActiveTab("nutrition");
         } else if (hash === "#profile" || hash === "#details" || hash === "#settings") {
@@ -889,76 +892,87 @@ export default function Page() {
 
   if (!ready) {
     return (
-      <main className="flex min-h-screen items-center justify-center text-sm text-zinc-500 bg-[#09090B]" aria-busy="true">
+      <main className="flex min-h-screen items-center justify-center text-sm text-zinc-500 bg-[#050507]" aria-busy="true">
         <Loader2 className="mr-2 h-5 w-5 animate-spin text-lime-400" /> Loading Arise Fitness...
       </main>
     );
   }
 
   return (
-    <div className="min-h-screen w-full bg-black text-zinc-100 flex items-center justify-center sm:p-4 md:p-6 font-sans antialiased selection:bg-lime-400 selection:text-zinc-950">
-      {/* Sleek Mobile Phone Viewport Frame on Desktop / Full-Bleed on Mobile */}
-      <div className="relative w-full sm:w-[440px] md:w-[480px] lg:w-[520px] h-[100dvh] sm:h-[890px] bg-[#09090B] sm:rounded-[44px] sm:border-[6px] sm:border-zinc-800/90 sm:shadow-[0_0_80px_rgba(163,230,53,0.12)] flex flex-col overflow-hidden">
+    <div className="min-h-screen w-full bg-[#050507] text-zinc-100 flex items-center justify-center sm:p-4 md:p-6 font-sans antialiased selection:bg-lime-400 selection:text-zinc-950">
+      {/* Mobile Shell Frame */}
+      <div className="relative w-full sm:w-[412px] h-[100dvh] sm:h-[852px] bg-[#050507] sm:rounded-[44px] sm:border-[6px] sm:border-zinc-800/90 sm:shadow-[0_0_90px_rgba(163,230,53,0.12)] flex flex-col overflow-hidden">
         
-        {/* Simulated Mobile Top Island on Desktop Frame */}
-        <div className="hidden sm:flex items-center justify-between px-7 pt-3 pb-1 text-[11px] font-semibold text-zinc-400 bg-[#09090B] select-none shrink-0">
+        {/* Simulated Mobile Notch on Desktop */}
+        <div className="hidden sm:flex items-center justify-between px-7 pt-3 pb-1 text-[11px] font-semibold text-zinc-400 bg-[#050507] select-none shrink-0">
           <span>9:41</span>
           <div className="w-24 h-5 bg-black rounded-full border border-zinc-800/80 flex items-center justify-end px-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500/80" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500/80 animate-pulse" />
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] text-lime-400 font-bold">5G</span>
-            <BatteryCharging className="w-4 h-4 text-zinc-300" />
+            <div className="w-3.5 h-3.5 rounded-full border border-zinc-400 flex items-center justify-center text-[8px] font-bold">✓</div>
           </div>
         </div>
 
-        {/* Top Sticky Header */}
-        <header className="px-4 pt-3 pb-2.5 bg-[#09090B]/95 backdrop-blur-md border-b border-zinc-800/70 shrink-0 z-20">
+        {/* Sticky Shrink-on-Scroll Header */}
+        <header className="px-4 pt-3 pb-2.5 bg-[#050507]/90 backdrop-blur-xl border-b border-white/10 shrink-0 z-30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-lime-400 to-emerald-500 flex items-center justify-center shadow-md shadow-lime-400/20 shrink-0">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-lime-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-lime-400/20">
                 <Flame className="w-5 h-5 text-zinc-950 stroke-[2.5]" />
               </div>
-              <div className="min-w-0">
+              <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-extrabold tracking-tight text-white">
-                    ARISE AI
-                  </span>
+                  <span className="text-sm font-extrabold tracking-tight text-white">{isBn ? "এরাইজ এআই" : "ARISE AI"}</span>
                   <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-lime-400/15 text-lime-400 border border-lime-400/30">
-                    PWA
+                    {isBn ? "পিওয়া ২.০" : "PWA v2.0"}
                   </span>
                 </div>
-                <p className="text-[11px] text-zinc-400 truncate">
-                  {activeTab === "today"
-                    ? (isBn ? "স্মার্ট কমান্ড সেন্টার" : "Adaptive Command Center")
-                    : activeTab === "coach"
-                    ? (isBn ? "এআই রুটিন আর্কিটেক্ট" : "Neural Routine Architect")
-                    : activeTab === "analytics"
-                    ? (isBn ? "বায়োমেট্রিক্স ও অ্যানালিটিক্স" : "Biometrics & Telemetry")
-                    : activeTab === "nutrition"
-                    ? (isBn ? "পুষ্টি ও ডায়েট প্ল্যানার" : "Nutrition & Diet Planner")
-                    : (isBn ? "ব্যায়াম ও টেকনিক লাইব্রেরি" : "Movement & Form Library")}
-                </p>
+                {/* MongoDB Cloud Sync Indicator */}
+                <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-medium">
+                  {activeUser?.cloudUser || activeUser?.emailOrHandle ? (
+                    <>
+                      <Cloud className="w-3 h-3 text-emerald-400" />
+                      <span className="text-emerald-400">{isBn ? "ক্লাউড সিঙ্কড" : "Cloud Synced"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <CloudOff className="w-3 h-3 text-amber-400" />
+                      <span className="text-amber-400">{isBn ? "অফলাইন ক্যাশ" : "Offline Cache"}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {/* Live BMI Quick Badge */}
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab("analytics");
+                  setActiveTab("stats");
                   setAnalyticsSubTab("biometrics");
                 }}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs hover:border-zinc-700 transition-colors cursor-pointer"
-                title="View BMI & Biometrics Telemetry"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl glass-surface text-xs hover:border-lime-400/50 transition-colors cursor-pointer"
+                title="View BMI Telemetry"
               >
                 <HeartPulse className="w-3.5 h-3.5 text-lime-400" />
                 <span className="font-bold text-white">{stats.bmi}</span>
                 <span className="text-[10px] text-zinc-400">BMI</span>
               </button>
 
-              {/* Audio Feedback Toggle */}
+              {/* Language Toggle (EN / বাং) */}
+              <button
+                type="button"
+                onClick={() => setLang(lang === "en" ? "bn" : "en")}
+                className="px-2 py-1.5 rounded-xl glass-surface text-[11px] font-extrabold text-lime-400 border border-lime-400/30 active:scale-95 transition-transform cursor-pointer"
+                title="Switch Language"
+              >
+                {lang === "en" ? "বাং" : "EN"}
+              </button>
+
+              {/* Audio Toggle */}
               <button
                 type="button"
                 onClick={() => {
@@ -966,7 +980,7 @@ export default function Page() {
                   setSoundOn(!soundOn);
                 }}
                 aria-label="Toggle Sound"
-                className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform cursor-pointer"
+                className="p-2 rounded-xl glass-surface text-zinc-300 active:scale-95 transition-transform cursor-pointer"
               >
                 {soundOn ? (
                   <Volume2 className="w-4 h-4 text-lime-400" />
@@ -975,35 +989,15 @@ export default function Page() {
                 )}
               </button>
 
-              {/* Language Switch */}
-              <button
-                type="button"
-                onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-                className="px-2 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] font-bold text-zinc-300 hover:text-white transition-colors cursor-pointer"
-                title="Toggle Language / ভাষা পরিবর্তন"
-              >
-                {lang === "bn" ? "বাং" : "EN"}
-              </button>
-
-              {/* My Details Modal Button */}
+              {/* Profile / Details Trigger */}
               <button
                 type="button"
                 id="btn-header-my-details"
                 onClick={() => setShowProfile(true)}
-                className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-lime-400/50 transition-colors cursor-pointer"
-                title={isBn ? "আমার শারীরিক বিবরণ" : "My Details"}
+                className="p-2 rounded-xl glass-surface text-zinc-300 hover:text-white active:scale-95 transition-transform cursor-pointer"
+                title={isBn ? "প্রোফাইল বিবরণ" : "Athlete Profile"}
               >
-                <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
-              </button>
-
-              {/* Account Modal Button */}
-              <button
-                type="button"
-                onClick={() => setShowAuthModal(true)}
-                className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition-colors cursor-pointer"
-                title="Account & Cloud Sync"
-              >
-                <UserIcon className="w-4 h-4 text-zinc-400" />
+                <UserIcon className="w-4 h-4 text-lime-400" />
               </button>
             </div>
           </div>
@@ -1034,9 +1028,9 @@ export default function Page() {
           {/* ========================================================= */}
           {activeTab === "today" && (
             <>
-              {/* Biometric Readiness & Target Weight Ring Strip */}
+              {/* Concentric AI Readiness Rings */}
               <section className="grid grid-cols-2 gap-2.5">
-                <div className="rounded-2xl bg-[#18181B] border border-zinc-800/80 p-3 flex items-center gap-3">
+                <div className="rounded-3xl glass-surface p-3 flex items-center gap-3">
                   {/* SVG Readiness Ring */}
                   <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
                     <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
@@ -1066,10 +1060,10 @@ export default function Page() {
                   </div>
                   <div className="min-w-0">
                     <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold truncate">
-                      AI Readiness
+                      {isBn ? "এআই প্রস্তুতি" : "AI Readiness"}
                     </div>
                     <div className="text-xs font-bold text-lime-400 truncate">
-                      Prime Output
+                      {isBn ? "সেরা পারফরম্যান্স" : "Prime Output"}
                     </div>
                     <div className="text-[10px] text-zinc-500 truncate">
                       {stats.tdee} kcal TDEE
@@ -1079,10 +1073,10 @@ export default function Page() {
 
                 <div
                   onClick={() => {
-                    setActiveTab("analytics");
+                    setActiveTab("stats");
                     setAnalyticsSubTab("biometrics");
                   }}
-                  className="rounded-2xl bg-[#18181B] border border-zinc-800/80 p-3 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
+                  className="rounded-3xl glass-surface p-3 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
                 >
                   {/* SVG Weight Goal Ring */}
                   <div className="relative w-11 h-11 shrink-0 flex items-center justify-center">
@@ -1113,7 +1107,7 @@ export default function Page() {
                   </div>
                   <div className="min-w-0">
                     <div className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold truncate">
-                      Goal Weight
+                      {isBn ? "টার্গেট ওজন" : "Goal Weight"}
                     </div>
                     <div className="text-xs font-bold text-white truncate">
                       {activeProfile.weightKg} → {targetWeight}kg
@@ -1126,10 +1120,10 @@ export default function Page() {
               </section>
 
               {/* AI Adaptive Coach Hero Card */}
-              <section className="rounded-3xl bg-gradient-to-b from-zinc-900 to-[#18181B] border border-zinc-800/90 p-4 shadow-lg relative overflow-hidden">
+              <section className="rounded-3xl glass-surface p-4 shadow-xl relative overflow-hidden border border-white/10">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-lime-400/15 text-lime-400 border border-lime-400/30">
-                    <Sparkles className="w-3 h-3" /> AI Adaptive Coach
+                    <Sparkles className="w-3 h-3" /> Obsidian Kinetic AI
                   </span>
                   <span className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-emerald-400" />
@@ -1150,7 +1144,7 @@ export default function Page() {
                 {/* Target Split Quick Filter Chips */}
                 <div className="mt-3.5">
                   <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
-                    Target Body Split
+                    {isBn ? "টার্গেট স্প্লিট" : "Target Split"}
                   </div>
                   <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                     {FOCUSES.map((f) => {
@@ -1165,8 +1159,8 @@ export default function Page() {
                           }}
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
                             active
-                              ? "bg-lime-400 text-zinc-950 shadow-sm shadow-lime-400/30"
-                              : "bg-zinc-950 text-zinc-400 border border-zinc-800 hover:text-zinc-200"
+                              ? "bg-lime-400 text-zinc-950 shadow-md shadow-lime-400/30 font-extrabold"
+                              : "bg-black/40 text-zinc-400 border border-white/5 hover:text-zinc-200"
                           }`}
                         >
                           {FOCUS_LABELS_I18N[lang]?.[f.id] ?? f.label}
@@ -1179,7 +1173,7 @@ export default function Page() {
                 {/* Available Equipment Quick Chips */}
                 <div className="mt-2.5">
                   <div className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
-                    Equipment Access
+                    {isBn ? "ইকুইপমেন্ট অ্যাক্সেস" : "Equipment Access"}
                   </div>
                   <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                     {([
@@ -1210,8 +1204,8 @@ export default function Page() {
                           }}
                           className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap border transition-all active:scale-95 cursor-pointer ${
                             active
-                              ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300"
-                              : "bg-zinc-950/80 border-zinc-800 text-zinc-500"
+                              ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-300 font-bold"
+                              : "bg-black/40 border-white/5 text-zinc-500"
                           }`}
                         >
                           {eq.label}
@@ -1222,16 +1216,16 @@ export default function Page() {
                 </div>
 
                 {/* Live Session Completion Meter */}
-                <div className="mt-3.5 pt-3 border-t border-zinc-800/80">
+                <div className="mt-3.5 pt-3 border-t border-white/10">
                   <div className="flex items-center justify-between text-[11px] mb-1.5">
                     <span className="text-zinc-400 font-medium">
-                      Session Sets Completed
+                      {isBn ? "সেশনের অগ্রগতি" : "Session Volume"}
                     </span>
                     <span className="font-bold text-lime-400">
                       {doneSetsCount}/{totalSetsCount} Sets ({sessionCompletionPct}%)
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-zinc-950 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-black/60 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-lime-400 to-emerald-500 rounded-full transition-all duration-300"
                       style={{ width: `${sessionCompletionPct}%` }}
@@ -1242,18 +1236,18 @@ export default function Page() {
 
               {/* Warm-Up Accordion */}
               {plan?.warmup && plan.warmup.length > 0 && session && (
-                <section className="rounded-2xl border border-zinc-800 bg-[#18181B] overflow-hidden">
+                <section className="rounded-3xl glass-surface border border-white/10 overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setWarmupOpen(!warmupOpen)}
-                    className="flex min-h-[50px] w-full items-center justify-between p-3.5 text-left hover:bg-zinc-800/40 transition-colors cursor-pointer"
+                    className="flex min-h-[50px] w-full items-center justify-between p-3.5 text-left hover:bg-white/[0.02] transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-400/15 text-lime-400">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-lime-400/15 text-lime-400">
                         <Flame className="h-4 w-4" />
                       </div>
                       <div>
-                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">{tr.warmupTitle}</h3>
+                        <h3 className="text-xs font-extrabold text-white uppercase tracking-wider">{tr.warmupTitle}</h3>
                         <p className="text-[11px] text-zinc-400">
                           {plan.warmup.filter((w) => session.warmupDone[w.moveId]).length} of {plan.warmup.length} completed
                         </p>
@@ -1263,7 +1257,7 @@ export default function Page() {
                   </button>
 
                   {warmupOpen && (
-                    <ul className="space-y-2 border-t border-zinc-800 p-3 pt-2">
+                    <ul className="space-y-2 border-t border-white/10 p-3 pt-2">
                       {plan.warmup.map((w) => {
                         const move = WARMUP_MAP[w.moveId];
                         if (!move) return null;
@@ -1271,16 +1265,16 @@ export default function Page() {
                         return (
                           <li
                             key={w.moveId}
-                            className={`flex items-start gap-3 rounded-xl border p-2.5 transition-all ${
-                              done ? "border-emerald-500/30 bg-emerald-950/15 opacity-70" : "border-zinc-800 bg-zinc-950"
+                            className={`flex items-start gap-3 rounded-2xl border p-2.5 transition-all ${
+                              done ? "border-emerald-500/30 bg-emerald-950/20 opacity-70" : "border-white/5 bg-black/40"
                             }`}
                           >
                             <button
                               type="button"
                               onClick={() => toggleWarmup(w.moveId)}
                               aria-label={`Mark ${move.name} done`}
-                              className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md cursor-pointer ${
-                                done ? "bg-lime-400 text-zinc-950" : "border border-zinc-700 bg-zinc-900"
+                              className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg cursor-pointer ${
+                                done ? "bg-lime-400 text-zinc-950" : "border border-white/10 bg-black/60"
                               }`}
                             >
                               {done && <Check className="h-3.5 w-3.5 stroke-[3]" />}
@@ -1397,10 +1391,10 @@ export default function Page() {
           {activeTab === "coach" && (
             <div className="flex flex-col h-full space-y-3">
               {/* Quick Preset Prompt Chips */}
-              <div className="rounded-2xl bg-[#18181B] border border-zinc-800/80 p-3">
+              <div className="rounded-3xl glass-surface border border-white/10 p-3">
                 <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-lime-400" />
-                  One-Tap AI Routine Presets
+                  Neural Routine Presets
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {AI_QUICK_PROMPTS.map((preset) => (
@@ -1408,7 +1402,7 @@ export default function Page() {
                       key={preset.label}
                       type="button"
                       onClick={() => handleSendCoachPrompt(preset.prompt, preset)}
-                      className="w-full text-left px-3 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all cursor-pointer"
+                      className="w-full text-left px-3 py-2.5 rounded-2xl bg-black/60 hover:bg-black border border-white/10 flex items-center justify-between text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all cursor-pointer"
                     >
                       <span>{preset.label}</span>
                       <ChevronRight className="w-4 h-4 text-lime-400" />
@@ -1429,8 +1423,8 @@ export default function Page() {
                     <div
                       className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
                         msg.sender === "user"
-                          ? "bg-lime-400 text-zinc-950 font-semibold rounded-br-sm"
-                          : "bg-[#18181B] border border-zinc-800 text-zinc-200 rounded-bl-sm"
+                          ? "bg-lime-400 text-zinc-950 font-extrabold rounded-br-sm shadow-sm shadow-lime-400/20"
+                          : "glass-surface border border-white/10 text-zinc-200 rounded-bl-sm"
                       }`}
                     >
                       {msg.text}
@@ -1438,7 +1432,7 @@ export default function Page() {
 
                     {/* Generated Routine Action Card inside Chat */}
                     {msg.suggestedPlan && (
-                      <div className="w-full mt-2 rounded-2xl bg-zinc-900 border border-lime-400/40 p-3.5 shadow-lg">
+                      <div className="w-full mt-2 rounded-3xl bg-zinc-900 border border-lime-400/40 p-3.5 shadow-lg">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
                             Ready to Deploy
@@ -1472,7 +1466,7 @@ export default function Page() {
                           className="w-full py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-500 text-zinc-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-lime-400/20 active:scale-95 transition-transform cursor-pointer"
                         >
                           <Sparkles className="w-3.5 h-3.5 stroke-[2.5]" />
-                          <span>Load Into Today&apos;s Workout</span>
+                          <span>Push to Today&apos;s Workout</span>
                         </button>
                       </div>
                     )}
@@ -1480,7 +1474,7 @@ export default function Page() {
                 ))}
 
                 {isAiTyping && (
-                  <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-[#18181B] border border-zinc-800 text-xs text-lime-400">
+                  <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl glass-surface border border-white/10 text-xs text-lime-400">
                     <Sparkles className="w-3.5 h-3.5 animate-spin" />
                     <span>Calibrating routine for {stats.bmi} BMI...</span>
                   </div>
@@ -1494,14 +1488,14 @@ export default function Page() {
                   e.preventDefault();
                   handleSendCoachPrompt(chatInput);
                 }}
-                className="sticky bottom-0 pt-2 bg-[#09090B]"
+                className="sticky bottom-0 pt-2 bg-[#050507]"
               >
-                <div className="flex items-center gap-2 bg-[#18181B] border border-zinc-800 rounded-2xl p-1.5 focus-within:border-lime-400/60">
+                <div className="flex items-center gap-2 glass-surface border border-white/10 rounded-2xl p-1.5 focus-within:border-lime-400/60">
                   <input
                     type="text"
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask AI Coach (e.g., 'Back & Biceps no gear')..."
+                    placeholder={isBn ? "কোচকে লিখুন (যেমন: ব্যাক ও বাইসেপস)..." : "Ask AI Coach (e.g., 'Back & Biceps no gear')..."}
                     className="flex-1 bg-transparent px-2.5 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
                   />
                   <button
@@ -1516,12 +1510,12 @@ export default function Page() {
           )}
 
           {/* ========================================================= */}
-          {/* TAB 3: BODY & STATS (BIOMETRICS & TELEMETRY)               */}
+          {/* TAB 5: BODY & STATS (BIOMETRICS & TELEMETRY)               */}
           {/* ========================================================= */}
-          {activeTab === "analytics" && (
+          {(activeTab === "stats" || activeTab === "analytics") && (
             <div className="space-y-4">
               {/* Analytics Sub-Tab Navigation Bar */}
-              <div className="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
+              <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                 {[
                   { id: "biometrics", label: "Biometrics & Engine" },
                   { id: "history", label: "Workout History" },
@@ -1535,8 +1529,8 @@ export default function Page() {
                     onClick={() => setAnalyticsSubTab(st.id as typeof analyticsSubTab)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                       analyticsSubTab === st.id
-                        ? "bg-lime-400 text-zinc-950 shadow-sm"
-                        : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"
+                        ? "bg-lime-400 text-zinc-950 font-extrabold shadow-sm shadow-lime-400/25"
+                        : "glass-surface border border-white/10 text-zinc-400 hover:text-white"
                     }`}
                   >
                     {st.label}
@@ -1547,7 +1541,7 @@ export default function Page() {
               {analyticsSubTab === "biometrics" && (
                 <>
                   {/* Live BMI & Calorie Calculator Card */}
-                  <section className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4 space-y-4">
+                  <section className="rounded-3xl glass-surface border border-white/10 p-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
@@ -1558,7 +1552,7 @@ export default function Page() {
                         </h2>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-black text-lime-400 leading-none">
+                        <div className="text-2xl font-black text-lime-400 leading-none font-mono">
                           {stats.bmi}
                         </div>
                         <div className="text-[11px] font-semibold text-emerald-400 mt-0.5">
@@ -1593,7 +1587,7 @@ export default function Page() {
                           className={`py-2 rounded-xl text-xs font-bold capitalize border transition-all cursor-pointer ${
                             activeProfile.gender === g
                               ? "bg-lime-400/15 border-lime-400 text-lime-400"
-                              : "bg-zinc-950 border-zinc-800 text-zinc-400"
+                              : "bg-black/50 border-white/5 text-zinc-400"
                           }`}
                         >
                           {g} Calibration
@@ -1657,26 +1651,26 @@ export default function Page() {
                     </div>
 
                     {/* Daily Calorie / Macro Summary Strip */}
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-800/80 text-center">
-                      <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800/70">
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center">
+                      <div className="rounded-2xl bg-black/50 p-2.5 border border-white/5">
                         <div className="text-[10px] text-zinc-500 uppercase">
-                          Daily TDEE
+                          {isBn ? "দৈনিক ক্যালোরি" : "Daily TDEE"}
                         </div>
                         <div className="text-sm font-extrabold text-white mt-0.5 font-mono">
                           {stats.tdee}
                         </div>
                         <div className="text-[10px] text-lime-400">kcal/day</div>
                       </div>
-                      <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800/70">
+                      <div className="rounded-2xl bg-black/50 p-2.5 border border-white/5">
                         <div className="text-[10px] text-zinc-500 uppercase">
-                          Protein Goal
+                          {isBn ? "টার্গেট প্রোটিন" : "Target Protein"}
                         </div>
                         <div className="text-sm font-extrabold text-white mt-0.5 font-mono">
                           {nutrition.proteinGrams}g
                         </div>
                         <div className="text-[10px] text-emerald-400">Hypertrophy</div>
                       </div>
-                      <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800/70">
+                      <div className="rounded-2xl bg-black/50 p-2.5 border border-white/5">
                         <div className="text-[10px] text-zinc-500 uppercase">
                           Cut Target
                         </div>
@@ -1689,7 +1683,7 @@ export default function Page() {
                   </section>
 
                   {/* Weight Trajectory SVG Area Chart */}
-                  <section className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4">
+                  <section className="rounded-3xl glass-surface border border-white/10 p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <h3 className="text-sm font-extrabold text-white flex items-center gap-1.5">
@@ -1741,7 +1735,7 @@ export default function Page() {
                             cx={Number(cx)}
                             cy={Number(cy)}
                             r="4"
-                            fill="#09090B"
+                            fill="#050507"
                             stroke="#a3e635"
                             strokeWidth="2.5"
                           />
@@ -1761,7 +1755,7 @@ export default function Page() {
                   </section>
 
                   {/* 28-Day Consistency Heatmap */}
-                  <section className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4">
+                  <section className="rounded-3xl glass-surface border border-white/10 p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-extrabold text-white flex items-center gap-1.5">
                         <Calendar className="w-4 h-4 text-lime-400" />
@@ -1780,18 +1774,16 @@ export default function Page() {
                       ].map((intensity, i) => {
                         const bg =
                           intensity === 3
-                            ? "bg-lime-400"
+                            ? "bg-lime-400 text-zinc-950 font-bold"
                             : intensity === 2
-                            ? "bg-emerald-500/70"
+                            ? "bg-emerald-500/70 text-zinc-950 font-bold"
                             : intensity === 1
-                            ? "bg-emerald-900/80"
-                            : "bg-zinc-900 border border-zinc-800";
+                            ? "bg-emerald-900/80 text-zinc-400"
+                            : "bg-black/60 text-zinc-600 border border-white/5";
                         return (
                           <div
                             key={i}
-                            className={`h-7 rounded-lg ${bg} flex items-center justify-center text-[10px] font-bold ${
-                              intensity === 3 ? "text-zinc-950" : "text-zinc-500"
-                            }`}
+                            className={`h-7 rounded-lg ${bg} flex items-center justify-center text-[10px] font-bold`}
                           >
                             {i + 1}
                           </div>
@@ -1879,8 +1871,8 @@ export default function Page() {
               {/* Daily Hydration Tracking Widget */}
               <WaterTrackerCard lang={lang} />
 
-              <div className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/80 pb-3">
+              <div className="rounded-3xl glass-surface border border-white/10 p-4 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-3">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
                       Sports Nutrition
@@ -1902,17 +1894,17 @@ export default function Page() {
 
                 {/* Energy & Macros Display */}
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-2xl bg-zinc-950 p-2.5 border border-zinc-800">
+                  <div className="rounded-2xl bg-black/50 p-2.5 border border-white/5">
                     <span className="text-[10px] text-lime-400 uppercase font-semibold block">{tr.proteinLabel}</span>
                     <strong className="text-sm font-extrabold text-white font-mono">{nutrition.proteinGrams}g</strong>
                     <span className="text-[9px] text-zinc-500 block">Hypertrophy</span>
                   </div>
-                  <div className="rounded-2xl bg-zinc-950 p-2.5 border border-zinc-800">
+                  <div className="rounded-2xl bg-black/50 p-2.5 border border-white/5">
                     <span className="text-[10px] text-sky-400 uppercase font-semibold block">{tr.carbsLabel}</span>
                     <strong className="text-sm font-extrabold text-white font-mono">{nutrition.carbGrams}g</strong>
                     <span className="text-[9px] text-zinc-500 block">Energy</span>
                   </div>
-                  <div className="rounded-2xl bg-zinc-950 p-2.5 border border-zinc-800">
+                  <div className="rounded-2xl bg-black/50 p-2.5 border border-white/5">
                     <span className="text-[10px] text-amber-400 uppercase font-semibold block">{tr.fatsLabel}</span>
                     <strong className="text-sm font-extrabold text-white font-mono">{nutrition.fatGrams}g</strong>
                     <span className="text-[9px] text-zinc-500 block">Hormones</span>
@@ -1920,24 +1912,24 @@ export default function Page() {
                 </div>
 
                 {/* Key Bangladeshi Foods Checklist */}
-                <div className="pt-2 border-t border-zinc-800/80 space-y-2">
+                <div className="pt-2 border-t border-white/10 space-y-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
                     {isBn ? "সেরা দেশীয় প্রোটিন ও খাবার" : "Essential Local Powerfoods"}
                   </h3>
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                    <div className="rounded-2xl bg-black/50 p-3 border border-white/5">
                       <div className="font-bold text-white">🐟 রুই ও কাতলা মাছ</div>
                       <div className="text-[10px] text-zinc-400 mt-0.5">প্রতি ১০০ গ্রামে ১৮-২০ গ্রাম প্রোটিন</div>
                     </div>
-                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                    <div className="rounded-2xl bg-black/50 p-3 border border-white/5">
                       <div className="font-bold text-white">🥚 দেশি ও ফার্মের ডিম</div>
                       <div className="text-[10px] text-zinc-400 mt-0.5">প্রতি ডিমে ৬ গ্রাম প্রোটিন ও কোলিন</div>
                     </div>
-                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                    <div className="rounded-2xl bg-black/50 p-3 border border-white/5">
                       <div className="font-bold text-white">🍗 মুরগির মাংস</div>
                       <div className="text-[10px] text-zinc-400 mt-0.5">কম ফ্যাটে উচ্চমানের লীন প্রোটিন</div>
                     </div>
-                    <div className="rounded-xl bg-zinc-950 p-2.5 border border-zinc-800">
+                    <div className="rounded-2xl bg-black/50 p-3 border border-white/5">
                       <div className="font-bold text-white">🥣 মুগ ও মসুর ডাল</div>
                       <div className="text-[10px] text-zinc-400 mt-0.5">সহজলভ্য প্রোটিন, ফাইবার ও আয়রন</div>
                     </div>
@@ -1948,11 +1940,11 @@ export default function Page() {
           )}
 
           {/* ========================================================= */}
-          {/* TAB 5: EXERCISES LIBRARY                                 */}
+          {/* TAB 3/5: EXERCISES LIBRARY                                */}
           {/* ========================================================= */}
-          {activeTab === "exercises" && (
+          {(activeTab === "exercises" || activeTab === "library") && (
             <div className="space-y-4">
-              <div className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-4 space-y-3">
+              <div className="rounded-3xl glass-surface border border-white/10 p-4 space-y-3">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-lime-400">
                     Exercise Catalog
@@ -1970,7 +1962,7 @@ export default function Page() {
                     placeholder={isBn ? "ব্যায়ামের নাম, পেশি বা সরঞ্জাম দিয়ে খুঁজুন..." : "Search exercises by name, muscle, or gear..."}
                     value={exerciseQuery}
                     onChange={(e) => setExerciseQuery(e.target.value)}
-                    className="h-10 w-full rounded-2xl border border-zinc-800 bg-zinc-950 pl-9 pr-8 text-xs text-white placeholder-zinc-500 focus:border-lime-400 focus:outline-none"
+                    className="h-10 w-full rounded-2xl border border-white/10 bg-black/50 pl-9 pr-8 text-xs text-white placeholder-zinc-500 focus:border-lime-400 focus:outline-none"
                   />
                   {exerciseQuery && (
                     <button
@@ -1992,8 +1984,8 @@ export default function Page() {
                       onClick={() => setSelectedMuscleCategory(f.id)}
                       className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                         selectedMuscleCategory === f.id
-                          ? "bg-lime-400 text-zinc-950 shadow-sm"
-                          : "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white"
+                          ? "bg-lime-400 text-zinc-950 shadow-sm shadow-lime-400/20"
+                          : "bg-black/50 border border-white/10 text-zinc-400 hover:text-white"
                       }`}
                     >
                       {isBn ? f.labelBn : f.label}
@@ -2010,10 +2002,10 @@ export default function Page() {
                     <div
                       key={ex.id}
                       onClick={() => setSelectedAnimationEx(ex)}
-                      className="rounded-3xl bg-[#18181B] border border-zinc-800/80 p-3.5 flex items-center justify-between gap-3 hover:border-lime-400/50 transition-all cursor-pointer active:scale-[0.99]"
+                      className="rounded-3xl glass-surface border border-white/10 p-3.5 flex items-center justify-between gap-3 hover:border-lime-400/50 transition-all cursor-pointer active:scale-[0.99]"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="relative h-14 w-14 rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 shrink-0">
+                        <div className="relative h-14 w-14 rounded-2xl overflow-hidden bg-black border border-white/10 shrink-0">
                           <img
                             src={media.localGif}
                             alt={ex.name}
@@ -2050,10 +2042,10 @@ export default function Page() {
         </main>
 
         {/* ========================================================= */}
-        {/* FLOATING GLASSMORPHIC AI REST COUNTDOWN TIMER PILL        */}
+        {/* FLOATING "DYNAMIC ISLAND" REST TIMER HUD                  */}
         {/* ========================================================= */}
         {timerSecondsLeft > 0 && (
-          <div className="absolute bottom-[84px] left-3.5 right-3.5 z-30 rounded-2xl bg-zinc-900/90 backdrop-blur-xl border border-lime-400/40 p-3 shadow-[0_10px_35px_rgba(0,0,0,0.85)] animate-in slide-in-from-bottom-3">
+          <div className="absolute bottom-[86px] left-3.5 right-3.5 z-40 rounded-3xl glass-surface p-3 border border-lime-400/40 shadow-[0_15px_45px_rgba(0,0,0,0.85)] animate-in slide-in-from-bottom-3">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -2076,14 +2068,14 @@ export default function Page() {
                 <button
                   type="button"
                   onClick={() => setTimerSecondsLeft((s) => Math.max(0, s - 15))}
-                  className="px-2 py-1.5 rounded-xl bg-zinc-800 text-[11px] font-bold text-zinc-200 active:scale-90 cursor-pointer"
+                  className="px-2 py-1.5 rounded-xl bg-black/60 text-[11px] font-bold text-zinc-200 active:scale-90 cursor-pointer"
                 >
                   -15s
                 </button>
                 <button
                   type="button"
                   onClick={() => setTimerSecondsLeft((s) => s + 15)}
-                  className="px-2 py-1.5 rounded-xl bg-zinc-800 text-[11px] font-bold text-zinc-200 active:scale-90 cursor-pointer"
+                  className="px-2 py-1.5 rounded-xl bg-black/60 text-[11px] font-bold text-zinc-200 active:scale-90 cursor-pointer"
                 >
                   +15s
                 </button>
@@ -2105,7 +2097,7 @@ export default function Page() {
                     setTimerSecondsLeft(0);
                   }}
                   aria-label="Skip Rest"
-                  className="p-2 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white active:scale-90 cursor-pointer"
+                  className="p-2 rounded-xl bg-black/60 text-zinc-400 hover:text-white active:scale-90 cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -2113,7 +2105,7 @@ export default function Page() {
             </div>
 
             {/* Rest Progress Bar */}
-            <div className="w-full h-1 bg-zinc-800 rounded-full mt-2 overflow-hidden">
+            <div className="w-full h-1 bg-black/60 rounded-full mt-2 overflow-hidden">
               <div
                 className="h-full bg-lime-400 transition-all duration-300"
                 style={{
@@ -2129,30 +2121,33 @@ export default function Page() {
         )}
 
         {/* ========================================================= */}
-        {/* THUMB-ZONE FLOATING BOTTOM NAVIGATION BAR                 */}
+        {/* 5-TAB THUMB-ZONE BOTTOM NAVIGATION DOCK                   */}
         {/* ========================================================= */}
         <nav
           aria-label="Primary Mobile Navigation"
-          className="shrink-0 px-4 pt-2 pb-4 sm:pb-5 bg-[#09090B]/95 backdrop-blur-lg border-t border-zinc-800/80 z-30"
+          className="shrink-0 px-4 pt-2 pb-4 sm:pb-5 bg-[#050507]/95 backdrop-blur-2xl border-t border-white/10 z-30"
         >
-          <div className="grid grid-cols-5 gap-1 bg-[#18181B] p-1.5 rounded-2xl border border-zinc-800/90">
+          <div className="grid grid-cols-5 gap-1 glass-surface p-1.5 rounded-3xl border border-white/10">
             {[
               { id: "today", label: isBn ? "আজকের" : "Today", icon: Flame },
               { id: "coach", label: isBn ? "কোচ" : "AI Coach", icon: Bot },
-              { id: "exercises", label: isBn ? "ব্যায়াম" : "Library", icon: Dumbbell },
+              { id: "exercises", label: isBn ? "ব্যায়াম" : "Library", icon: BookOpen },
               { id: "nutrition", label: isBn ? "পুষ্টি" : "Diet", icon: Utensils },
-              { id: "analytics", label: isBn ? "বডি" : "Body", icon: Activity },
+              { id: "analytics", label: isBn ? "বডি" : "Stats", icon: Activity },
             ].map((tab) => {
               const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
+              const isActive =
+                activeTab === tab.id ||
+                (tab.id === "exercises" && activeTab === "library") ||
+                (tab.id === "analytics" && activeTab === "stats");
               return (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as ActiveTab)}
-                  className={`py-2 px-1 rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer ${
+                  className={`py-2 px-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 cursor-pointer ${
                     isActive
-                      ? "bg-lime-400 text-zinc-950 font-extrabold shadow-sm shadow-lime-400/25"
+                      ? "bg-lime-400 text-zinc-950 font-extrabold shadow-sm shadow-lime-400/30"
                       : "text-zinc-400 hover:text-zinc-200 font-semibold"
                   }`}
                 >
@@ -2161,7 +2156,7 @@ export default function Page() {
                       isActive ? "stroke-[2.5]" : "stroke-[2]"
                     }`}
                   />
-                  <span className="text-[10px] truncate">{tab.label}</span>
+                  <span className="text-[10px] truncate max-w-full">{tab.label}</span>
                 </button>
               );
             })}
@@ -2172,8 +2167,8 @@ export default function Page() {
         {/* WORKOUT COMPLETION CELEBRATION MODAL                      */}
         {/* ========================================================= */}
         {showCelebration && (
-          <div className="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end p-4 animate-in fade-in">
-            <div className="w-full rounded-3xl bg-[#18181B] border border-lime-400/40 p-6 text-center shadow-2xl">
+          <div className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end p-4 animate-in fade-in">
+            <div className="w-full rounded-3xl glass-surface border border-lime-400/40 p-6 text-center shadow-2xl">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-lime-400 to-emerald-500 mx-auto flex items-center justify-center text-zinc-950 mb-3 shadow-lg shadow-lime-400/20">
                 <Trophy className="w-7 h-7 stroke-[2.5]" />
               </div>
@@ -2191,14 +2186,14 @@ export default function Page() {
                     setShowCelebration(false);
                     setShowFinish(true);
                   }}
-                  className="w-full py-3 rounded-2xl bg-lime-400 text-zinc-950 font-extrabold text-sm active:scale-95 transition-transform cursor-pointer"
+                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-500 text-zinc-950 font-extrabold text-sm active:scale-95 transition-transform cursor-pointer shadow-lg shadow-lime-400/20"
                 >
                   Save & Log Session
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCelebration(false)}
-                  className="w-full py-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold text-xs hover:text-white"
+                  className="w-full py-2.5 rounded-2xl bg-white/5 border border-white/10 text-zinc-300 font-bold text-xs hover:text-white cursor-pointer"
                 >
                   Dismiss
                 </button>

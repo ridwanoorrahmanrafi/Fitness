@@ -101,13 +101,13 @@ export function LandingPage({
   ];
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-zinc-100 flex flex-col selection:bg-emerald-500 selection:text-black relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#050507] text-zinc-100 flex flex-col selection:bg-lime-400 selection:text-black relative overflow-x-hidden">
       {/* Subtle Ambient Glows */}
-      <div className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-emerald-600/10 blur-[150px] -z-10" />
-      <div className="pointer-events-none fixed top-1/3 -right-40 h-[400px] w-[500px] rounded-full bg-sky-600/10 blur-[150px] -z-10" />
+      <div className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-lime-500/10 blur-[150px] -z-10" />
+      <div className="pointer-events-none fixed top-1/3 -right-40 h-[400px] w-[500px] rounded-full bg-emerald-600/10 blur-[150px] -z-10" />
 
       {/* Sticky Top Header */}
-      <header className="sticky top-0 z-40 border-b border-zinc-800 bg-[#090d16]/90 px-4 py-3.5 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#050507]/90 px-4 py-3.5 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           {/* Logo & Brand */}
           <div
@@ -117,7 +117,7 @@ export function LandingPage({
               onLaunchApp();
             }}
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-black shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform shrink-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-lime-400 to-emerald-500 text-black shadow-md shadow-lime-400/20 group-hover:scale-105 transition-transform shrink-0">
               <Activity className="h-5 w-5 stroke-[2.5]" />
             </div>
             <div>
@@ -125,7 +125,7 @@ export function LandingPage({
                 <span className="text-base sm:text-lg font-extrabold tracking-tight text-white uppercase">
                   ARISE
                 </span>
-                <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 text-[10px] font-bold text-emerald-400">
+                <span className="rounded bg-lime-400/15 border border-lime-400/30 px-1.5 py-0.5 text-[10px] font-bold text-lime-400">
                   FITNESS
                 </span>
               </div>
@@ -142,7 +142,7 @@ export function LandingPage({
               id="landing-lang-toggle"
               role="group"
               aria-label="Language selection"
-              className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900 p-0.5 text-xs"
+              className="flex items-center rounded-xl border border-white/10 bg-black/50 p-0.5 text-xs"
             >
               <button
                 type="button"
@@ -153,9 +153,9 @@ export function LandingPage({
                     onLanguageToggle();
                   }
                 }}
-                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                   lang === "bn"
-                    ? "bg-emerald-500 text-black font-bold"
+                    ? "bg-lime-400 text-black font-bold shadow-sm shadow-lime-400/25"
                     : "text-zinc-400 hover:text-white"
                 }`}
                 aria-pressed={lang === "bn"}
@@ -171,9 +171,9 @@ export function LandingPage({
                     onLanguageToggle();
                   }
                 }}
-                className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                   lang === "en"
-                    ? "bg-emerald-500 text-black font-bold"
+                    ? "bg-lime-400 text-black font-bold shadow-sm shadow-lime-400/25"
                     : "text-zinc-400 hover:text-white"
                 }`}
                 aria-pressed={lang === "en"}
@@ -186,7 +186,7 @@ export function LandingPage({
             <button
               onClick={onOpenAuth}
               type="button"
-              className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white hover:border-zinc-700 transition-all"
+              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/50 px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer"
             >
               <User className="h-3.5 w-3.5 text-zinc-400" />
               <span className="hidden sm:inline">{userName ? userName : t.navLogin}</span>
@@ -200,7 +200,7 @@ export function LandingPage({
                 onLaunchApp();
               }}
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3.5 py-1.5 text-xs font-bold text-black shadow-md hover:bg-emerald-400 active:scale-95 transition-all"
+              className="flex items-center gap-1.5 rounded-xl bg-lime-400 px-3.5 py-1.5 text-xs font-bold text-black shadow-md shadow-lime-400/20 hover:bg-lime-300 active:scale-95 transition-all cursor-pointer"
             >
               <span>{t.landingLaunchApp}</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -286,8 +286,8 @@ export function LandingPage({
 
           {/* 4 Feature Highlights */}
           <div className="pt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
-            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
-              <div className="text-emerald-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
+            <div className="rounded-3xl border border-white/10 glass-surface p-4 shadow-sm">
+              <div className="text-lime-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
                 <Zap className="h-3.5 w-3.5" /> AI Adaptive
               </div>
               <div className="text-xs text-zinc-400 leading-snug">
@@ -295,8 +295,8 @@ export function LandingPage({
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
-              <div className="text-teal-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
+            <div className="rounded-3xl border border-white/10 glass-surface p-4 shadow-sm">
+              <div className="text-emerald-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
                 <Utensils className="h-3.5 w-3.5" /> Local Nutrition
               </div>
               <div className="text-xs text-zinc-400 leading-snug">
@@ -304,7 +304,7 @@ export function LandingPage({
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
+            <div className="rounded-3xl border border-white/10 glass-surface p-4 shadow-sm">
               <div className="text-sky-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
                 <Play className="h-3.5 w-3.5" /> Form Guides
               </div>
@@ -313,8 +313,8 @@ export function LandingPage({
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
-              <div className="text-emerald-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
+            <div className="rounded-3xl border border-white/10 glass-surface p-4 shadow-sm">
+              <div className="text-lime-400 text-xs font-semibold mb-1 flex items-center gap-1.5 uppercase">
                 <ShieldCheck className="h-3.5 w-3.5" /> 100% Private
               </div>
               <div className="text-xs text-zinc-400 leading-snug">
@@ -326,10 +326,10 @@ export function LandingPage({
       </section>
 
       {/* Interactive Biometric Calculator Section */}
-      <section className="px-4 py-16 border-y border-zinc-800 bg-[#0d121f]">
+      <section className="px-4 py-16 border-y border-white/10 bg-[#050507]">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="text-center space-y-1.5">
-            <span className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+            <span className="text-xs font-bold tracking-wider text-lime-400 uppercase">
               {isBn ? "তাৎক্ষণিক ক্যালকুলেটর" : "Instant Calorie & Macro Calculator"}
             </span>
             <h2 className="text-2xl font-bold text-white sm:text-3xl">
@@ -340,7 +340,7 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 items-center rounded-2xl border border-zinc-800 bg-[#111726] p-6 shadow-md">
+          <div className="grid md:grid-cols-2 gap-6 items-center rounded-3xl border border-white/10 glass-surface p-6 shadow-md">
             {/* Input Controls */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -513,8 +513,8 @@ export function LandingPage({
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <div className="rounded-3xl border border-white/10 glass-surface p-5 space-y-3 hover:border-lime-400/50 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-lime-400/15 text-lime-400 border border-lime-400/30">
               <Sparkles className="h-5 w-5" />
             </div>
             <h3 className="text-base font-bold text-white">
@@ -527,8 +527,8 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/15 text-teal-400 border border-teal-500/30">
+          <div className="rounded-3xl border border-white/10 glass-surface p-5 space-y-3 hover:border-lime-400/50 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <Utensils className="h-5 w-5" />
             </div>
             <h3 className="text-base font-bold text-white">
@@ -541,8 +541,8 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/15 text-sky-400 border border-sky-500/30">
+          <div className="rounded-3xl border border-white/10 glass-surface p-5 space-y-3 hover:border-lime-400/50 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-400 border border-sky-500/30">
               <Play className="h-5 w-5" />
             </div>
             <h3 className="text-base font-bold text-white">
@@ -555,8 +555,8 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <div className="rounded-3xl border border-white/10 glass-surface p-5 space-y-3 hover:border-lime-400/50 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-lime-400/15 text-lime-400 border border-lime-400/30">
               <Calendar className="h-5 w-5" />
             </div>
             <h3 className="text-base font-bold text-white">
@@ -569,8 +569,8 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+          <div className="rounded-3xl border border-white/10 glass-surface p-5 space-y-3 hover:border-lime-400/50 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
               <Activity className="h-5 w-5" />
             </div>
             <h3 className="text-base font-bold text-white">
@@ -583,8 +583,8 @@ export function LandingPage({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 space-y-3 hover:border-zinc-700 transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <div className="rounded-3xl border border-white/10 glass-surface p-5 space-y-3 hover:border-lime-400/50 transition-all">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <h3 className="text-base font-bold text-white">
@@ -600,9 +600,9 @@ export function LandingPage({
       </section>
 
       {/* FAQ Section */}
-      <section className="px-4 py-16 border-t border-zinc-800 max-w-4xl mx-auto w-full space-y-6">
+      <section className="px-4 py-16 border-t border-white/10 max-w-4xl mx-auto w-full space-y-6">
         <div className="text-center space-y-1.5">
-          <span className="text-xs font-bold tracking-wider text-emerald-400 uppercase">
+          <span className="text-xs font-bold tracking-wider text-lime-400 uppercase">
             FAQ
           </span>
           <h2 className="text-2xl font-bold text-white sm:text-3xl">
@@ -617,7 +617,7 @@ export function LandingPage({
           {faqs.map((faq, idx) => (
             <div
               key={idx}
-              className="rounded-xl border border-zinc-800 bg-[#111726] text-zinc-200 overflow-hidden"
+              className="rounded-2xl border border-white/10 glass-surface text-zinc-200 overflow-hidden"
             >
               <button
                 type="button"
@@ -625,17 +625,17 @@ export function LandingPage({
                   playSound("click");
                   setOpenFaqIndex(openFaqIndex === idx ? null : idx);
                 }}
-                className="flex w-full items-center justify-between p-4 text-left text-sm font-semibold text-white hover:bg-zinc-800/40 transition-colors"
+                className="flex w-full items-center justify-between p-4 text-left text-sm font-semibold text-white hover:bg-white/5 transition-colors cursor-pointer"
               >
                 <span>{faq.q}</span>
                 {openFaqIndex === idx ? (
-                  <ChevronUp className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <ChevronUp className="h-4 w-4 text-lime-400 shrink-0" />
                 ) : (
                   <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0" />
                 )}
               </button>
               {openFaqIndex === idx && (
-                <div className="border-t border-zinc-800 bg-zinc-900/60 p-4 text-xs text-zinc-300 leading-relaxed">
+                <div className="border-t border-white/10 bg-black/40 p-4 text-xs text-zinc-300 leading-relaxed">
                   <p>{faq.a}</p>
                 </div>
               )}
@@ -645,7 +645,7 @@ export function LandingPage({
       </section>
 
       {/* Bottom CTA Banner */}
-      <section className="px-4 py-16 border-t border-zinc-800 bg-gradient-to-b from-[#0d121f] to-[#090d16] text-center space-y-4">
+      <section className="px-4 py-16 border-t border-white/10 bg-gradient-to-b from-[#050507] to-black text-center space-y-4">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
           {isBn ? "আজ থেকেই শুরু করুন আপনার ফিটনেস যাত্রা" : "Start Your Fitness Journey Today"}
         </h2>

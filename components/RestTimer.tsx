@@ -71,19 +71,19 @@ export function RestTimer({
   return (
     <aside
       aria-label="Rest timer"
-      className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 z-50 mx-auto max-w-lg rounded-2xl border border-slate-800 bg-[#111726]/95 p-4 shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom duration-300 font-sans text-white"
+      className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 z-50 mx-auto max-w-lg rounded-3xl border border-lime-400/40 glass-surface p-4 shadow-[0_15px_45px_rgba(0,0,0,0.85)] animate-in slide-in-from-bottom duration-300 font-sans text-white"
     >
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-400"></span>
           </span>
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-lime-400">
             {isBn ? "বিশ্রাম সময়" : "Rest Timer"}
           </span>
         </div>
-        <span className="max-w-[55%] truncate text-xs font-medium text-slate-300">{label}</span>
+        <span className="max-w-[55%] truncate text-xs font-medium text-zinc-300">{label}</span>
       </div>
 
       <div className="flex items-center justify-between gap-3">
@@ -95,7 +95,7 @@ export function RestTimer({
           >
             {mm}:{ss}
           </span>
-          <span className="text-[11px] text-slate-400 font-medium">
+          <span className="text-[11px] text-zinc-400 font-medium">
             {isBn ? "বাকি" : "left"}
           </span>
         </div>
@@ -106,7 +106,7 @@ export function RestTimer({
               playSound("click");
               onAdjust(-15);
             }}
-            className="rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-600 transition-all cursor-pointer"
+            className="rounded-xl border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer"
             title="Subtract 15 seconds"
           >
             -15s
@@ -116,7 +116,7 @@ export function RestTimer({
               playSound("click");
               onAdjust(15);
             }}
-            className="rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:border-slate-600 transition-all cursor-pointer"
+            className="rounded-xl border border-white/10 bg-black/60 px-2.5 py-1 text-xs font-semibold text-lime-400 hover:text-lime-300 transition-all cursor-pointer"
             title="Add 15 seconds"
           >
             +15s
@@ -127,7 +127,7 @@ export function RestTimer({
               state === "running" ? onPause() : onResume();
             }}
             aria-label={state === "running" ? "Pause" : "Resume"}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all cursor-pointer font-bold"
+            className="flex h-8 w-8 items-center justify-center rounded-xl bg-lime-400 text-zinc-950 transition-all cursor-pointer font-bold"
           >
             {state === "running" ? (
               <Pause className="h-4 w-4 stroke-[2.5]" />
@@ -142,7 +142,7 @@ export function RestTimer({
             }}
             aria-label="Skip timer"
             title="Skip timer"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-400 hover:text-white transition-all cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -150,9 +150,9 @@ export function RestTimer({
       </div>
 
       {/* Progress bar */}
-      <div className="w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden mt-3">
+      <div className="w-full bg-black/60 h-1.5 rounded-full overflow-hidden mt-3">
         <div
-          className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+          className="bg-lime-400 h-full rounded-full transition-all duration-300"
           style={{ width: `${Math.max(0, Math.min(100, Math.round((1 - progress) * 100)))}%` }}
         />
       </div>

@@ -91,7 +91,7 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
     >
       <div className="space-y-5 font-sans">
         {/* Workout Complete Banner */}
-        <div className="relative rounded-2xl p-5 bg-gradient-to-br from-emerald-950/40 via-[#111726] to-[#0d121f] border border-emerald-500/20 shadow-lg overflow-hidden">
+        <div className="relative rounded-3xl p-5 glass-surface border border-lime-400/30 shadow-lg overflow-hidden">
           <div className="absolute top-2.5 right-3 flex items-center gap-2">
             {onLanguageChange && (
               <div
@@ -154,27 +154,27 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
 
         {/* Workout Stats Grid */}
         <div className="grid grid-cols-3 gap-2.5">
-          <div className="rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-center">
-            <div className="text-[11px] text-slate-400 font-medium">
+          <div className="rounded-2xl border border-white/10 glass-surface p-3 text-center">
+            <div className="text-[11px] text-zinc-400 font-medium">
               {isBn ? "সময়কাল" : "Duration"}
             </div>
-            <div className="text-base font-bold text-white mt-1">
+            <div className="text-base font-extrabold text-white mt-1">
               {minutes} {isBn ? "মি." : "min"}
             </div>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-center">
-            <div className="text-[11px] text-slate-400 font-medium">
+          <div className="rounded-2xl border border-white/10 glass-surface p-3 text-center">
+            <div className="text-[11px] text-zinc-400 font-medium">
               {isBn ? "মোট ভলিউম" : "Total Volume"}
             </div>
-            <div className="text-base font-bold text-white mt-1">
+            <div className="text-base font-extrabold text-white mt-1">
               {t.volumeKg ? `${t.volumeKg} kg` : "-"}
             </div>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-center">
-            <div className="text-[11px] text-slate-400 font-medium">
+          <div className="rounded-2xl border border-white/10 glass-surface p-3 text-center">
+            <div className="text-[11px] text-zinc-400 font-medium">
               {isBn ? "আনুমানিক ক্যালোরি" : "Calories (Est.)"}
             </div>
-            <div className="text-base font-bold text-amber-400 mt-1">
+            <div className="text-base font-extrabold text-lime-400 mt-1">
               ~{kcal} kcal
             </div>
           </div>
@@ -182,7 +182,7 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
 
         {/* Perceived Intensity */}
         <section>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-300">
             {isBn ? "ব্যায়ামের তীব্রতা কেমন ছিল?" : "How did the workout feel?"}
           </h3>
           <div className="grid grid-cols-3 gap-2">
@@ -192,9 +192,9 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
                 type="button"
                 aria-pressed={difficulty === d.id}
                 onClick={() => setDifficulty(d.id)}
-                className={`min-h-[56px] h-auto p-2.5 flex flex-col items-center justify-center rounded-xl border transition-all cursor-pointer ${difficulty === d.id
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold"
-                    : "border-slate-800 bg-[#111726]/60 text-slate-400 hover:text-white hover:border-slate-700"
+                className={`min-h-[56px] h-auto p-2.5 flex flex-col items-center justify-center rounded-2xl border transition-all cursor-pointer ${difficulty === d.id
+                    ? "border-lime-400 bg-lime-400/15 text-lime-400 font-extrabold"
+                    : "border-white/10 glass-surface text-zinc-400 hover:text-white hover:border-white/20"
                   }`}
               >
                 <div className="text-xs font-semibold">{d.label}</div>
@@ -206,7 +206,7 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
 
         {/* Muscular Soreness & Recovery */}
         <section>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-300">
             {isBn ? "কোন পেশীতে বেশি চাপ অনুভূত হচ্ছে?" : "Targeted Muscle Soreness & Fatigue"}
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -216,7 +216,7 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
               </Chip>
             ))}
           </div>
-          <p className="mt-1.5 text-[11px] text-slate-400">
+          <p className="mt-1.5 text-[11px] text-zinc-400">
             {isBn
               ? "নির্বাচিত পেশীগুলোকে পরবর্তী ৭২ ঘণ্টার জন্য রিকভারি অগ্রাধিকার দেওয়া হবে।"
               : "Selected muscle groups will be scheduled for recovery prioritization over the next 72 hours."}
@@ -225,7 +225,7 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
 
         {/* Workout Notes */}
         <section>
-          <label htmlFor="notes" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+          <label htmlFor="notes" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-zinc-300">
             {isBn ? "ওয়ার্কআউট নোট / অনুভূতি (ঐচ্ছিক)" : "Workout Notes & Reflections (Optional)"}
           </label>
           <textarea
@@ -235,7 +235,7 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={isBn ? "যেমন: শেষ সেটে দারুণ পাম্প পেয়েছি, ফর্ম সঠিক ছিল" : "e.g. good depth on squats, maintained steady tempo throughout"}
-            className="w-full rounded-xl border border-slate-800 bg-[#111726]/80 p-3 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-2xl border border-white/10 glass-surface bg-black/60 p-3 text-xs text-white placeholder-zinc-500 focus:border-lime-400 focus:outline-none"
           />
         </section>
 
@@ -243,9 +243,9 @@ export function FinishSheet({ open, session, weightKg, lang = "bn", onLanguageCh
         <button
           onClick={() => onSave({ difficulty, soreMuscles: sore, notes: notes.trim(), minutes, kcal })}
           disabled={t.setsDone === 0}
-          className={`w-full py-3.5 px-4 rounded-xl font-semibold text-sm transition-all cursor-pointer ${t.setsDone === 0
-              ? "bg-slate-800 text-slate-500 cursor-not-allowed"
-              : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 active:scale-[0.99]"
+          className={`w-full py-3.5 px-4 rounded-2xl font-extrabold text-sm transition-all cursor-pointer ${t.setsDone === 0
+              ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+              : "bg-gradient-to-r from-lime-400 to-emerald-500 hover:from-lime-300 hover:to-emerald-400 text-zinc-950 shadow-md shadow-lime-400/25 active:scale-[0.98]"
             }`}
         >
           {t.setsDone === 0

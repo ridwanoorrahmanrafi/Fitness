@@ -262,14 +262,14 @@ export function ExerciseAnimationModal({
       className="modal modal-open backdrop-blur-md z-50 p-0 sm:p-4"
     >
       <div
-        className={`modal-box relative flex w-full flex-col p-0 rounded-2xl border border-slate-800 bg-[#0d121f] text-slate-100 shadow-2xl overflow-hidden transition-all duration-300 font-sans ${
+        className={`modal-box relative flex w-full flex-col p-0 rounded-3xl border border-white/10 glass-surface bg-[#050507]/95 text-zinc-100 shadow-2xl overflow-hidden transition-all duration-300 font-sans ${
           isFullscreen
             ? "fixed inset-0 max-h-screen rounded-none z-50 max-w-none w-screen h-screen"
             : "max-h-[94vh] max-w-2xl"
         }`}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 bg-[#111726] px-4 sm:px-6 py-3.5 backdrop-blur-md">
+        <div className="flex items-center justify-between border-b border-white/10 glass-surface bg-[#050507]/90 px-4 sm:px-6 py-3.5 backdrop-blur-md">
           <div className="min-w-0 pr-3">
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -388,13 +388,13 @@ export function ExerciseAnimationModal({
         </div>
 
         {/* Mobile View Toggle */}
-        <div className="flex sm:hidden border-b border-slate-800 bg-[#111726]/90 p-1.5 px-4 gap-2 font-sans">
+        <div className="flex sm:hidden border-b border-white/10 glass-surface bg-[#050507]/80 p-1.5 px-4 gap-2 font-sans">
           <button
             onClick={() => setViewMode("gif")}
             className={`flex-1 py-1.5 text-xs font-semibold rounded-lg text-center transition-all ${
               viewMode === "gif"
-                ? "bg-emerald-500 text-black font-bold"
-                : "text-slate-400 bg-slate-900 border border-slate-800"
+                ? "bg-lime-400 text-zinc-950 font-extrabold"
+                : "text-zinc-400 bg-black/40 border border-white/5"
             }`}
           >
             {lang === "bn" ? "📹 অ্যানিমেশন" : "📹 Animation"}
@@ -403,8 +403,8 @@ export function ExerciseAnimationModal({
             onClick={() => setViewMode("biomechanics")}
             className={`flex-1 py-1.5 text-xs font-semibold rounded-lg text-center transition-all ${
               viewMode === "biomechanics"
-                ? "bg-emerald-500 text-black font-bold"
-                : "text-slate-400 bg-slate-900 border border-slate-800"
+                ? "bg-lime-400 text-zinc-950 font-extrabold"
+                : "text-zinc-400 bg-black/40 border border-white/5"
             }`}
           >
             {lang === "bn" ? "🧬 বায়োমেকানিক্স" : "🧬 Biomechanics"}
@@ -414,7 +414,7 @@ export function ExerciseAnimationModal({
         {/* Scrollable Modal Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {/* Main Visualizer Frame */}
-          <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-[#111726]/80 p-4 shadow-xl flex flex-col items-center justify-center min-h-[290px]">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 glass-surface bg-black/60 p-4 shadow-xl flex flex-col items-center justify-center min-h-[290px]">
             {/* Subtle Grid Backdrop */}
             <div
               className="absolute inset-0 opacity-10 pointer-events-none"
@@ -651,7 +651,7 @@ export function ExerciseAnimationModal({
           </div>
 
           {/* Biomechanical Execution Guide */}
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 space-y-3">
+          <div className="rounded-3xl border border-white/10 glass-surface p-4 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
               <Zap className="h-3.5 w-3.5 text-emerald-400" /> {t.stepByStepTitle}
             </h3>
@@ -748,7 +748,7 @@ export function ExerciseAnimationModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="border-t border-slate-800 bg-[#111726] px-5 py-3.5 flex items-center justify-between gap-3">
+        <div className="border-t border-white/10 glass-surface bg-[#050507] px-5 py-3.5 flex items-center justify-between gap-3">
           <a
             href={`https://www.youtube.com/results?search_query=proper+form+${encodeURIComponent(exercise.name)}`}
             target="_blank"

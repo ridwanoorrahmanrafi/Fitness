@@ -84,7 +84,7 @@ export function MuscleVolumeHeatmap({ history, lang = "bn" }: Props) {
   }, [history]);
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-lg">
+    <div className="rounded-3xl glass-surface border border-white/10 p-5 shadow-lg">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400">

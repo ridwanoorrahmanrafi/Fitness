@@ -36,6 +36,7 @@
   ],
   "exclude": [
     "node_modules",
-    "fitness_workout_tracker.tsx"
+    "fitness_workout_tracker.tsx",
+    "obsidian_kinetic_v2_0_pwa.tsx"
   ]
 }

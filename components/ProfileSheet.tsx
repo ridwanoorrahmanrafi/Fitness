@@ -503,7 +503,7 @@ export function ProfileSheet({
 
           {/* Interactive Visual BMI Gauge */}
           {stats && (
-            <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 space-y-3">
+            <div className="rounded-3xl border border-white/10 glass-surface p-4 space-y-3">
               <BmiGauge bmi={stats.bmi} category={stats.bmiCategory} />
 
               <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t border-zinc-800">

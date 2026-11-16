@@ -170,13 +170,13 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
       role="dialog"
       aria-modal="true"
       aria-labelledby="diet-modal-title"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/85 backdrop-blur-md sm:items-center p-0 sm:p-4"
     >
-      <div className="relative flex max-h-[92vh] w-full max-w-2xl flex-col rounded-t-2xl sm:rounded-2xl border border-zinc-800 bg-[#0d121f] text-slate-100 shadow-2xl overflow-hidden font-sans">
+      <div className="relative flex max-h-[92vh] w-full max-w-2xl flex-col rounded-t-[36px] sm:rounded-3xl border border-white/10 glass-surface bg-[#050507]/95 text-zinc-100 shadow-2xl overflow-hidden font-sans">
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 bg-[#111726] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-white/10 glass-surface bg-[#050507]/90 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-lime-400/15 text-lime-400 border border-lime-400/30 font-bold">
               <Utensils className="h-5 w-5" />
             </div>
             <div>
@@ -240,14 +240,14 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
         </div>
 
         {/* Engine Switcher (DaisyUI Tabs: Preset vs AI) */}
-        <div className="border-b border-zinc-800 bg-[#111726]/80 px-4 py-2.5 flex items-center justify-between gap-2">
-          <div className="tabs tabs-boxed bg-zinc-900/90 p-1 border border-zinc-800">
+        <div className="border-b border-white/10 glass-surface bg-[#050507]/80 px-4 py-2.5 flex items-center justify-between gap-2">
+          <div className="tabs tabs-boxed bg-black/60 p-1 border border-white/10 rounded-2xl">
             <button
               type="button"
               onClick={() => setViewMode("preset")}
-              className={`tab text-xs font-semibold tracking-wide transition-all gap-1.5 ${
+              className={`tab text-xs font-semibold tracking-wide transition-all gap-1.5 rounded-xl ${
                 viewMode === "preset"
-                  ? "tab-active bg-emerald-500 text-black font-bold"
+                  ? "tab-active bg-lime-400 text-zinc-950 font-extrabold"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -434,7 +434,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
           )}
 
           {/* Plan Summary Banner */}
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 shadow-md">
+          <div className="rounded-3xl border border-white/10 glass-surface p-4 shadow-md">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
               <span className="text-base font-bold text-white sm:text-lg uppercase tracking-tight">
                 {isBn ? activeDiet.bengaliTitle : activeDiet.title}
@@ -529,7 +529,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
               return (
                 <div
                   key={meal.id}
-                  className="rounded-2xl border border-zinc-800 bg-[#111726] overflow-hidden transition-all shadow-sm"
+                  className="rounded-3xl border border-white/10 glass-surface overflow-hidden transition-all shadow-sm"
                 >
                   <div
                     onClick={() => setExpandedMeal(isExpanded && expandedMeal !== null ? "" : meal.id)}
@@ -596,15 +596,15 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
           </div>
 
           {/* Nutrition Guidelines */}
-          <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 space-y-2.5">
+          <div className="rounded-3xl border border-white/10 glass-surface p-4 space-y-2.5">
             <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-              <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />{" "}
+              <CheckCircle className="h-3.5 w-3.5 text-lime-400" />{" "}
               {isBn ? "বাঙালি খাদ্যাভ্যাসে জরুরি নিয়মাবলী" : "Nutrition & Healthy Eating Guidelines"}
             </h4>
             <ul className="space-y-2 text-xs text-zinc-300">
               {activeDiet.guidelines.map((g, idx) => (
                 <li key={idx} className="flex items-start gap-2">
-                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-400 mt-0.5">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-lime-400/10 text-[10px] font-bold text-lime-400 mt-0.5">
                     ✓
                   </span>
                   <span>{g}</span>
@@ -615,15 +615,15 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
         </div>
 
         {/* Footer Actions */}
-        <div className="border-t border-slate-800 bg-[#111726] px-5 py-3.5 flex items-center justify-between gap-3">
+        <div className="border-t border-white/10 glass-surface bg-[#050507] px-5 py-3.5 flex items-center justify-between gap-3">
           <button
             onClick={copyPlanToClipboard}
-            className="flex min-h-[40px] items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-600 transition-all cursor-pointer"
+            className="flex min-h-[40px] items-center gap-2 rounded-2xl border border-white/10 bg-black/60 px-4 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer"
           >
             {copied ? (
               <>
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
-                <span className="text-emerald-300">{t.copiedBtn}</span>
+                <CheckCircle className="h-4 w-4 text-lime-400" />
+                <span className="text-lime-300">{t.copiedBtn}</span>
               </>
             ) : (
               <>
@@ -635,7 +635,7 @@ ${activeDiet.guidelines.map((g, idx) => `${idx + 1}. ${g}`).join("\n")}
 
           <button
             onClick={onClose}
-            className="flex min-h-[40px] items-center justify-center rounded-xl bg-emerald-500 hover:bg-emerald-400 px-6 text-xs font-bold uppercase text-slate-950 transition-all active:scale-[0.98] cursor-pointer"
+            className="flex min-h-[40px] items-center justify-center rounded-2xl bg-gradient-to-r from-lime-400 to-emerald-500 hover:from-lime-300 hover:to-emerald-400 px-6 text-xs font-extrabold uppercase text-zinc-950 shadow-md shadow-lime-400/20 transition-all active:scale-[0.98] cursor-pointer"
           >
             {t.closeBtn}
           </button>

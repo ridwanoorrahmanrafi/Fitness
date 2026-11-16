@@ -84,7 +84,7 @@ export function GoalsProgressView({
   return (
     <div className="space-y-6 text-zinc-100">
       {/* 1. Cloud Sync Banner */}
-      <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div className="rounded-3xl glass-surface border border-white/10 p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-3">
           <span
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
@@ -150,7 +150,7 @@ export function GoalsProgressView({
 
       {/* 2. Fitness Progress Evaluation */}
       {evaluation && (
-        <section className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-sm space-y-4">
+        <section className="rounded-3xl glass-surface border border-white/10 p-5 shadow-sm space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-4">
             <div>
               <div className="flex items-center gap-2">
@@ -263,7 +263,7 @@ export function GoalsProgressView({
             return (
               <div
                 key={goal.id}
-                className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm space-y-3"
+                className="rounded-2xl border border-white/10 glass-surface p-4 shadow-sm space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
@@ -330,7 +330,7 @@ export function GoalsProgressView({
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
         >
-          <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-[#111726] p-6 shadow-xl space-y-4 text-zinc-100">
+          <div className="w-full max-w-md rounded-3xl border border-white/10 glass-surface p-6 shadow-xl space-y-4 text-zinc-100">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-white">

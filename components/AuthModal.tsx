@@ -368,7 +368,7 @@ export function AuthModal({
         )}
 
         {/* Active Account Status Bar */}
-        <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 shadow-sm">
+        <div className="rounded-xl glass-surface border border-white/10 p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-bold text-base">
@@ -496,7 +496,7 @@ export function AuthModal({
 
         {/* TAB 1: Email & Password Login */}
         {tab === "login" && (
-          <form onSubmit={handleEmailLogin} className="space-y-3.5 rounded-xl border border-zinc-800 bg-[#111726] p-4">
+          <form onSubmit={handleEmailLogin} className="space-y-3.5 rounded-xl glass-surface border border-white/10 p-4">
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-300">
                 {isBn ? "ইমেইল অ্যাড্রেস" : "Email Address"}
@@ -559,7 +559,7 @@ export function AuthModal({
 
         {/* TAB 2: Email Registration */}
         {tab === "register" && (
-          <form onSubmit={handleEmailSignUp} className="space-y-3.5 rounded-xl border border-zinc-800 bg-[#111726] p-4">
+          <form onSubmit={handleEmailSignUp} className="space-y-3.5 rounded-xl glass-surface border border-white/10 p-4">
             <div>
               <label className="mb-1 block text-xs font-medium text-zinc-300">
                 {isBn ? "আপনার পুরো নাম" : "Full Name"}
@@ -637,7 +637,7 @@ export function AuthModal({
         {/* TAB 3: Guest & Local Profiles */}
         {tab === "local" && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-zinc-800 bg-[#111726] p-4 space-y-2">
+            <div className="rounded-xl glass-surface border border-white/10 p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
                   <User className="h-3.5 w-3.5 text-emerald-400" />
@@ -705,7 +705,7 @@ export function AuthModal({
             )}
 
             {/* Create New Local Profile Form */}
-            <form onSubmit={handleCreateLocal} className="space-y-2.5 rounded-xl border border-zinc-800 bg-[#111726] p-3">
+            <form onSubmit={handleCreateLocal} className="space-y-2.5 rounded-xl glass-surface border border-white/10 p-3">
               <div className="text-xs font-semibold text-zinc-300">
                 {isBn ? "নতুন লোকাল প্রোফাইল যোগ করুন" : "Add Local Profile"}
               </div>
@@ -748,5 +748,3 @@ export function AuthModal({
     </Sheet>
   );
 }
-
-export { AuthModal as HunterAuthModal };

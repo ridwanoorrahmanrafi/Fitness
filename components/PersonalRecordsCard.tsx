@@ -129,7 +129,7 @@ export function PersonalRecordsCard({
   return (
     <div className="space-y-6">
       {/* 1. Personal Records (1RM Hall of Fame) */}
-      <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-lg">
+      <div className="rounded-3xl glass-surface border border-white/10 p-5 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
@@ -198,7 +198,7 @@ export function PersonalRecordsCard({
       </div>
 
       {/* 2. Athletic Milestones */}
-      <div className="rounded-2xl border border-zinc-800 bg-[#111726] p-5 shadow-lg">
+      <div className="rounded-3xl glass-surface border border-white/10 p-5 shadow-lg">
         <div className="flex items-center gap-2 mb-4">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
             <Award className="h-4 w-4" />
